@@ -1,11 +1,17 @@
 let token = localStorage.getItem('adminToken');
 let orders = [];
+const BASE_URL = (() => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    return 'https://magic-game-store-api.onrender.com'; // CHANGEZ CE NOM !
+})();
 
 function login() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
-    fetch('http://localhost:3000/api/login', {
+    fetch('${BASE_URL}/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -39,7 +45,7 @@ function logout() {
 function loadOrders() {
     if (!token) return;
 
-    fetch('http://localhost:3000/api/admin/orders', {
+    fetch('${BASE_URL}/api/admin/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
@@ -54,7 +60,7 @@ function loadOrders() {
 }
 
 function loadStats() {
-    fetch('http://localhost:3000/api/admin/stats', {
+    fetch('${BASE_URL}/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -128,7 +134,7 @@ function filterOrders() {
 function updateStatus(orderId, newStatus) {
     if (!confirm('Confirmer le changement de statut ?')) return;
 
-    fetch(`http://localhost:3000/api/admin/orders/${orderId}`, {
+    fetch(`${BASE_URL}/api/admin/orders/${orderId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -146,7 +152,7 @@ function updateStatus(orderId, newStatus) {
 function deleteOrder(orderId) {
     if (!confirm('Supprimer définitivement cette commande ?')) return;
 
-    fetch(`http://localhost:3000/api/admin/orders/${orderId}`, {
+    fetch(`${BASE_URL}/api/admin/orders/${orderId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -164,7 +170,7 @@ function refreshOrders() {
 
 // Vérifier session au chargement
 if (token) {
-    fetch('http://localhost:3000/api/admin/orders', {
+    fetch('${BASE_URL}/api/admin/orders', {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
