@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Game Store</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jockey+One&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <div class="header-logo">
+                <h1><a href="index.html">Magic Game Store</a></h1>
+            </div>
+
+            <nav>
+                <li><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIQUE</a></li> 
+                <li><a href="#" id="aboLink"><i class="fa-solid fa-cart-plus"></i> ABONNEMENT</a></li>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-container">
+            <div class="titre">
+                <h2 id="heroTitle">VENTE UC<br>PUBG MOBILE</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- TARIFS -->
+    <div class="tarifs" id="tarifs">
+        <div class="tarifs-container" id="tarifsContainer">
+            <div class="tarif">
+                <h3>30 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>3,000 Ar</p>
+                    <button class="acheter" data-pack="30 UC" data-price="3,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>60 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>5,000 Ar</p>
+                    <button class="acheter" data-pack="60 UC" data-price="5,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>90 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>8,000 Ar</p>
+                    <button class="acheter" data-pack="90 UC" data-price="8,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>120 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>10,000 Ar</p>
+                    <button class="acheter" data-pack="120 UC" data-price="10,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>180 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>16,000 Ar</p>
+                    <button class="acheter" data-pack="180 UC" data-price="16,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>325 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>21,000 Ar</p>
+                    <button class="acheter" data-pack="325 UC" data-price="21,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>415 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>30,000 Ar</p>
+                    <button class="acheter" data-pack="415 UC" data-price="30,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>660 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>41,000 Ar</p>
+                    <button class="acheter" data-pack="660 UC" data-price="41,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>720 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>45,500 Ar</p>
+                    <button class="acheter" data-pack="720 UC" data-price="45,500 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>985 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>62,000 Ar</p>
+                    <button class="acheter" data-pack="985 UC" data-price="62,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>1320 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>82,000 Ar</p>
+                    <button class="acheter" data-pack="1320 UC" data-price="82,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>1800 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>100,000 Ar</p>
+                    <button class="acheter" data-pack="1800 UC" data-price="100,000 Ar">ACHETER</button>
+                </div>
+            </div>
+            <div class="tarif">
+                <h3>3850 UC</h3>
+                <hr>
+                <div class="price">
+                    <p>204,000 Ar</p>
+                    <button class="acheter" data-pack="3850 UC" data-price="204,000 Ar">ACHETER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABONNEMENTS -->
+    <div class="abonnements" id="abonnements">
+        <div class="abonnements-container">
+            <div class="abonnement">
+                <h3>PRIME<br>1 mois</h3>
+                <hr>
+                <p>6,000 Ar</p>
+                <button class="acheter" data-pack="Prime 1mois" data-price="6,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME<br>3 mois</h3>
+                <hr>
+                <p>17,000 Ar</p>
+                <button class="acheter" data-pack="Prime 3mois" data-price="17,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME<br>6 mois</h3>
+                <hr>
+                <p>28,000 Ar</p>
+                <button class="acheter" data-pack="Prime 6mois" data-price="28,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME<br>12 mois</h3>
+                <hr>
+                <p>50,000 Ar</p>
+                <button class="acheter" data-pack="Prime 12mois" data-price="50,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME+<br>1 mois</h3>
+                <hr>
+                <p>41,000 Ar</p>
+                <button class="acheter" data-pack="Prime+ 1mois" data-price="41,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME+<br>3 mois</h3>
+                <hr>
+                <p>119,000 Ar</p>
+                <button class="acheter" data-pack="Prime+ 3mois" data-price="119,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME+<br>6 mois</h3>
+                <hr>
+                <p>233,000 Ar</p>
+                <button class="acheter" data-pack="Prime+ 6mois" data-price="233,000 Ar">ACHETER</button>
+            </div>
+            <div class="abonnement">
+                <h3>PRIME+<br>12 mois</h3>
+                <hr>
+                <p>457,000 Ar</p>
+                <button class="acheter" data-pack="Prime+ 12mois" data-price="457,000 Ar">ACHETER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-container">
+            <div class="marque">
+                <div class="marque-container">
+                    <h2 class="outlined-text"> SELNEKER PROJECT // BY MAGIC GAME STORE // ORIGINAL VERSION // </h2>
+                </div>
+                <div class="marque-container">
+                    <h2 class="outlined-text"> SELNEKER PROJECT // BY MAGIC GAME STORE // ORIGINAL VERSION // </h2>
+                </div>
+            </div>
+            <div class="hr"><hr></div>
+
+            <div class="pieds">
+                <div class="contacts">
+                    <div class="contacts-container">
+                        <a href="#"><span>CONTACTER</span></a>
+                        <a href="#"><span>WHATSAPP</span></a>
+                        <a href="#"><span>SIGNALER UN BUG</span></a>
+                    </div>
+                </div>
+                <div class="copyright">
+                    <span>© 2026 MAGIC GAME STORE // SURAZY_PLAYER</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL 1 - INFO COMMANDE -->
+    <div class="modalInfo" id="modalInfo">
+        <div class="modalInfo-container">
+            <button class="modal-close" id="closeInfo"><i class="fa-solid fa-xmark"></i></button>
+            <h3>INFO COMMANDE</h3>
+            <div class="packprice">
+                <strong>Pack : <span id="OrderPack"></span></strong>
+                <strong>Prix : <span id="OrderPrice"></span></strong>
+            </div>
+            <h3>Vos informations</h3>
+            <div class="userInfo">
+                <input type="text" id="pubgIdInput" placeholder="ID PUBG (11 chiffres)" maxlength="11" minlength="11">
+                <input type="text" id="pseudoInput" placeholder="Votre pseudo">
+            </div>
+            <div class="btn-group">
+                <button class="btn-secondary" id="closeInfo2">Annuler</button>
+                <button class="btn-primary" id="next">Suivant</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2 - PAIEMENT -->
+    <div class="modalPay" id="modalPay">
+        <div class="modalPay-container">
+            <button class="modal-close" id="closePay"><i class="fa-solid fa-xmark"></i></button>
+            <h3>Paiement MVola</h3>
+            <div class="numero">
+                <p><strong>038 39 05692</strong></p>
+                <button class="btn-copy" onclick="copyNumber()">Copier</button>
+            </div>
+            <div class="reference-form">
+                <input type="text" id="referenceInput" placeholder="Entrez la référence MVola">
+            </div>
+            <div class="guidbtn">
+                <button class="btn-secondary" id="retour">Retour</button>
+                <button class="btn-primary" id="confirm">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast"></div>
+
+    <script src="index.js"></script>
+</body>
+</html>

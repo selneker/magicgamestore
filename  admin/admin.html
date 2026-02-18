@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Magic Game Store</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="loginSection" class="login-container">
+        <div class="login-box">
+            <h2>🔐 Administration</h2>
+            <input type="email" id="loginEmail" placeholder="Email" value="admin@magicgamestore.com">
+            <input type="password" id="loginPassword" placeholder="Mot de passe" value="brad777">
+            <button onclick="login()">Se connecter</button>
+            <p id="loginError" class="error"></p>
+        </div>
+    </div>
+
+    <div id="adminSection" style="display: none;">
+        <header class="admin-header">
+            <h1><i class="fas fa-crown"></i> Magic Game Store - Admin</h1>
+            <div>
+                <span id="adminEmail"></span>
+                <button onclick="logout()" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-shopping-bag"></i>
+                <div>
+                    <h3 id="totalOrders">0</h3>
+                    <p>Commandes totales</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-money-bill-wave"></i>
+                <div>
+                    <h3 id="totalRevenue">0 Ar</h3>
+                    <p>Chiffre d'affaires</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <h3 id="pendingOrders">0</h3>
+                    <p>En attente</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <h3 id="deliveredOrders">0</h3>
+                    <p>Livrées</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="🔍 Rechercher par ID PUBG ou pseudo...">
+            <select id="statusFilter">
+                <option value="all">Tous les statuts</option>
+                <option value="en attente">En attente</option>
+                <option value="livré">Livré</option>
+                <option value="annulé">Annulé</option>
+            </select>
+            <button onclick="refreshOrders()" class="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Actualiser
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>ID PUBG</th>
+                        <th>Pseudo</th>
+                        <th>Pack</th>
+                        <th>Prix</th>
+                        <th>Paiement</th>
+                        <th>Référence</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody">
+                    <tr><td colspan="10" class="loading">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
