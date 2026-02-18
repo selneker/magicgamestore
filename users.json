@@ -2,7 +2,7 @@
   {
     "id": 1,
     "email": "admin@magicgamestore.com",
-    "password": "$2b$10$d6dJWwbJOG3B6.B3iMpfpeOitsv.7OMaizhbukahAvpvDzhvh/Dea",
+    "password": "admin123",
     "role": "admin",
     "createdAt": "2026-02-17T12:47:14.379Z"
   }
