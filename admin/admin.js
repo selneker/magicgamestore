@@ -1,17 +1,19 @@
 let token = localStorage.getItem('adminToken');
 let orders = [];
+
+// URL dynamique (localhost ou production)
 const BASE_URL = (() => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000';
     }
-    return 'https://magicgamestore.onrender.com'; // CHANGEZ CE NOM !
+    return 'https://magicgamestore.onrender.com';
 })();
 
 function login() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
-    fetch('${BASE_URL}/api/login', {
+    fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -45,7 +47,7 @@ function logout() {
 function loadOrders() {
     if (!token) return;
 
-    fetch('${BASE_URL}/api/admin/orders', {
+    fetch(`${BASE_URL}/api/admin/orders`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
@@ -60,7 +62,7 @@ function loadOrders() {
 }
 
 function loadStats() {
-    fetch('${BASE_URL}/api/admin/stats', {
+    fetch(`${BASE_URL}/api/admin/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -170,7 +172,7 @@ function refreshOrders() {
 
 // Vérifier session au chargement
 if (token) {
-    fetch('${BASE_URL}/api/admin/orders', {
+    fetch(`${BASE_URL}/api/admin/orders`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
