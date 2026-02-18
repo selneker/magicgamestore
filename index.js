@@ -37,7 +37,7 @@ const API_URL = (() => {
         return 'http://localhost:3000/api';
     }
     // En production (Render)
-    return 'https://magic-game-store-api.onrender.com/api'; // CHANGEZ CE NOM !
+    return 'https://magicgamestore.onrender.com'; // CHANGEZ CE NOM !
 })();
 
 // ===========================================
