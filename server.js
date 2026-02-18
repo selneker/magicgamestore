@@ -232,7 +232,6 @@ app.get('/admin-test', (req, res) => {
 
 
 // Démarrer le serveur
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Serveur démarré sur le port ${PORT}`);
     console.log(`📊 Admin: https://magic-game-store-api.onrender.com/admin/admin.html`);
