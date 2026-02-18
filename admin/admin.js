@@ -1,25 +1,36 @@
 let token = localStorage.getItem('adminToken');
 let orders = [];
 
-// URL dynamique (localhost ou production)
+// ========== URL DYNAMIQUE ==========
 const BASE_URL = (() => {
+    // Si on est en local
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000';
     }
-    return 'https://magicgamestore.onrender.com';
+    // En production (Render)
+    return 'https://magicgamestore.onrender.com';  // Votre URL Render
 })();
+
+console.log('🌐 API URL:', BASE_URL); // Pour déboguer
 
 function login() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
+
+    console.log('📤 Tentative de connexion...');
 
     fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log('📥 Réponse status:', res.status);
+        return res.json();
+    })
     .then(data => {
+        console.log('📥 Données reçues:', data);
+        
         if (data.token) {
             token = data.token;
             localStorage.setItem('adminToken', token);
@@ -29,11 +40,12 @@ function login() {
             loadOrders();
             loadStats();
         } else {
-            document.getElementById('loginError').textContent = data.error;
+            document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
         }
     })
     .catch(err => {
-        document.getElementById('loginError').textContent = 'Erreur de connexion';
+        console.error('❌ Erreur fetch:', err);
+        document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
     });
 }
 
@@ -45,39 +57,56 @@ function logout() {
 }
 
 function loadOrders() {
-    if (!token) return;
+    if (!token) {
+        console.log('⛔ Pas de token');
+        return;
+    }
+
+    console.log('📤 Chargement des commandes...');
 
     fetch(`${BASE_URL}/api/admin/orders`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     })
     .then(res => {
-        if (res.status === 401) logout();
+        console.log('📥 Réponse status:', res.status);
+        if (res.status === 401) {
+            logout();
+            throw new Error('Non autorisé');
+        }
         return res.json();
     })
     .then(data => {
+        console.log(`📥 ${data.length} commandes reçues`);
         orders = data;
         displayOrders(data);
     })
-    .catch(err => console.error('Erreur:', err));
+    .catch(err => console.error('❌ Erreur chargement commandes:', err));
 }
 
 function loadStats() {
+    if (!token) return;
+
     fetch(`${BASE_URL}/api/admin/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById('totalOrders').textContent = data.totalOrders;
-        document.getElementById('totalRevenue').textContent = data.totalRevenue.toLocaleString() + ' Ar';
-        document.getElementById('pendingOrders').textContent = data.statusCount['en attente'];
-        document.getElementById('deliveredOrders').textContent = data.statusCount['livré'];
-    });
+        console.log('📊 Stats:', data);
+        document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+        document.getElementById('totalRevenue').textContent = (data.totalRevenue || 0).toLocaleString() + ' Ar';
+        document.getElementById('pendingOrders').textContent = data.statusCount?.['en attente'] || 0;
+        document.getElementById('deliveredOrders').textContent = data.statusCount?.['livré'] || 0;
+    })
+    .catch(err => console.error('❌ Erreur chargement stats:', err));
 }
 
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
-    if (ordersToShow.length === 0) {
+    if (!ordersToShow || ordersToShow.length === 0) {
         tbody.innerHTML = '<tr><td colspan="10" class="loading">Aucune commande</td></tr>';
         return;
     }
@@ -86,15 +115,15 @@ function displayOrders(ordersToShow) {
         <tr>
             <td>#${order.id}</td>
             <td>${new Date(order.date).toLocaleString()}</td>
-            <td>${order.pubgId}</td>
-            <td>${order.pseudo}</td>
-            <td>${order.pack}</td>
-            <td>${order.price}</td>
-            <td>${order.paymentMethod}</td>
-            <td>${order.reference}</td>
+            <td>${order.pubgId || ''}</td>
+            <td>${order.pseudo || ''}</td>
+            <td>${order.pack || ''}</td>
+            <td>${order.price || ''}</td>
+            <td>${order.paymentMethod || ''}</td>
+            <td>${order.reference || ''}</td>
             <td>
-                <span class="status-badge status-${order.status.replace(' ', '-')}">
-                    ${order.status}
+                <span class="status-badge status-${(order.status || 'en attente').replace(' ', '-')}">
+                    ${order.status || 'en attente'}
                 </span>
             </td>
             <td>
@@ -110,8 +139,9 @@ function displayOrders(ordersToShow) {
     `).join('');
 }
 
-document.getElementById('searchInput').addEventListener('input', filterOrders);
-document.getElementById('statusFilter').addEventListener('change', filterOrders);
+// Filters
+document.getElementById('searchInput')?.addEventListener('input', filterOrders);
+document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
 
 function filterOrders() {
     const search = document.getElementById('searchInput').value.toLowerCase();
@@ -121,13 +151,13 @@ function filterOrders() {
     
     if (search) {
         filtered = filtered.filter(o => 
-            o.pubgId.toLowerCase().includes(search) ||
-            o.pseudo.toLowerCase().includes(search)
+            (o.pubgId || '').toLowerCase().includes(search) ||
+            (o.pseudo || '').toLowerCase().includes(search)
         );
     }
     
     if (status !== 'all') {
-        filtered = filtered.filter(o => o.status === status);
+        filtered = filtered.filter(o => (o.status || 'en attente') === status);
     }
     
     displayOrders(filtered);
@@ -148,7 +178,8 @@ function updateStatus(orderId, newStatus) {
     .then(() => {
         loadOrders();
         loadStats();
-    });
+    })
+    .catch(err => console.error('❌ Erreur mise à jour:', err));
 }
 
 function deleteOrder(orderId) {
@@ -162,7 +193,8 @@ function deleteOrder(orderId) {
     .then(() => {
         loadOrders();
         loadStats();
-    });
+    })
+    .catch(err => console.error('❌ Erreur suppression:', err));
 }
 
 function refreshOrders() {
@@ -172,6 +204,7 @@ function refreshOrders() {
 
 // Vérifier session au chargement
 if (token) {
+    console.log('🔑 Token trouvé, vérification...');
     fetch(`${BASE_URL}/api/admin/orders`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -182,7 +215,9 @@ if (token) {
             loadOrders();
             loadStats();
         } else {
+            console.log('⛔ Token invalide');
             localStorage.removeItem('adminToken');
         }
-    });
+    })
+    .catch(err => console.error('❌ Erreur vérification token:', err));
 }
