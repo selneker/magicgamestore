@@ -36,7 +36,7 @@ const API_URL = (() => {
         return 'http://localhost:3000/api';
     }
     // CORRECTION: magicgamestore (pas magicgamesstore) et avec /api/
-    return 'https://magicgamestore.onrender.com/api';
+    return 'https://magicgame.store/api';
 })();
 
 console.log('🌐 API URL:', API_URL); // Pour déboguer
