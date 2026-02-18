@@ -30,15 +30,16 @@ const referenceInput = document.getElementById('referenceInput');
 // Toast
 const toast = document.getElementById('toast');
 
-// API URL
+// ========== URL CORRIGÉE ==========
 const API_URL = (() => {
-    // Si on est en local
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
     }
-    // En production (Render)
-    return 'https://magicgamestore.onrender.com'; // CHANGEZ CE NOM !
+    // CORRECTION: magicgamestore (pas magicgamesstore) et avec /api/
+    return 'https://magicgamestore.onrender.com/api';
 })();
+
+console.log('🌐 API URL:', API_URL); // Pour déboguer
 
 // ===========================================
 // INITIALISATION
@@ -189,6 +190,9 @@ function submitOrder() {
     confirmBtn.textContent = 'Envoi...';
     confirmBtn.classList.add('loading');
     
+    console.log('📤 Envoi commande à:', `${API_URL}/order`);
+    console.log('📦 Données:', { pubgId, pseudo, pack, price, paymentMethod, reference });
+    
     // Envoyer au backend
     fetch(`${API_URL}/order`, {
         method: 'POST',
@@ -202,7 +206,17 @@ function submitOrder() {
             reference
         })
     })
-    .then(res => res.json())
+    .then(async res => {
+        console.log('📥 Réponse status:', res.status);
+        const text = await res.text();
+        console.log('📥 Réponse texte:', text);
+        
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error('Réponse non-JSON: ' + text.substring(0, 100));
+        }
+    })
     .then(data => {
         if (data.error) {
             showToast('Erreur : ' + data.error, 'error');
@@ -212,7 +226,7 @@ function submitOrder() {
         }
     })
     .catch(err => {
-        console.error('Erreur:', err);
+        console.error('❌ Erreur:', err);
         showToast('❌ Impossible de contacter le serveur', 'error');
     })
     .finally(() => {
