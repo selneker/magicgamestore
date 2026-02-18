@@ -16,7 +16,7 @@ const app = express();
 
 // Middleware
 app.use(helmet({
-    contentSecurityPolicy: false,  // Désactive CSP
+    contentSecurityPolicy: false,
 }));
 app.use(cors());
 app.use(express.json());
@@ -28,9 +28,6 @@ const limiter = rateLimit({
     max: 100
 });
 app.use('/api/', limiter);
-
-// Servir les fichiers statiques (HTML, CSS, JS)
-app.use(express.static(__dirname));
 
 // Fichiers JSON
 const ordersFile = path.join(__dirname, 'orders.json');
@@ -217,8 +214,22 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
     });
 });
 
-// Route spécifique pour l'admin
+// ========== ROUTES STATIQUES (dans le bon ordre) ==========
+
+// 1. D'ABORD la route spécifique pour l'admin
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
+// 2. ENSUITE les fichiers statiques généraux
+app.use(express.static(__dirname));
+
+// 3. ENFIN les routes HTML spécifiques
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('*.html', (req, res) => {
+    res.sendFile(path.join(__dirname, req.path));
+});
 
 // Route de débogage
 app.get('/admin-test', (req, res) => {
@@ -232,20 +243,11 @@ app.get('/admin-test', (req, res) => {
     });
 });
 
-// Route pour servir index.html à la racine (corrige le 404)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Route pour servir les autres fichiers HTML si nécessaire
-app.get('*.html', (req, res) => {
-    res.sendFile(path.join(__dirname, req.path));
-});
-
 // Démarrer le serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Serveur démarré sur le port ${PORT}`);
     console.log(`📊 Site: https://magicgamestore.onrender.com`);
     console.log(`📊 Admin: https://magicgamestore.onrender.com/admin/admin.html`);
+    console.log(`📊 Test: https://magicgamestore.onrender.com/admin-test`);
 });
