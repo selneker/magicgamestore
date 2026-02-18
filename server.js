@@ -27,6 +27,9 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Servir les fichiers statiques (HTML, CSS, JS)
+app.use(express.static(__dirname));
+
 // Fichiers JSON
 const ordersFile = path.join(__dirname, 'orders.json');
 const usersFile = path.join(__dirname, 'users.json');
@@ -212,14 +215,12 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
     });
 });
 
-
-// REMPLACE la ligne existante par CELLE-CI :
+// Route spécifique pour l'admin
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
-// AJOUTE AUSSI cette route de débogage
+// Route de débogage
 app.get('/admin-test', (req, res) => {
     const adminPath = path.join(__dirname, 'admin', 'admin.html');
-    const fs = require('fs');
     const exists = fs.existsSync(adminPath);
     res.json({
         message: 'Test admin',
@@ -229,10 +230,20 @@ app.get('/admin-test', (req, res) => {
     });
 });
 
+// Route pour servir index.html à la racine (corrige le 404)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Route pour servir les autres fichiers HTML si nécessaire
+app.get('*.html', (req, res) => {
+    res.sendFile(path.join(__dirname, req.path));
+});
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Serveur démarré sur le port ${PORT}`);
-    console.log(`📊 Admin: https://magic-game-store-api.onrender.com/admin/admin.html`);
+    console.log(`📊 Site: https://magicgamestore.onrender.com`);
+    console.log(`📊 Admin: https://magicgamestore.onrender.com/admin/admin.html`);
 });
