@@ -8,7 +8,7 @@ const BASE_URL = (() => {
         return 'http://localhost:3000';
     }
     // En production (Render)
-    return 'https://magicgamestore.onrender.com';  // Votre URL Render
+    return 'https://magicgame.store';  // Votre URL Render
 })();
 
 console.log('🌐 API URL:', BASE_URL); // Pour déboguer
