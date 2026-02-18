@@ -15,7 +15,9 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false,  // Désactive CSP
+}));
 app.use(cors());
 app.use(express.json());
 app.use(morgan('combined'));
