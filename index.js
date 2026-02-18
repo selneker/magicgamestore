@@ -31,7 +31,14 @@ const referenceInput = document.getElementById('referenceInput');
 const toast = document.getElementById('toast');
 
 // API URL
-const API_URL = 'http://localhost:3000/api';
+const API_URL = (() => {
+    // Si on est en local
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000/api';
+    }
+    // En production (Render)
+    return 'https://magic-game-store-api.onrender.com/api'; // CHANGEZ CE NOM !
+})();
 
 // ===========================================
 // INITIALISATION
