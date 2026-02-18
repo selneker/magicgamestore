@@ -38,19 +38,6 @@ if (!fs.existsSync(ordersFile)) {
     fs.writeFileSync(ordersFile, JSON.stringify([]));
 }
 
-if (!fs.existsSync(usersFile)) {
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
-    const defaultAdmin = [{
-        id: 1,
-        email: process.env.ADMIN_EMAIL,
-        password: hash,
-        role: 'admin',
-        createdAt: new Date().toISOString()
-    }];
-    fs.writeFileSync(usersFile, JSON.stringify(defaultAdmin, null, 2));
-}
-
 // Fonctions utilitaires
 function readOrders() {
     return JSON.parse(fs.readFileSync(ordersFile));
@@ -62,6 +49,10 @@ function writeOrders(orders) {
 
 function readUsers() {
     return JSON.parse(fs.readFileSync(usersFile));
+}
+
+function writeUsers(users) {
+    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 }
 
 // Middleware auth
@@ -214,7 +205,82 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
     });
 });
 
-// ========== ROUTES STATIQUES (dans le bon ordre) ==========
+// ========== ROUTES DE DEBUG POUR RÉSOUDRE L'AUTH ==========
+
+// 1. VOIR l'état actuel
+app.get('/api/debug-auth', (req, res) => {
+    const users = fs.existsSync(usersFile) ? readUsers() : [];
+    const admin = users.find(u => u.email === process.env.ADMIN_EMAIL);
+    
+    res.json({
+        env: {
+            adminEmail: process.env.ADMIN_EMAIL,
+            adminPassword: process.env.ADMIN_PASSWORD ? '********' : 'non défini'
+        },
+        file: {
+            usersFileExists: fs.existsSync(usersFile),
+            usersCount: users.length
+        },
+        admin: admin ? {
+            email: admin.email,
+            role: admin.role,
+            hash: admin.password.substring(0, 20) + '...'
+        } : null
+    });
+});
+
+// 2. CRÉER un nouvel admin avec le bon mot de passe
+app.get('/api/create-admin', async (req, res) => {
+    try {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
+        
+        const newAdmin = [{
+            id: 1,
+            email: process.env.ADMIN_EMAIL,
+            password: hash,
+            role: 'admin',
+            createdAt: new Date().toISOString()
+        }];
+        
+        fs.writeFileSync(usersFile, JSON.stringify(newAdmin, null, 2));
+        
+        res.json({ 
+            success: true, 
+            message: 'Admin créé avec succès',
+            email: process.env.ADMIN_EMAIL,
+            password: process.env.ADMIN_PASSWORD
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 3. TESTER la connexion directement (POST en GET pour debug)
+app.get('/api/test-login/:password', async (req, res) => {
+    try {
+        const testPassword = req.params.password;
+        const users = readUsers();
+        const admin = users.find(u => u.email === process.env.ADMIN_EMAIL);
+        
+        if (!admin) {
+            return res.json({ error: 'Admin non trouvé' });
+        }
+        
+        const valid = await bcrypt.compare(testPassword, admin.password);
+        
+        res.json({
+            email: admin.email,
+            passwordTested: testPassword,
+            isValid: valid,
+            storedHash: admin.password.substring(0, 20) + '...'
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ========== ROUTES STATIQUES ==========
 
 // 1. D'ABORD la route spécifique pour l'admin
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
@@ -249,5 +315,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Serveur démarré sur le port ${PORT}`);
     console.log(`📊 Site: https://magicgamestore.onrender.com`);
     console.log(`📊 Admin: https://magicgamestore.onrender.com/admin/admin.html`);
-    console.log(`📊 Test: https://magicgamestore.onrender.com/admin-test`);
+    console.log(`📊 Debug Auth: https://magicgamestore.onrender.com/api/debug-auth`);
+    console.log(`📊 Create Admin: https://magicgamestore.onrender.com/api/create-admin`);
 });
