@@ -315,55 +315,66 @@
 
         // Rechercher les commandes par ID PUBG
         async function searchOrders() {
-            const pubgId = document.getElementById('searchPubgId').value.trim();
-            
-            if (!pubgId) {
-                alert('Veuillez entrer votre ID PUBG');
-                return;
-            }
-            
-            if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
-                alert('L\'ID PUBG doit contenir exactement 11 chiffres');
-                return;
-            }
+    const pubgId = document.getElementById('searchPubgId').value.trim();
+    
+    if (!pubgId) {
+        alert('Veuillez entrer votre ID PUBG');
+        return;
+    }
+    
+    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
+        alert('L\'ID PUBG doit contenir exactement 11 chiffres');
+        return;
+    }
 
-            currentPubgId = pubgId;
-            
-            // Afficher le chargement
-            document.getElementById('ordersContainer').innerHTML = `
-                <div class="loading">
-                    <i class="fa-solid fa-spinner"></i> Chargement de votre historique...
-                </div>
-            `;
+    currentPubgId = pubgId;
+    
+    document.getElementById('ordersContainer').innerHTML = `
+        <div class="loading">
+            <i class="fa-solid fa-spinner fa-spin"></i> Chargement de votre historique...
+        </div>
+    `;
 
-            try {
-                console.log(`📤 Recherche des commandes pour ID: ${pubgId}`);
-                
-                // Appel API pour récupérer les commandes de cet ID
-                const response = await fetch(`${API_URL}/orders/user/${pubgId}`);
-                const orders = await response.json();
-                
-                console.log(`📥 ${orders.length} commandes trouvées`);
-                
-                currentOrders = orders;
-                
-                // Afficher les filtres
-                document.getElementById('filtersSection').style.display = 'block';
-                
-                // Afficher les commandes
-                displayOrders(orders);
-                
-            } catch (error) {
-                console.error('❌ Erreur:', error);
-                document.getElementById('ordersContainer').innerHTML = `
-                    <div class="no-orders">
-                        <i class="fa-solid fa-exclamation-triangle"></i>
-                        <h3>Erreur de chargement</h3>
-                        <p>Veuillez réessayer plus tard</p>
-                    </div>
-                `;
-            }
+    try {
+        console.log(`📤 Recherche des commandes pour ID: ${pubgId}`);
+        
+        const response = await fetch(`${API_URL}/orders/user/${pubgId}`);
+        
+        // Vérifier si la réponse est OK
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        // S'assurer que data est un tableau
+        const orders = Array.isArray(data) ? data : [];
+        
+        console.log(`📥 ${orders.length} commandes trouvées`);
+        
+        currentOrders = orders;
+        
+        if (orders.length > 0) {
+            document.getElementById('filtersSection').style.display = 'block';
+        } else {
+            document.getElementById('filtersSection').style.display = 'none';
+        }
+        
+        displayOrders(orders);
+        
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        document.getElementById('ordersContainer').innerHTML = `
+            <div class="no-orders">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <h3>Erreur de chargement</h3>
+                <p>Impossible de charger votre historique. Veuillez réessayer.</p>
+                <p style="font-size: 0.8rem; color: #999;">${error.message}</p>
+            </div>
+        `;
+        document.getElementById('filtersSection').style.display = 'none';
+    }
+}
 
         // Afficher les commandes
         function displayOrders(orders) {
