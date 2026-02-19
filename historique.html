@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Historique - Magic Game Store</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .history-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-form input {
+            flex: 2;
+            min-width: 250px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-form button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .search-form button:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid black;
+            background: white;
+            color: black;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: black;
+            color: white;
+        }
+        
+        .filter-btn:hover {
+            background: black;
+            color: white;
+        }
+        
+        .orders-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .order-card {
+            background: white;
+            border-left: 4px solid black;
+            border-radius: 5px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .order-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .order-info h3 {
+            margin: 0 0 1rem 0;
+            font-family: 'Jockey One', sans-serif;
+            font-size: 1.3rem;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .order-details p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .order-details i {
+            width: 20px;
+            margin-right: 5px;
+            color: black;
+        }
+        
+        .order-status {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+        
+        .status-en-attente {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .status-livré {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-annulé {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .order-date {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: #f9f9f9;
+            border-radius: 5px;
+            color: #666;
+        }
+        
+        .no-orders i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ccc;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .order-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-status {
+                text-align: left;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <div class="header-logo">
+                <h1><a href="index.html">Magic Game Store</a></h1>
+            </div>
+            <nav>
+                <li><a href="mon-historique.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> MON HISTORIQUE</a></li> 
+                <li><a href="index.html"><i class="fa-solid fa-cart-plus"></i> ACHETER</a></li>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENU PRINCIPAL -->
+    <div class="history-container">
+        <div class="history-header">
+            <h1><i class="fa-solid fa-clock-rotate-left"></i> Mon Historique d'Achats</h1>
+            <button onclick="refreshHistory()" class="filter-btn" style="border-radius: 5px;">
+                <i class="fa-solid fa-rotate-right"></i> Actualiser
+            </button>
+        </div>
+
+        <!-- SECTION RECHERCHE -->
+        <div class="search-section">
+            <h3>🔍 Rechercher mes achats</h3>
+            <div class="search-form">
+                <input type="text" id="searchPubgId" placeholder="Entrez votre ID PUBG (11 chiffres)" maxlength="11">
+                <button onclick="searchOrders()">
+                    <i class="fa-solid fa-magnifying-glass"></i> Voir mes achats
+                </button>
+            </div>
+            <p style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
+                <i class="fa-solid fa-info-circle"></i> Entrez votre ID PUBG pour voir toutes vos commandes
+            </p>
+        </div>
+
+        <!-- FILTRES (apparaissent après recherche) -->
+        <div id="filtersSection" style="display: none;">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterOrders('all')">Tous</button>
+                <button class="filter-btn" onclick="filterOrders('en attente')">⏳ En attente</button>
+                <button class="filter-btn" onclick="filterOrders('livré')">✅ Livrés</button>
+                <button class="filter-btn" onclick="filterOrders('annulé')">❌ Annulés</button>
+            </div>
+        </div>
+
+        <!-- LISTE DES COMMANDES -->
+        <div id="ordersContainer">
+            <div class="no-orders">
+                <i class="fa-solid fa-box-open"></i>
+                <h3>Entrez votre ID PUBG pour voir votre historique</h3>
+                <p>Vos commandes apparaîtront ici après recherche</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-container">
+            <div class="marque">
+                <div class="marque-container">
+                    <h2 class="outlined-text"> MAGIC GAME STORE // HISTORIQUE CLIENT // SUIVEZ VOS COMMANDES // </h2>
+                </div>
+                <div class="marque-container">
+                    <h2 class="outlined-text"> MAGIC GAME STORE // HISTORIQUE CLIENT // SUIVEZ VOS COMMANDES // </h2>
+                </div>
+            </div>
+            <div class="pieds">
+                <div class="copyright">
+                    <span>© 2026 MAGIC GAME STORE</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const API_URL = (() => {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:3000/api';
+            }
+            return `${window.location.origin}/api`;
+        })();
+
+        let currentOrders = [];
+        let currentFilter = 'all';
+        let currentPubgId = '';
+
+        // Rechercher les commandes par ID PUBG
+        async function searchOrders() {
+            const pubgId = document.getElementById('searchPubgId').value.trim();
+            
+            if (!pubgId) {
+                alert('Veuillez entrer votre ID PUBG');
+                return;
+            }
+            
+            if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
+                alert('L\'ID PUBG doit contenir exactement 11 chiffres');
+                return;
+            }
+
+            currentPubgId = pubgId;
+            
+            // Afficher le chargement
+            document.getElementById('ordersContainer').innerHTML = `
+                <div class="loading">
+                    <i class="fa-solid fa-spinner"></i> Chargement de votre historique...
+                </div>
+            `;
+
+            try {
+                console.log(`📤 Recherche des commandes pour ID: ${pubgId}`);
+                
+                // Appel API pour récupérer les commandes de cet ID
+                const response = await fetch(`${API_URL}/orders/user/${pubgId}`);
+                const orders = await response.json();
+                
+                console.log(`📥 ${orders.length} commandes trouvées`);
+                
+                currentOrders = orders;
+                
+                // Afficher les filtres
+                document.getElementById('filtersSection').style.display = 'block';
+                
+                // Afficher les commandes
+                displayOrders(orders);
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div class="no-orders">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>Veuillez réessayer plus tard</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Afficher les commandes
+        function displayOrders(orders) {
+            const container = document.getElementById('ordersContainer');
+            
+            if (!orders || orders.length === 0) {
+                container.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fa-solid fa-box-open fa-3x"></i>
+                        <h3>Aucune commande trouvée</h3>
+                        <p>ID PUBG: ${currentPubgId}</p>
+                        <p>Vous n'avez pas encore effectué d'achat avec cet ID.</p>
+                        <a href="index.html" style="color: black; font-weight: bold; text-decoration: underline;">
+                            Faire un achat maintenant
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="orders-grid">
+                    ${orders.map(order => `
+                        <div class="order-card">
+                            <div class="order-info">
+                                <h3>${order.pack}</h3>
+                                <div class="order-details">
+                                    <p><i class="fa-regular fa-calendar"></i> ${new Date(order.date).toLocaleDateString()}</p>
+                                    <p><i class="fa-regular fa-clock"></i> ${new Date(order.date).toLocaleTimeString()}</p>
+                                    <p><i class="fa-solid fa-tag"></i> ${order.price}</p>
+                                    <p><i class="fa-regular fa-credit-card"></i> ${order.paymentMethod}</p>
+                                    <p><i class="fa-regular fa-user"></i> ${order.pseudo}</p>
+                                    <p><i class="fa-regular fa-id-card"></i> ${order.pubgId}</p>
+                                    <p><i class="fa-regular fa-hashtag"></i> Réf: ${order.reference}</p>
+                                </div>
+                            </div>
+                            <div class="order-status">
+                                <span class="status-badge status-${order.status.replace(' ', '-')}">
+                                    ${order.status === 'en attente' ? '⏳ En attente' : 
+                                      order.status === 'livré' ? '✅ Livré' : 
+                                      order.status === 'annulé' ? '❌ Annulé' : order.status}
+                                </span>
+                                <span class="order-date">#${order.id}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Filtrer les commandes
+        function filterOrders(filter) {
+            currentFilter = filter;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filtrer
+            let filteredOrders = currentOrders;
+            if (filter !== 'all') {
+                filteredOrders = currentOrders.filter(o => o.status === filter);
+            }
+            
+            displayOrders(filteredOrders);
+        }
+
+        // Actualiser
+        async function refreshHistory() {
+            if (currentPubgId) {
+                await searchOrders();
+            }
+        }
+
+        // Auto-refresh toutes les 30 secondes (optionnel)
+        setInterval(() => {
+            if (currentPubgId) {
+                console.log('🔄 Rafraîchissement auto...');
+                searchOrders();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
