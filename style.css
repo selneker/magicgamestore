@@ -537,10 +537,4 @@ footer {
     .hero-container h2 {
         font-size: 2rem;
     }
-
-
-   .tarifs, .abonnements {
-        width: min(30%, 250px);
-        height: min(30%, 150px);
-   }
 }
