@@ -513,28 +513,3 @@ footer {
         margin-right: 3px;
     }
 }
-
-/* Encore plus petit (moins de 320px) */
-@media (max-width: 320px) {
-    .header-container {
-        flex-direction: column;
-        height: auto;
-        padding: 0.5rem;
-    }
-    
-    header nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 5px;
-    }
-    
-    header nav li {
-        display: inline-block;
-        margin: 0;
-    }
-    
-    .hero-container h2 {
-        font-size: 2rem;
-    }
-}
