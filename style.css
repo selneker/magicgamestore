@@ -537,9 +537,4 @@ footer {
     .hero-container h2 {
         font-size: 2rem;
     }
-    
-    .tarif, .abonnement {
-        max-width: 240px;
-    }
 }
-
