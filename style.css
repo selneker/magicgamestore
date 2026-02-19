@@ -466,8 +466,8 @@ footer {
     }
     
     .tarif, .abonnement {
-        width: 100%; /* Prend toute la largeur */
-        max-width: 280px; /* Mais pas trop large */
+        width: min(30% , 250px );
+        height: min(30%, 150px); /* Mais pas trop large */
         margin: 0 auto; /* Centré */
         padding: 0.8rem;
         box-sizing: border-box; /* Important pour que padding soit inclus */
