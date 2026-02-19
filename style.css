@@ -115,8 +115,8 @@ header nav a:hover {
     display: flex;
     flex-wrap: wrap;
     gap: clamp(1rem, 3rem, 4rem);
+    align-content: center;
     justify-content: center;
-    padding: 2rem 0;
 }
 
 .tarif, .abonnement {
@@ -124,7 +124,8 @@ header nav a:hover {
     border-left: 2px solid var(--secondly-color);
     border-radius: 5px;
     padding: 1rem;
-    width: min(250px, 90%);
+    width: min(30%, 250px);
+    height: min(30%, 150px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
     background: white;
