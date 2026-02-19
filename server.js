@@ -14,22 +14,29 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// ========== MIDDLEWARE ==========
 app.use(helmet({
     contentSecurityPolicy: false,
 }));
-app.use(cors());
+
+// CORS plus flexible
+app.use(cors({
+    origin: ['https://magicgame.store', 'https://www.magicgame.store', 'http://localhost:3000'],
+    credentials: true
+}));
+
 app.use(express.json());
 app.use(morgan('combined'));
 
-// Rate limiting
+// Rate limiting - avec message personnalisé
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: { error: 'Trop de requêtes, veuillez attendre 15 minutes' }
 });
 app.use('/api/', limiter);
 
-// Fichiers JSON
+// ========== FICHIERS JSON ==========
 const ordersFile = path.join(__dirname, 'orders.json');
 const usersFile = path.join(__dirname, 'users.json');
 
@@ -38,7 +45,7 @@ if (!fs.existsSync(ordersFile)) {
     fs.writeFileSync(ordersFile, JSON.stringify([]));
 }
 
-// Fonctions utilitaires
+// ========== FONCTIONS UTILITAIRES ==========
 function readOrders() {
     return JSON.parse(fs.readFileSync(ordersFile));
 }
@@ -55,7 +62,7 @@ function writeUsers(users) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 }
 
-// Middleware auth
+// ========== MIDDLEWARE AUTH ==========
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -76,31 +83,45 @@ function isAdmin(req, res, next) {
     next();
 }
 
-// ========== ROUTES API ==========
+// ========== ROUTES API PUBLIQUES ==========
 
 // Login
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-    
-    const users = readUsers();
-    const user = users.find(u => u.email === email);
-    
-    if (!user) {
-        return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    try {
+        const { email, password } = req.body;
+        
+        // Vérifier si users.json existe
+        if (!fs.existsSync(usersFile)) {
+            return res.status(500).json({ error: 'Base de données utilisateurs non initialisée' });
+        }
+        
+        const users = readUsers();
+        const user = users.find(u => u.email === email);
+        
+        if (!user) {
+            return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+        }
+        
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+        }
+        
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+        
+        res.json({ 
+            token, 
+            user: { email: user.email, role: user.role } 
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur login:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
     }
-    
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) {
-        return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-    }
-    
-    const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-    );
-    
-    res.json({ token, user: { email: user.email, role: user.role } });
 });
 
 // Créer une commande
@@ -141,71 +162,88 @@ app.post('/api/order', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erreur:', error);
+        console.error('❌ Erreur commande:', error);
         res.status(500).json({ error: 'Erreur serveur' });
     }
 });
 
-// ADMIN: Récupérer toutes les commandes
+// ========== ROUTES ADMIN (protégées) ==========
+
+// Récupérer toutes les commandes
 app.get('/api/admin/orders', authenticateToken, isAdmin, (req, res) => {
     const orders = readOrders();
     res.json(orders);
 });
 
-// ADMIN: Mettre à jour statut
+// Mettre à jour statut
 app.put('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
-    const orderId = parseInt(req.params.id);
-    const { status } = req.body;
-    
-    const orders = readOrders();
-    const index = orders.findIndex(o => o.id === orderId);
-    
-    if (index === -1) {
-        return res.status(404).json({ error: 'Commande non trouvée' });
+    try {
+        const orderId = parseInt(req.params.id);
+        const { status } = req.body;
+        
+        const orders = readOrders();
+        const index = orders.findIndex(o => o.id === orderId);
+        
+        if (index === -1) {
+            return res.status(404).json({ error: 'Commande non trouvée' });
+        }
+        
+        orders[index].status = status;
+        writeOrders(orders);
+        
+        res.json({ message: 'Statut mis à jour' });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    
-    orders[index].status = status;
-    writeOrders(orders);
-    
-    res.json({ message: 'Statut mis à jour' });
 });
 
-// ADMIN: Supprimer commande
+// Supprimer commande
 app.delete('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
-    const orderId = parseInt(req.params.id);
-    
-    let orders = readOrders();
-    orders = orders.filter(o => o.id !== orderId);
-    writeOrders(orders);
-    
-    res.json({ message: 'Commande supprimée' });
+    try {
+        const orderId = parseInt(req.params.id);
+        
+        let orders = readOrders();
+        orders = orders.filter(o => o.id !== orderId);
+        writeOrders(orders);
+        
+        res.json({ message: 'Commande supprimée' });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// ADMIN: Statistiques
+// Statistiques
 app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
-    const orders = readOrders();
-    
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o) => {
-        const price = parseInt(o.price.replace(/[^0-9]/g, '')) || 0;
-        return sum + price;
-    }, 0);
-    
-    const statusCount = {
-        'en attente': orders.filter(o => o.status === 'en attente').length,
-        'livré': orders.filter(o => o.status === 'livré').length,
-        'annulé': orders.filter(o => o.status === 'annulé').length
-    };
-    
-    res.json({
-        totalOrders,
-        totalRevenue,
-        statusCount,
-        lastOrders: orders.slice(-10).reverse()
-    });
+    try {
+        const orders = readOrders();
+        
+        const totalOrders = orders.length;
+        const totalRevenue = orders.reduce((sum, o) => {
+            const price = parseInt(o.price.replace(/[^0-9]/g, '')) || 0;
+            return sum + price;
+        }, 0);
+        
+        const statusCount = {
+            'en attente': orders.filter(o => o.status === 'en attente').length,
+            'livré': orders.filter(o => o.status === 'livré').length,
+            'annulé': orders.filter(o => o.status === 'annulé').length
+        };
+        
+        res.json({
+            totalOrders,
+            totalRevenue,
+            statusCount,
+            lastOrders: orders.slice(-10).reverse()
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// ========== ROUTES DE DEBUG POUR RÉSOUDRE L'AUTH ==========
+// ========== ROUTES DE DEBUG (à supprimer en production) ==========
 
 // 1. VOIR l'état actuel
 app.get('/api/debug-auth', (req, res) => {
@@ -215,7 +253,7 @@ app.get('/api/debug-auth', (req, res) => {
     res.json({
         env: {
             adminEmail: process.env.ADMIN_EMAIL,
-            adminPassword: process.env.ADMIN_PASSWORD ? '********' : 'non défini'
+            adminPasswordDefined: !!process.env.ADMIN_PASSWORD
         },
         file: {
             usersFileExists: fs.existsSync(usersFile),
@@ -229,9 +267,13 @@ app.get('/api/debug-auth', (req, res) => {
     });
 });
 
-// 2. CRÉER un nouvel admin avec le bon mot de passe
+// 2. CRÉER un nouvel admin
 app.get('/api/create-admin', async (req, res) => {
     try {
+        if (!process.env.ADMIN_PASSWORD) {
+            return res.status(500).json({ error: 'ADMIN_PASSWORD non défini dans les variables d\'environnement' });
+        }
+        
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
         
@@ -247,18 +289,23 @@ app.get('/api/create-admin', async (req, res) => {
         
         res.json({ 
             success: true, 
-            message: 'Admin créé avec succès',
+            message: '✅ Admin créé avec succès',
             email: process.env.ADMIN_EMAIL,
             password: process.env.ADMIN_PASSWORD
         });
+        
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// 3. TESTER la connexion directement (POST en GET pour debug)
+// 3. TESTER la connexion
 app.get('/api/test-login/:password', async (req, res) => {
     try {
+        if (!fs.existsSync(usersFile)) {
+            return res.json({ error: 'users.json n\'existe pas' });
+        }
+        
         const testPassword = req.params.password;
         const users = readUsers();
         const admin = users.find(u => u.email === process.env.ADMIN_EMAIL);
@@ -275,6 +322,7 @@ app.get('/api/test-login/:password', async (req, res) => {
             isValid: valid,
             storedHash: admin.password.substring(0, 20) + '...'
         });
+        
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -282,22 +330,18 @@ app.get('/api/test-login/:password', async (req, res) => {
 
 // ========== ROUTES STATIQUES ==========
 
-// 1. D'ABORD la route spécifique pour l'admin
+// Servir l'admin en premier
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
-// 2. ENSUITE les fichiers statiques généraux
+// Servir les fichiers statiques généraux
 app.use(express.static(__dirname));
 
-// 3. ENFIN les routes HTML spécifiques
+// Route pour la racine
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('*.html', (req, res) => {
-    res.sendFile(path.join(__dirname, req.path));
-});
-
-// Route de débogage
+// Route de débogage admin
 app.get('/admin-test', (req, res) => {
     const adminPath = path.join(__dirname, 'admin', 'admin.html');
     const exists = fs.existsSync(adminPath);
@@ -309,12 +353,19 @@ app.get('/admin-test', (req, res) => {
     });
 });
 
-// Démarrer le serveur
+// ========== GESTION DES ERREURS 404 ==========
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route non trouvée' });
+});
+
+// ========== DÉMARRAGE DU SERVEUR ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🚀 ==================================`);
     console.log(`✅ Serveur démarré sur le port ${PORT}`);
-    console.log(`📊 Site: https://magicgamestore.onrender.com`);
-    console.log(`📊 Admin: https://magicgamestore.onrender.com/admin/admin.html`);
-    console.log(`📊 Debug Auth: https://magicgamestore.onrender.com/api/debug-auth`);
-    console.log(`📊 Create Admin: https://magicgamestore.onrender.com/api/create-admin`);
+    console.log(`🌐 Site: https://magicgame.store`);
+    console.log(`🔐 Admin: https://magicgame.store/admin/admin.html`);
+    console.log(`📊 Debug: https://magicgame.store/api/debug-auth`);
+    console.log(`🛠️  Create Admin: https://magicgame.store/api/create-admin`);
+    console.log(`=====================================\n`);
 });
