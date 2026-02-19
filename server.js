@@ -364,6 +364,33 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route non trouvée' });
 });
 
+
+// ========== ROUTE POUR L'HISTORIQUE CLIENT ==========
+// Récupérer les commandes d'un utilisateur par son ID PUBG
+app.get('/api/orders/user/:pubgId', (req, res) => {
+    try {
+        const pubgId = req.params.pubgId;
+        
+        console.log(`📤 Recherche des commandes pour ID PUBG: ${pubgId}`);
+        
+        const orders = readOrders();
+        
+        // Filtrer les commandes pour cet ID PUBG
+        const userOrders = orders.filter(order => order.pubgId === pubgId);
+        
+        // Trier par date (plus récent d'abord)
+        const sortedOrders = userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        console.log(`📥 ${sortedOrders.length} commandes trouvées`);
+        
+        res.json(sortedOrders);
+        
+    } catch (error) {
+        console.error('❌ Erreur historique client:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
 // ========== DÉMARRAGE DU SERVEUR ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
