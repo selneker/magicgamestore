@@ -373,7 +373,18 @@ app.get('/api/orders/user/:pubgId', (req, res) => {
         
         console.log(`📤 Recherche des commandes pour ID PUBG: ${pubgId}`);
         
+        // Vérifier que le fichier orders.json existe
+        if (!fs.existsSync(ordersFile)) {
+            return res.json([]); // Retourner un tableau vide
+        }
+        
         const orders = readOrders();
+        
+        // Vérifier que orders est bien un tableau
+        if (!Array.isArray(orders)) {
+            console.error('❌ orders.json n\'est pas un tableau');
+            return res.json([]);
+        }
         
         // Filtrer les commandes pour cet ID PUBG
         const userOrders = orders.filter(order => order.pubgId === pubgId);
@@ -381,13 +392,15 @@ app.get('/api/orders/user/:pubgId', (req, res) => {
         // Trier par date (plus récent d'abord)
         const sortedOrders = userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        console.log(`📥 ${sortedOrders.length} commandes trouvées`);
+        console.log(`📥 ${sortedOrders.length} commandes trouvées pour ${pubgId}`);
         
+        // Retourner TOUJOURS un tableau, même vide
         res.json(sortedOrders);
         
     } catch (error) {
         console.error('❌ Erreur historique client:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        // En cas d'erreur, retourner un tableau vide plutôt qu'une erreur 500
+        res.json([]);
     }
 });
 
