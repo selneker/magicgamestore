@@ -20,8 +20,14 @@ app.use(helmet({
 }));
 
 // CORS plus flexible
+// CORS plus flexible
 app.use(cors({
-    origin: ['https://magicgame.store', 'https://www.magicgame.store', 'http://localhost:3000'],
+    origin: [
+        'https://magicgame.store', 
+        'https://www.magicgame.store', 
+        'https://magicgamestore.onrender.com',  // 👈 AJOUTEZ CETTE LIGNE
+        'http://localhost:3000'
+    ],
     credentials: true
 }));
 
