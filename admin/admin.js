@@ -221,3 +221,76 @@ if (token) {
     })
     .catch(err => console.error('❌ Erreur vérification token:', err));
 }
+
+
+// ========== RAFRAÎCHISSEMENT AUTOMATIQUE ==========
+let autoRefreshInterval;
+
+function startAutoRefresh() {
+    // Rafraîchir toutes les 30 secondes (30000 ms)
+    autoRefreshInterval = setInterval(() => {
+        console.log('🔄 Rafraîchissement auto des données...');
+        if (token) {
+            loadOrders();
+            loadStats();
+        }
+    }, 30000); // 30 secondes
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        console.log('⏹️ Rafraîchissement auto arrêté');
+    }
+}
+
+// Modifiez la fonction login pour démarrer l'auto-refresh
+function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    console.log('📤 Tentative de connexion...');
+
+    fetch(`${BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    })
+    .then(res => {
+        console.log('📥 Réponse status:', res.status);
+        return res.json();
+    })
+    .then(data => {
+        console.log('📥 Données reçues:', data);
+        
+        if (data.token) {
+            token = data.token;
+            localStorage.setItem('adminToken', token);
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            document.getElementById('adminEmail').textContent = data.user.email;
+            
+            // Charger les données
+            loadOrders();
+            loadStats();
+            
+            // DÉMARRER LE RAFRAÎCHISSEMENT AUTO
+            startAutoRefresh();
+        } else {
+            document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
+        }
+    })
+    .catch(err => {
+        console.error('❌ Erreur fetch:', err);
+        document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
+    });
+}
+
+// Modifiez logout pour arrêter l'auto-refresh
+function logout() {
+    stopAutoRefresh(); // ARRÊTER LE RAFRAÎCHISSEMENT
+    localStorage.removeItem('adminToken');
+    token = null;
+    document.getElementById('loginSection').style.display = 'flex';
+    document.getElementById('adminSection').style.display = 'none';
+}
