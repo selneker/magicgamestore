@@ -14,6 +14,10 @@ dotenv.config();
 
 const app = express();
 
+
+// ========= CONFIANCE AU PROXY DE RENDER========
+app.set('trust proxy', 1);
+
 // ========== MIDDLEWARE ==========
 app.use(helmet({
     contentSecurityPolicy: false,
