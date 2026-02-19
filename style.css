@@ -456,3 +456,90 @@ footer {
         flex-direction: column;
     }
 }
+
+
+@media (max-width: 400px) {
+    .tarifs-container, .abonnements-container {
+        margin: 0 10px;
+        gap: 1rem;
+        padding: 1rem 0;
+    }
+    
+    .tarif, .abonnement {
+        width: 100%; /* Prend toute la largeur */
+        max-width: 280px; /* Mais pas trop large */
+        margin: 0 auto; /* Centré */
+        padding: 0.8rem;
+        box-sizing: border-box; /* Important pour que padding soit inclus */
+    }
+    
+    .tarif h3, .abonnement h3 {
+        font-size: 1.2rem;
+        word-break: break-word; /* Casse les mots trop longs */
+        hyphens: auto; /* Ajoute des tirets si nécessaire */
+    }
+    
+    .tarif button, .abonnement button {
+        padding: 0.5em 1em;
+        font-size: 0.9rem;
+        white-space: normal; /* Permet au texte du bouton de passer à la ligne */
+    }
+    
+    /* Le titre principal */
+    .hero-container h2 {
+        font-size: clamp(0.5rem, 12vw, 3rem); /* S'adapte mieux */
+        line-height: 1.2;
+        word-break: break-word;
+    }
+    
+    /* Header pour mobile */
+    .header-container {
+        padding: 0 5px;
+        margin: 0 5px;
+    }
+    
+    header nav li {
+        margin: 0 2px;
+    }
+    
+    header nav a {
+        padding: 5px;
+        font-size: 0.7rem;
+        white-space: nowrap; /* Empêche les liens de passer à la ligne */
+    }
+    
+    /* Pour les icônes */
+    header nav a i {
+        margin-right: 3px;
+    }
+}
+
+/* Encore plus petit (moins de 320px) */
+@media (max-width: 320px) {
+    .header-container {
+        flex-direction: column;
+        height: auto;
+        padding: 0.5rem;
+    }
+    
+    header nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    header nav li {
+        display: inline-block;
+        margin: 0;
+    }
+    
+    .hero-container h2 {
+        font-size: 2rem;
+    }
+    
+    .tarif, .abonnement {
+        max-width: 240px;
+    }
+}
+
