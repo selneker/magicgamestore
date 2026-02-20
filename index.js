@@ -157,11 +157,6 @@ function validateOrder() {
 // ===========================================
 // FONCTIONS DE PAIEMENT DIRECT MVOLA
 // ===========================================
-
-/**
- * Génère le code USSD MVola pour un montant donné
- * Format: #111**1*2*0383905692*MONTANT*2*0#
- */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
     return `#111**1*2*0383905692*${cleanPrice}*2*0#`;
@@ -208,7 +203,7 @@ function initMvolaDirectButton() {
                 gap: 10px;
                 transition: all 0.3s;
             ">
-                <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
+                <i class="fa-solid fa-phone"></i> Payer ${priceText} directement
             </button>
         </a>
     `;
