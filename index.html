@@ -257,33 +257,35 @@
             
             <div class="numero">
                 <p>
-                    <strong>038 39 05692</strong>
+                    <strong>038 39 056 92</strong>
                     <span style="color:#00000097; font-size:0.9rem;"> (Selneker Dino)</span>
                 </p>
                 <button class="btn-copy" onclick="copyNumber()">Copier</button>
             </div>
             
-            <!-- BOUTON DE PAIEMENT DIRECT - GÉNÉRÉ DYNAMIQUEMENT -->
+            <!-- BOUTON DE PAIEMENT DIRECT - SANS CODE AFFICHÉ -->
             <div class="paybtn" id="payBtnContainer">
                 <!-- Le bouton sera inséré ici par JavaScript -->
             </div>
             
             <div style="text-align: center; margin: 10px 0; color: #666; position: relative;">
                 <span style="background: white; padding: 0 10px;">OU</span>
-                <hr style="position: absolute; top: 50%; width: 100%; z-index: -1;">
+                <hr style="position: absolute; top: 50%; width: 100%; z-index: -1; border: none; border-top: 1px solid #ddd;">
             </div>
             
             <div class="reference-form">
-                <input type="text" id="referenceInput" placeholder="Entrez la référence MVola">
+                <input type="text" id="referenceInput" placeholder="Entrez la référence MVola (ex: Ref:1141756***)">
+                <small style="display: block; color: #666; margin-top: 5px;">
+                    <i class="fa-solid fa-info-circle"></i> Après paiement, entrez la référence reçue par SMS
+                </small>
             </div>
             
             <div class="guidbtn">
                 <button class="btn-secondary" id="retour">Retour</button>
-                <button class="btn-primary" id="confirm">Confirmer</button>
+                <button class="btn-primary" id="confirm">Confirmer le paiement</button>
             </div>
         </div>
     </div>
-
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="toast"></div>
 
