@@ -425,6 +425,40 @@ footer {
     animation: spin 0.8s linear infinite;
 }
 
+
+.paybtn a {
+    text-decoration: none;
+    display: block;
+    width: 100%;
+}
+
+.paybtn button {
+    background: #00A651;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.paybtn button:hover {
+    background: #008542;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 166, 81, 0.3);
+}
+
+.paybtn button i {
+    font-size: 1.2rem;
+}
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
