@@ -459,6 +459,21 @@ footer {
     font-size: 1.2rem;
 }
 
+
+.reference-form small {
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.reference-form input:invalid {
+    border-color: #ff9800;
+}
+
+.reference-form input:valid {
+    border-color: #4CAF50;
+}
+
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
