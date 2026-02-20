@@ -253,25 +253,24 @@
     <div class="modalPay" id="modalPay">
         <div class="modalPay-container">
             <button class="modal-close" id="closePay"><i class="fa-solid fa-xmark"></i></button>
-                <h3>Paiement MVola</h3>
-        
-                <div class="numero">
-                    <p>
-                        <strong>038 39 05692</strong>
-                        <span style="color:#00000097; font-size:0.9rem;"> (Selneker Dino)</span>
-                    </p>
-                    <button class="btn-copy" onclick="copyNumber()">Copier</button>
-                </div>
-        
-                <!-- NOUVEAU BOUTON DE PAIEMENT DIRECT -->
-                <div class="paybtn">
-                    <button id="payDirectBtn" class="btn-primary" style="background: #00A651; width: 100%; padding: 15px; font-size: 1.1rem;">
-                        <i class="fa-solid fa-phone"></i> Payer directement avec MVola
-                    </button>
-                </div>
-        
-            <div style="text-align: center; margin: 10px 0; color: #666;">
-                <span>OU</span>
+            <h3>Paiement MVola</h3>
+            
+            <div class="numero">
+                <p>
+                    <strong>038 39 05692</strong>
+                    <span style="color:#00000097; font-size:0.9rem;"> (Selneker Dino)</span>
+                </p>
+                <button class="btn-copy" onclick="copyNumber()">Copier</button>
+            </div>
+            
+            <!-- BOUTON DE PAIEMENT DIRECT - GÉNÉRÉ DYNAMIQUEMENT -->
+            <div class="paybtn" id="payBtnContainer">
+                <!-- Le bouton sera inséré ici par JavaScript -->
+            </div>
+            
+            <div style="text-align: center; margin: 10px 0; color: #666; position: relative;">
+                <span style="background: white; padding: 0 10px;">OU</span>
+                <hr style="position: absolute; top: 50%; width: 100%; z-index: -1;">
             </div>
             
             <div class="reference-form">
