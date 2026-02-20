@@ -253,14 +253,31 @@
     <div class="modalPay" id="modalPay">
         <div class="modalPay-container">
             <button class="modal-close" id="closePay"><i class="fa-solid fa-xmark"></i></button>
-            <h3>Paiement MVola</h3>
-            <div class="numero">
-                <p><strong>038 39 05692</strong><span style="color:#00000097; font-size:0.9rem;"> (Selneker Dino)</span></span></p>
-                <button class="btn-copy" onclick="copyNumber()">Copier</button>
+                <h3>Paiement MVola</h3>
+        
+                <div class="numero">
+                    <p>
+                        <strong>038 39 05692</strong>
+                        <span style="color:#00000097; font-size:0.9rem;"> (Selneker Dino)</span>
+                    </p>
+                    <button class="btn-copy" onclick="copyNumber()">Copier</button>
+                </div>
+        
+                <!-- NOUVEAU BOUTON DE PAIEMENT DIRECT -->
+                <div class="paybtn">
+                    <button id="payDirectBtn" class="btn-primary" style="background: #00A651; width: 100%; padding: 15px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-phone"></i> Payer directement avec MVola
+                    </button>
+                </div>
+        
+            <div style="text-align: center; margin: 10px 0; color: #666;">
+                <span>OU</span>
             </div>
+            
             <div class="reference-form">
                 <input type="text" id="referenceInput" placeholder="Entrez la référence MVola">
             </div>
+            
             <div class="guidbtn">
                 <button class="btn-secondary" id="retour">Retour</button>
                 <button class="btn-primary" id="confirm">Confirmer</button>
