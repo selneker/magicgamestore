@@ -236,6 +236,107 @@ function submitOrder() {
     });
 }
 
+
+// ========== PAIEMENT DIRECT MVola ==========
+function initDirectPayment() {
+    const payDirectBtn = document.getElementById('payDirectBtn');
+    
+    if (payDirectBtn) {
+        payDirectBtn.addEventListener('click', function() {
+            // Récupérer le prix depuis l'affichage
+            const priceText = document.getElementById('OrderPrice')?.textContent || '';
+            // Extraire les chiffres (ex: "16,000 Ar" -> 16000)
+            const priceNumber = priceText.replace(/[^0-9]/g, '');
+            
+            // Récupérer le pack pour vérification
+            const packText = document.getElementById('OrderPack')?.textContent || '';
+            
+            console.log('💰 Prix extrait:', priceNumber);
+            console.log('📦 Pack:', packText);
+            
+            // Vérifier que le prix est valide
+            if (!priceNumber || priceNumber === '0') {
+                alert('❌ Erreur: Prix non valide');
+                return;
+            }
+            
+            // Construire le code USSD Telma MVola
+            // Format: #111*[montant]*[code_merchant]# 
+            // Adaptez selon le format exact de Telma
+            
+            // Option 1: Format standard (à adapter selon votre code marchand)
+            const ussdCode = `#111**1*2*0383905692*${priceNumber}*2*0#`;           
+            console.log('📞 Code USSD:', ussdCode);
+            
+            // Confirmation avec le montant
+            if (confirm(`Payer ${priceText} avec MVola ?\n\nLe code USSD va être lancé.`)) {
+                // Pour Android
+                if (/Android/i.test(navigator.userAgent)) {
+                    // Intent pour Android
+                    window.location.href = `tel:${ussdCode}`;
+                } 
+                // Pour iPhone
+                else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    // Les iPhone ne supportent pas tel: pour USSD, on utilise un prompt
+                    alert(`Composez le code: ${ussdCode}\n\nSur iPhone, vous devez le composer manuellement.`);
+                }
+                // Pour les autres (fallback)
+                else {
+                    alert(`Composez le code: ${ussdCode}`);
+                }
+                
+                // Optionnel: Ouvrir l'application Téléphone directement
+                // window.open(`tel:${ussdCode}`, '_system');
+            }
+        });
+    }
+}
+
+// Appeler cette fonction quand la modal de paiement s'ouvre
+function openModal(modal) {
+    modal.style.display = 'flex';
+    modal.classList.remove('fade-in');
+    void modal.offsetWidth;
+    modal.classList.add('fade-in');
+    document.body.style.overflow = 'hidden';
+    
+    // Initialiser le bouton de paiement direct quand la modal s'ouvre
+    if (modal.id === 'modalPay') {
+        setTimeout(initDirectPayment, 100); // Petit délai pour s'assurer que le DOM est prêt
+    }
+}
+
+// Améliorer la fonction submitOrder pour gérer le paiement direct
+function submitOrder() {
+    const pubgId = pubgIdInput?.value.trim();
+    const pseudo = pseudoInput?.value.trim();
+    const pack = OrderPack?.textContent;
+    const price = OrderPrice?.textContent;
+    const reference = referenceInput?.value.trim();
+    const paymentMethod = 'MVola';
+    
+    if (!pubgId || !pseudo) {
+        showToast('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
+        showToast('ID PUBG doit être 11 chiffres', 'error');
+        return;
+    }
+    
+    // Si la référence est vide mais que c'est un paiement direct, on peut l'ignorer
+    if (!reference) {
+        if (confirm('Avez-vous effectué le paiement ? Sans référence, nous ne pourrons pas vérifier automatiquement.')) {
+            // Procéder sans référence
+        } else {
+            return;
+        }
+    }
+    
+    // ... (reste du code d'envoi)
+}
+
 // ===========================================
 // ÉCOUTEURS D'ÉVÉNEMENTS
 // ===========================================
