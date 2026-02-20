@@ -30,29 +30,25 @@ const referenceInput = document.getElementById('referenceInput');
 // Toast
 const toast = document.getElementById('toast');
 
-// ========== URL CORRIGÉE ==========
+// ========== URL DE L'API ==========
 const API_URL = (() => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
     }
-    // CORRECTION: magicgamestore (pas magicgamesstore) et avec /api/
     return 'https://magicgame.store/api';
 })();
 
-console.log('🌐 API URL:', API_URL); // Pour déboguer
+console.log('🌐 API URL:', API_URL);
 
 // ===========================================
 // INITIALISATION
 // ===========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Appliquer le mode sauvegardé
     if (mode === 'abonnements') {
         showAbonnements();
     } else {
         showTarifs();
     }
-    
-    // Initialiser les écouteurs
     initEventListeners();
 });
 
@@ -63,44 +59,34 @@ function showTarifs() {
     abonnements.style.display = 'none';
     abonnements.classList.remove('active', 'fade-in');
     
-    // Animation titre
     heroTitle.classList.remove('fade-in');
     void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'VENTE UC<br>PUBG MOBILE';
     heroTitle.classList.add('fade-in');
     
-    // Afficher tarifs
     tarifs.style.display = 'block';
     tarifs.classList.add('active', 'fade-in');
     
-    // Changer le texte du bouton
     aboLink.innerHTML = '<i class="fa-solid fa-cart-plus"></i> ABONNEMENT';
     mode = 'uc';
     localStorage.setItem('mode', mode);
-    
-    console.log('✅ Mode UC activé');
 }
 
 function showAbonnements() {
     tarifs.style.display = 'none';
     tarifs.classList.remove('active', 'fade-in');
     
-    // Animation titre
     heroTitle.classList.remove('fade-in');
     void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'ABONNEMENT<br>PUBG MOBILE';
     heroTitle.classList.add('fade-in');
     
-    // Afficher abonnements
     abonnements.style.display = 'block';
     abonnements.classList.add('active', 'fade-in');
     
-    // Changer le texte du bouton
     aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> ACHAT UC';
     mode = 'abonnements';
     localStorage.setItem('mode', mode);
-    
-    console.log('✅ Mode Abonnement activé');
 }
 
 // ===========================================
@@ -112,6 +98,11 @@ function openModal(modal) {
     void modal.offsetWidth;
     modal.classList.add('fade-in');
     document.body.style.overflow = 'hidden';
+    
+    // Si c'est la modale de paiement, initialiser le bouton MVola direct
+    if (modal.id === 'modalPay') {
+        setTimeout(initMvolaDirectButton, 100);
+    }
 }
 
 function closeAllModals() {
@@ -119,7 +110,6 @@ function closeAllModals() {
     modalPay.style.display = 'none';
     document.body.style.overflow = 'auto';
     
-    // Vider les inputs
     if (pubgIdInput) pubgIdInput.value = '';
     if (pseudoInput) pseudoInput.value = '';
     if (referenceInput) referenceInput.value = '';
@@ -165,151 +155,43 @@ function validateOrder() {
 }
 
 // ===========================================
-// ENVOI COMMANDE AU BACKEND
+// FONCTIONS DE PAIEMENT DIRECT MVOLA
 // ===========================================
-function submitOrder() {
-    const pubgId = pubgIdInput?.value.trim();
-    const pseudo = pseudoInput?.value.trim();
-    const pack = OrderPack?.textContent;
-    const price = OrderPrice?.textContent;
-    const reference = referenceInput?.value.trim();
-    const paymentMethod = 'MVola';
-    
-    if (!pubgId || !pseudo || !reference) {
-        showToast('Veuillez remplir tous les champs', 'error');
-        return;
-    }
-    
-    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
-        showToast('ID PUBG doit être 11 chiffres', 'error');
-        return;
-    }
-    
-    // Désactiver le bouton
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = 'Envoi...';
-    confirmBtn.classList.add('loading');
-    
-    console.log('📤 Envoi commande à:', `${API_URL}/order`);
-    console.log('📦 Données:', { pubgId, pseudo, pack, price, paymentMethod, reference });
-    
-    // Envoyer au backend
-    fetch(`${API_URL}/order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            pubgId,
-            pseudo,
-            pack,
-            price,
-            paymentMethod,
-            reference
-        })
-    })
-    .then(async res => {
-        console.log('📥 Réponse status:', res.status);
-        const text = await res.text();
-        console.log('📥 Réponse texte:', text);
-        
-        try {
-            return JSON.parse(text);
-        } catch (e) {
-            throw new Error('Réponse non-JSON: ' + text.substring(0, 100));
-        }
-    })
-    .then(data => {
-        if (data.error) {
-            showToast('Erreur : ' + data.error, 'error');
-        } else {
-            showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
-            closeAllModals();
-        }
-    })
-    .catch(err => {
-        console.error('❌ Erreur:', err);
-        showToast('❌ Impossible de contacter le serveur', 'error');
-    })
-    .finally(() => {
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = 'Confirmer';
-        confirmBtn.classList.remove('loading');
-    });
-}
 
-
-// ========== PAIEMENT DIRECT MVOLA ==========
-function generateUSSDCode(price, phoneNumber = '0383905692') {
-    // Format: #111**1*2*0383905692*MONTANT*2*0#
-    // price doit être un nombre sans virgule (ex: 8000)
-    
-    // Nettoyer le prix (enlever tout ce qui n'est pas chiffre)
+/**
+ * Génère le code USSD MVola pour un montant donné
+ * Format: #111**1*2*0383905692*MONTANT*2*0#
+ */
+function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
-    
-    // Générer le code USSD
-    const ussdCode = `#111**1*2*${phoneNumber}*${cleanPrice}*2*0#`;
-    
-    return ussdCode;
+    return `#111**1*2*0383905692*${cleanPrice}*2*0#`;
 }
 
-function generateReference() {
-    // Générer une référence unique basée sur le timestamp
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return `MGS${timestamp}${random}`;
-}
-
-function sendPaymentNotification(orderData) {
-    // Envoyer la commande au serveur avec une référence générée automatiquement
-    fetch(`${API_URL}/order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            ...orderData,
-            reference: orderData.reference || 'Paiement direct',
-            autoGenerated: true
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.error) {
-            showToast('Erreur: ' + data.error, 'error');
-        } else {
-            showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
-        }
-    })
-    .catch(err => {
-        console.error('Erreur:', err);
-        showToast('❌ Erreur lors de l\'envoi', 'error');
-    });
-}
-
-function initDirectPayment() {
-    const payBtnContainer = document.getElementById('payBtnContainer');
+/**
+ * Initialise le bouton de paiement direct dans la modale
+ */
+function initMvolaDirectButton() {
+    const container = document.getElementById('payBtnContainer');
+    if (!container) return;
     
-    if (!payBtnContainer) return;
-    
-    // Récupérer les infos de la commande
-    const pack = document.getElementById('OrderPack')?.textContent || '';
-    const priceText = document.getElementById('OrderPrice')?.textContent || '';
-    const pubgId = document.getElementById('pubgIdInput')?.value.trim() || '';
-    const pseudo = document.getElementById('pseudoInput')?.value.trim() || '';
-    
-    // Extraire le prix (ex: "8,000 Ar" -> 8000)
+    // Récupérer les infos
+    const pack = OrderPack?.textContent || '';
+    const priceText = OrderPrice?.textContent || '';
     const priceNumber = priceText.replace(/[^0-9]/g, '');
     
     if (!priceNumber || priceNumber === '0') {
-        payBtnContainer.innerHTML = '<p style="color: red;">Erreur de prix</p>';
+        container.innerHTML = '<p style="color: red;">Erreur de prix</p>';
         return;
     }
     
     // Générer le code USSD
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Créer le bouton avec lien tel: direct
-    payBtnContainer.innerHTML = `
+    // Créer le bouton (SANS afficher le code)
+    container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;"
-           onclick="handleDirectPaymentClick('${pack}', '${priceText}', '${pubgId}', '${pseudo}')">
+           onclick="return handleMvolaDirectClick('${pack}', '${priceText}')">
             <button style="
                 background: #00A651;
                 color: white;
@@ -329,68 +211,41 @@ function initDirectPayment() {
                 <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
             </button>
         </a>
-        <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">
-            Code: ${ussdCode}
-        </p>
     `;
 }
 
-// Fonction appelée quand on clique sur le lien
-window.handleDirectPaymentClick = function(pack, price, pubgId, pseudo) {
-    console.log('📞 Paiement direct lancé');
-    
+/**
+ * Fonction appelée quand on clique sur le bouton de paiement direct
+ */
+window.handleMvolaDirectClick = function(pack, price) {
     // Vérifier que l'ID PUBG et le pseudo sont remplis
-    if (!pubgId || !pseudo || pubgId.length !== 11) {
-        alert('❌ Veuillez d\'abord remplir vos informations (ID PUBG et pseudo)');
-        return false; // Empêche le lien de s'ouvrir
+    const pubgId = pubgIdInput?.value.trim();
+    const pseudo = pseudoInput?.value.trim();
+    
+    if (!pubgId || !pseudo) {
+        alert('❌ Veuillez remplir vos informations (ID PUBG et pseudo)');
+        return false;
     }
     
-    // Générer une référence automatique
-    const autoReference = generateReference();
+    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
+        alert('❌ L\'ID PUBG doit contenir 11 chiffres');
+        return false;
+    }
     
-    // Préparer les données de la commande
-    const orderData = {
-        pubgId: pubgId,
-        pseudo: pseudo,
-        pack: pack,
-        price: price,
-        paymentMethod: 'MVola (Direct)',
-        reference: autoReference
-    };
+    // Message de confirmation
+    showToast('📱 Code USSD lancé - Après paiement, entrez la référence reçue', 'success');
     
-    // Envoyer la notification au serveur
-    sendPaymentNotification(orderData);
+    // Mettre le focus sur le champ référence après 5 secondes
+    setTimeout(() => {
+        referenceInput?.focus();
+    }, 5000);
     
-    // Afficher un message
-    showToast('📱 Code USSD lancé - Entrez votre code secret', 'success');
-    
-    // Retourner true pour que le lien s'ouvre
-    return true;
+    return true; // Permet l'ouverture du lien tel:
 };
 
-// Modifier la fonction openModal pour initialiser le bouton
-function openModal(modal) {
-    modal.style.display = 'flex';
-    modal.classList.remove('fade-in');
-    void modal.offsetWidth;
-    modal.classList.add('fade-in');
-    document.body.style.overflow = 'hidden';
-    
-    if (modal.id === 'modalPay') {
-        // Récupérer les valeurs des champs
-        const pubgId = document.getElementById('pubgIdInput')?.value.trim() || '';
-        const pseudo = document.getElementById('pseudoInput')?.value.trim() || '';
-        
-        // Stocker dans des attributs data pour y accéder plus tard
-        modal.setAttribute('data-pubgid', pubgId);
-        modal.setAttribute('data-pseudo', pseudo);
-        
-        // Initialiser le bouton de paiement
-        setTimeout(initDirectPayment, 100);
-    }
-}
-
-// Modifier submitOrder pour gérer le cas avec référence automatique
+// ===========================================
+// ENVOI DE COMMANDE
+// ===========================================
 function submitOrder() {
     const pubgId = pubgIdInput?.value.trim();
     const pseudo = pseudoInput?.value.trim();
@@ -399,6 +254,7 @@ function submitOrder() {
     const reference = referenceInput?.value.trim();
     const paymentMethod = 'MVola';
     
+    // Validation
     if (!pubgId || !pseudo) {
         showToast('Veuillez remplir tous les champs', 'error');
         return;
@@ -409,19 +265,19 @@ function submitOrder() {
         return;
     }
     
-    // Si la référence est vide, demander confirmation
+    // La référence MVola est obligatoire
     if (!reference) {
-        if (confirm('Aucune référence saisie. Voulez-vous quand même enregistrer la commande ?')) {
-            // Procéder sans référence
-        } else {
-            return;
-        }
+        showToast('Veuillez entrer la référence MVola reçue par SMS', 'error');
+        referenceInput?.focus();
+        return;
     }
     
     // Désactiver le bouton
     confirmBtn.disabled = true;
     confirmBtn.textContent = 'Envoi...';
     confirmBtn.classList.add('loading');
+    
+    console.log('📤 Envoi commande:', { pubgId, pseudo, pack, price, reference });
     
     // Envoyer au backend
     fetch(`${API_URL}/order`, {
@@ -433,7 +289,7 @@ function submitOrder() {
             pack,
             price,
             paymentMethod,
-            reference: reference || 'Paiement direct sans référence'
+            reference // La vraie référence MVola de l'utilisateur
         })
     })
     .then(res => res.json())
@@ -446,7 +302,7 @@ function submitOrder() {
         }
     })
     .catch(err => {
-        console.error('Erreur:', err);
+        console.error('❌ Erreur:', err);
         showToast('❌ Impossible de contacter le serveur', 'error');
     })
     .finally(() => {
@@ -455,7 +311,6 @@ function submitOrder() {
         confirmBtn.classList.remove('loading');
     });
 }
-
 
 // ===========================================
 // ÉCOUTEURS D'ÉVÉNEMENTS
@@ -476,12 +331,8 @@ function initEventListeners() {
     // Boutons acheter
     acheterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const pack = btn.dataset.pack;
-            const price = btn.dataset.price;
-            
-            OrderPack.textContent = pack;
-            OrderPrice.textContent = price;
-            
+            OrderPack.textContent = btn.dataset.pack;
+            OrderPrice.textContent = btn.dataset.price;
             openModal(modalInfo);
         });
     });
@@ -495,7 +346,6 @@ function initEventListeners() {
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             if (!validateOrder()) return;
-            
             modalInfo.style.display = 'none';
             openModal(modalPay);
         });
@@ -516,20 +366,16 @@ function initEventListeners() {
     
     // Fermer modale avec Escape
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeAllModals();
-        }
+        if (e.key === 'Escape') closeAllModals();
     });
     
     // Fermer en cliquant hors modale
     window.addEventListener('click', (e) => {
-        if (e.target === modalInfo || e.target === modalPay) {
-            closeAllModals();
-        }
+        if (e.target === modalInfo || e.target === modalPay) closeAllModals();
     });
 }
 
 // ===========================================
-// EXPOSER LES FONCTIONS GLOBALES
+// FONCTIONS GLOBALES
 // ===========================================
 window.copyNumber = copyNumber;
