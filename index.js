@@ -164,7 +164,7 @@ function validateOrder() {
  */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
-    return `#111**1*2*0383905692*${cleanPrice}*2*0#`;
+    return `#111*1*2*0383905692*${cleanPrice}*2*0#`;
 }
 
 /**
