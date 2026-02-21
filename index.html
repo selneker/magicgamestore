@@ -251,37 +251,64 @@
 
     <!-- MODAL 2 - PAIEMENT -->
     <div class="modalPay" id="modalPay">
-        <div class="modalPay-container">
+        <div class="modalPay-container" style="max-width: 450px; padding: 25px;">
             <button class="modal-close" id="closePay"><i class="fa-solid fa-xmark"></i></button>
-            <h3>Paiement MVola</h3>
             
-            <div class="numero">
-                <p>
-                    <strong>038 39 056 92</strong>
-                    <span style="color:#00000097; font-size:0.9rem;"> (Selneker Dino)</span>
+            <!-- Titre -->
+            <h2 style="font-family: 'Jockey One', sans-serif; font-size: 1.8rem; margin: 0 0 5px 0; text-align: center;">Paiement MVola</h2>
+            
+            <!-- Prix -->
+            <div style="text-align: center; margin-bottom: 25px;">
+                <span id="OrderPrice" style="font-size: 2.2rem; font-weight: bold; color: #000;">30 000 Ar</span>
+            </div>
+            
+            <!-- Bouton Payer directement -->
+            <div class="paybtn" id="payBtnContainer" style="margin-bottom: 20px;">
+                <!-- Le bouton sera généré par JavaScript -->
+            </div>
+            
+            <!-- Séparateur OU -->
+            <div style="display: flex; align-items: center; margin: 20px 0; color: #999;">
+                <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
+                <span style="padding: 0 15px; font-weight: 500;">OU PAYER MANUELLEMENT</span>
+                <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
+            </div>
+            
+            <!-- Numéro du destinataire -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">
+                    Numéro du destinataire <span style="color: #666; font-weight: normal;">(Selneker Dino)</span>
+                </label>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; font-family: monospace; font-size: 1.1rem; font-weight: bold;">
+                        038 39 056 92
+                    </div>
+                    <button class="btn-copy" onclick="copyNumber()" style="background: #000; color: white; border: none; border-radius: 8px; padding: 0 20px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        Copier
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Référence de transaction -->
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #333;">
+                    Référence de la transaction
+                </label>
+                <input type="text" id="referenceInput" placeholder="Ex: 1141756***" 
+                       style="width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; box-sizing: border-box;">
+                <p style="color: #666; font-size: 0.85rem; margin-top: 8px;">
+                    <i class="fa-solid fa-info-circle"></i> Entrez la référence reçue par SMS après votre transfert.
                 </p>
-                <button class="btn-copy" onclick="copyNumber()">Copier</button>
-            </div>
-             <div style="text-align: center; margin: 10px 0; color: #666; position: relative;">
-                <span style="background: white; padding: 0 10px;">OU</span>
-                <hr style="position: absolute; top: 50%; width: 100%; z-index: -1; border: none; border-top: 1px solid #ddd;">
             </div>
             
-            <!-- BOUTON DE PAIEMENT DIRECT - SANS CODE AFFICHÉ -->
-            <div class="paybtn" id="payBtnContainer">
-                <!-- Le bouton sera inséré ici par JavaScript -->
-            </div>
-            
-            <div class="reference-form">
-                <input type="text" id="referenceInput" placeholder="Entrez la référence MVola (ex: Ref:1141756***)">
-                <small style="display: block; color: #666; margin-top: 5px;">
-                    <i class="fa-solid fa-info-circle"></i> Après paiement, entrez la référence reçue par SMS
-                </small>
-            </div>
-            
-            <div class="guidbtn">
-                <button class="btn-secondary" id="retour">Retour</button>
-                <button class="btn-primary" id="confirm">Confirmer le paiement</button>
+            <!-- Boutons Retour et Confirmer -->
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-secondary" id="retour" style="flex: 1; padding: 14px; border: 2px solid #000; background: white; color: #000; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                    Retour
+                </button>
+                <button class="btn-primary" id="confirm" style="flex: 1; padding: 14px; border: none; background: #000; color: white; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                    Confirmer
+                </button>
             </div>
         </div>
     </div>
