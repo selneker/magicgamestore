@@ -425,38 +425,6 @@ footer {
     animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ========== STYLES SPÉCIFIQUES À LA MODALE DE PAIEMENT ========== */
-
-/* Conteneur principal de la modale de paiement */
-.modalPay-container {
-    max-width: 450px !important;
-}
-
-/* Titre de la modale */
-.modalPay-container h2 {
-    font-size: 1.8rem;
-    text-align: center;
-    margin: 0 0 5px 0;
-    font-family: "Jockey One", sans-serif;
-}
-
-/* Affichage du prix */
-.modalPay-container #OrderPrice {
-    font-size: 2.2rem;
-    font-weight: bold;
-    text-align: center;
-    display: block;
-    margin-bottom: 20px;
-}
-
-/* Bouton Payer directement */
-.paybtn {
-    margin-bottom: 15px;
-}
 
 .paybtn a {
     text-decoration: none;
@@ -468,8 +436,8 @@ footer {
     background: #00A651;
     color: white;
     border: none;
-    border-radius: 5px;
     padding: 15px 20px;
+    border-radius: 5px;
     font-weight: bold;
     font-size: 1.1rem;
     cursor: pointer;
@@ -491,100 +459,23 @@ footer {
     font-size: 1.2rem;
 }
 
-/* Section numéro de téléphone */
-.modalPay-container .numero {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: transparent;
-    padding: 0;
-    margin-bottom: 20px;
-}
 
-.modalPay-container .numero p {
-    flex: 1;
-    background: #f5f5f5;
-    border-radius: 5px;
-    padding: 12px 15px;
-    font-family: monospace;
-    font-size: 1.1rem;
-    margin: 0;
-}
-
-.modalPay-container .btn-copy {
-    background: black;
-    border-radius: 5px;
-    padding: 12px 20px;
-    height: auto;
-}
-
-/* Séparateur OU */
-.modalPay-container .separator {
-    display: flex;
-    align-items: center;
-    margin: 15px 0;
-    color: #999;
-}
-
-.modalPay-container .separator hr {
-    flex: 1;
-    border: none;
-    border-top: 1px solid #ddd;
-}
-
-.modalPay-container .separator span {
-    padding: 0 10px;
-    font-weight: 500;
-}
-
-/* Formulaire référence */
-.modalPay-container .reference-form {
-    margin-bottom: 20px;
-}
-
-.modalPay-container .reference-form label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 8px;
-    color: #333;
-}
-
-.modalPay-container .reference-form input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-}
-
-.modalPay-container .reference-form input:focus {
-    border-color: black;
-    outline: none;
-}
-
-.modalPay-container .reference-form small {
-    display: block;
+.reference-form small {
     color: #666;
     font-size: 0.8rem;
     margin-top: 5px;
 }
 
-.modalPay-container .reference-form small i {
-    margin-right: 5px;
+.reference-form input:invalid {
+    border-color: #ff9800;
 }
 
-/* Boutons Retour et Confirmer */
-.modalPay-container .guidbtn {
-    display: flex;
-    gap: 10px;
+.reference-form input:valid {
+    border-color: #4CAF50;
 }
 
-.modalPay-container .btn-secondary,
-.modalPay-container .btn-primary {
-    flex: 1;
-    padding: 12px;
-    font-size: 1rem;
-    border-radius: 5px;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* RESPONSIVE */
@@ -613,15 +504,8 @@ footer {
     .btn-group, .guidbtn {
         flex-direction: column;
     }
-    
-    .modalPay-container #OrderPrice {
-        font-size: 1.8rem;
-    }
-    
-    .modalPay-container .guidbtn {
-        flex-direction: column;
-    }
 }
+
 
 @media (max-width: 400px) {
     .tarifs-container, .abonnements-container {
@@ -632,30 +516,32 @@ footer {
     
     .tarif, .abonnement {
         width: min(40% , 250px );
-        height: min(40%, 150px);
-        margin: 0 auto;
+        height: min(40%, 150px); /* Mais pas trop large */
+        margin: 0 auto; /* Centré */
         padding: 0.8rem;
-        box-sizing: border-box;
+        box-sizing: border-box; /* Important pour que padding soit inclus */
     }
     
     .tarif h3, .abonnement h3 {
         font-size: 1.2rem;
-        word-break: break-word;
-        hyphens: auto;
+        word-break: break-word; /* Casse les mots trop longs */
+        hyphens: auto; /* Ajoute des tirets si nécessaire */
     }
     
     .tarif button, .abonnement button {
         padding: 0.5em 1em;
         font-size: 0.9rem;
-        white-space: normal;
+        white-space: normal; /* Permet au texte du bouton de passer à la ligne */
     }
     
+    /* Le titre principal */
     .hero-container h2 {
-        font-size: clamp(0.5rem, 12vw, 3rem);
+        font-size: clamp(0.5rem, 12vw, 3rem); /* S'adapte mieux */
         line-height: 1.2;
         word-break: break-word;
     }
     
+    /* Header pour mobile */
     .header-container {
         padding: 0 5px;
         margin: 0 5px;
@@ -668,14 +554,11 @@ footer {
     header nav a {
         padding: 5px;
         font-size: 0.7rem;
-        white-space: nowrap;
+        white-space: nowrap; /* Empêche les liens de passer à la ligne */
     }
     
+    /* Pour les icônes */
     header nav a i {
         margin-right: 3px;
-    }
-    
-    .modalPay-container #OrderPrice {
-        font-size: 1.5rem;
     }
 }
