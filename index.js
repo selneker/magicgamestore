@@ -187,7 +187,7 @@ function initMvolaDirectButton() {
     // Générer le code USSD
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Créer le bouton avec style amélioré (bouton très arrondi)
+    // Créer le bouton (SANS afficher le code)
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;"
@@ -196,20 +196,19 @@ function initMvolaDirectButton() {
                 background: #00A651;
                 color: white;
                 border: none;
-                border-radius: 50px;
-                padding: 18px 20px;
+                padding: 15px 20px;
+                border-radius: 5px;
                 font-weight: bold;
-                font-size: 1.2rem;
+                font-size: 1.1rem;
                 cursor: pointer;
                 width: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 10px;
-                box-shadow: 0 5px 15px rgba(0,166,81,0.3);
                 transition: all 0.3s;
             ">
-                <i class="fa-solid fa-phone" style="font-size: 1.2rem;"></i> Payer directement
+                <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
             </button>
         </a>
     `;
