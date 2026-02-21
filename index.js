@@ -157,9 +157,14 @@ function validateOrder() {
 // ===========================================
 // FONCTIONS DE PAIEMENT DIRECT MVOLA
 // ===========================================
+
+/**
+ * Génère le code USSD MVola pour un montant donné
+ * Format: #111**1*2*0383905692*MONTANT*2*0#
+ */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
-    return `#111*1*2*0383905692*${cleanPrice}*2*0#`;
+    return `#111**1*2*0383905692*${cleanPrice}*2*0#`;
 }
 
 /**
@@ -182,7 +187,7 @@ function initMvolaDirectButton() {
     // Générer le code USSD
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Créer le bouton (SANS afficher le code)
+    // Créer le bouton avec style amélioré (bouton très arrondi)
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;"
@@ -191,19 +196,20 @@ function initMvolaDirectButton() {
                 background: #00A651;
                 color: white;
                 border: none;
-                padding: 15px 20px;
-                border-radius: 5px;
+                border-radius: 50px;
+                padding: 18px 20px;
                 font-weight: bold;
-                font-size: 1.1rem;
+                font-size: 1.2rem;
                 cursor: pointer;
                 width: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 10px;
+                box-shadow: 0 5px 15px rgba(0,166,81,0.3);
                 transition: all 0.3s;
             ">
-                <i class="fa-solid fa-phone"></i> Payer ${priceText} directement
+                <i class="fa-solid fa-phone" style="font-size: 1.2rem;"></i> Payer directement
             </button>
         </a>
     `;
