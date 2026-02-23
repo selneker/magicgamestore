@@ -221,3 +221,28 @@ tr:hover {
     padding: 2rem;
     color: #666;
 }
+
+
+ .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .logout-btn:hover {
+        background: #d32f2f !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .admin-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .admin-header div {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
