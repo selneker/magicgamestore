@@ -202,12 +202,11 @@
             animation: spin 1s linear infinite;
         }
 
-
         .outlined-text {
-        font-family: 'Jockey One', sans-serif;
-        color: transparent;
-        -webkit-text-stroke: 0.4px rgba(255, 255, 255, 0.879);
-        margin-top: -5px;
+            font-family: 'Jockey One', sans-serif;
+            color: transparent;
+            -webkit-text-stroke: 0.4px rgba(255, 255, 255, 0.879);
+            margin-top: -5px;
         }
         
         @keyframes spin {
@@ -224,6 +223,22 @@
                 text-align: left;
                 align-items: flex-start;
             }
+        }
+
+        /* Style pour les messages d'erreur de validation */
+        .validation-error {
+            color: #f44336;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .search-form input.invalid {
+            border-color: #f44336;
+        }
+        
+        .search-form input.valid {
+            border-color: #4CAF50;
         }
     </style>
 </head>
@@ -254,13 +269,15 @@
         <div class="search-section">
             <h3>🔍 Rechercher mes achats</h3>
             <div class="search-form">
-                <input type="text" id="searchPubgId" placeholder="Entrez votre ID PUBG (11 chiffres)" maxlength="11">
+                <input type="text" id="searchPubgId" placeholder="Entrez votre ID PUBG (5-20 chiffres)" 
+                       oninput="validateInput()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                 <button onclick="searchOrders()">
                     <i class="fa-solid fa-magnifying-glass"></i> Voir mes achats
                 </button>
             </div>
+            <div id="validationMessage" class="validation-error"></div>
             <p style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
-                <i class="fa-solid fa-info-circle"></i> Entrez votre ID PUBG pour voir toutes vos commandes
+                <i class="fa-solid fa-info-circle"></i> Entrez votre ID PUBG (5 à 20 chiffres) pour voir toutes vos commandes
             </p>
         </div>
 
@@ -311,6 +328,7 @@
             </div>
         </div>
     </footer>
+
     <script>
         // Configuration
         const API_URL = (() => {
@@ -324,70 +342,103 @@
         let currentFilter = 'all';
         let currentPubgId = '';
 
-        // Rechercher les commandes par ID PUBG
+        // ========== FONCTION DE VALIDATION ID PUBG ==========
+        function validatePubgId(pubgId) {
+            if (!pubgId) return { valid: false, message: 'Veuillez entrer votre ID PUBG' };
+            if (!/^\d+$/.test(pubgId)) return { valid: false, message: 'ID PUBG ne doit contenir que des chiffres' };
+            if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (minimum 5 chiffres)' };
+            if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (maximum 20 chiffres)' };
+            return { valid: true };
+        }
+
+        // ========== VALIDATION EN TEMPS RÉEL ==========
+        function validateInput() {
+            const input = document.getElementById('searchPubgId');
+            const pubgId = input.value.trim();
+            const validation = validatePubgId(pubgId);
+            const messageDiv = document.getElementById('validationMessage');
+            
+            if (pubgId === '') {
+                input.classList.remove('invalid', 'valid');
+                messageDiv.style.display = 'none';
+            } else if (!validation.valid) {
+                input.classList.add('invalid');
+                input.classList.remove('valid');
+                messageDiv.textContent = validation.message;
+                messageDiv.style.display = 'block';
+            } else {
+                input.classList.add('valid');
+                input.classList.remove('invalid');
+                messageDiv.style.display = 'none';
+            }
+        }
+
+        // ========== RECHERCHER LES COMMANDES ==========
         async function searchOrders() {
-    const pubgId = document.getElementById('searchPubgId').value.trim();
-    
-    if (!pubgId) {
-        alert('Veuillez entrer votre ID PUBG');
-        return;
-    }
-    
-    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
-        alert('L\'ID PUBG doit contenir exactement 11 chiffres');
-        return;
-    }
+            const pubgId = document.getElementById('searchPubgId').value.trim();
+            
+            // Valider l'ID
+            const validation = validatePubgId(pubgId);
+            if (!validation.valid) {
+                alert(validation.message);
+                return;
+            }
 
-    currentPubgId = pubgId;
-    
-    document.getElementById('ordersContainer').innerHTML = `
-        <div class="loading">
-            <i class="fa-solid fa-spinner fa-spin"></i> Chargement de votre historique...
-        </div>
-    `;
+            currentPubgId = pubgId;
+            
+            document.getElementById('ordersContainer').innerHTML = `
+                <div class="loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Chargement de votre historique...
+                </div>
+            `;
 
-    try {
-        console.log(`📤 Recherche des commandes pour ID: ${pubgId}`);
-        
-        const response = await fetch(`${API_URL}/orders/user/${pubgId}`);
-        
-        // Vérifier si la réponse est OK
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status}`);
+            try {
+                console.log(`📤 Recherche des commandes pour ID: ${pubgId}`);
+                
+                const response = await fetch(`${API_URL}/orders/user/${pubgId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const orders = Array.isArray(data) ? data : [];
+                
+                console.log(`📥 ${orders.length} commandes trouvées`);
+                
+                currentOrders = orders;
+                
+                if (orders.length > 0) {
+                    document.getElementById('filtersSection').style.display = 'block';
+                    // Réinitialiser le filtre actif
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.textContent.includes('Tous')) {
+                            btn.classList.add('active');
+                        }
+                    });
+                    currentFilter = 'all';
+                } else {
+                    document.getElementById('filtersSection').style.display = 'none';
+                }
+                
+                displayOrders(orders);
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div class="no-orders">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>Impossible de charger votre historique. Veuillez réessayer.</p>
+                        <p style="font-size: 0.8rem; color: #999;">${error.message}</p>
+                    </div>
+                `;
+                document.getElementById('filtersSection').style.display = 'none';
+            }
         }
-        
-        const data = await response.json();
-        
-        // S'assurer que data est un tableau
-        const orders = Array.isArray(data) ? data : [];
-        
-        console.log(`📥 ${orders.length} commandes trouvées`);
-        
-        currentOrders = orders;
-        
-        if (orders.length > 0) {
-            document.getElementById('filtersSection').style.display = 'block';
-        } else {
-            document.getElementById('filtersSection').style.display = 'none';
-        }
-        
-        displayOrders(orders);
-        
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        document.getElementById('ordersContainer').innerHTML = `
-            <div class="no-orders">
-                <i class="fa-solid fa-exclamation-triangle"></i>
-                <h3>Erreur de chargement</h3>
-                <p>Impossible de charger votre historique. Veuillez réessayer.</p>
-                <p style="font-size: 0.8rem; color: #999;">${error.message}</p>
-            </div>
-        `;
-        document.getElementById('filtersSection').style.display = 'none';
-    }
-}
 
-        // Afficher les commandes
+        // ========== AFFICHER LES COMMANDES ==========
         function displayOrders(orders) {
             const container = document.getElementById('ordersContainer');
             
@@ -436,17 +487,15 @@
             `;
         }
 
-        // Filtrer les commandes
+        // ========== FILTRER LES COMMANDES ==========
         function filterOrders(filter) {
             currentFilter = filter;
             
-            // Mettre à jour les boutons actifs
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            // Filtrer
             let filteredOrders = currentOrders;
             if (filter !== 'all') {
                 filteredOrders = currentOrders.filter(o => o.status === filter);
@@ -455,20 +504,28 @@
             displayOrders(filteredOrders);
         }
 
-        // Actualiser
+        // ========== ACTUALISER ==========
         async function refreshHistory() {
             if (currentPubgId) {
                 await searchOrders();
             }
         }
 
-        // Auto-refresh toutes les 30 secondes (optionnel)
+        // ========== AUTO-REFRESH ==========
         setInterval(() => {
             if (currentPubgId) {
                 console.log('🔄 Rafraîchissement auto...');
                 searchOrders();
             }
         }, 30000);
+
+        // ========== PERMETTRE UNIQUEMENT LES CHIFFRES ==========
+        document.getElementById('searchPubgId').addEventListener('keypress', function(e) {
+            const charCode = e.which ? e.which : e.keyCode;
+            if (charCode < 48 || charCode > 57) {
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
