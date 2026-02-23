@@ -261,9 +261,9 @@ function displayOrders(ordersToShow) {
             <td>${order.reference || ''}</td>
             <td>
                 <span class="status-badge status-${(order.status || 'en attente').replace(' ', '-')}">
-                    ${order.status === 'en attente' ? '⏳ En attente' : 
-                      order.status === 'livré' ? '✅ Livré' : 
-                      order.status === 'annulé' ? '❌ Annulé' : order.status}
+                    ${order.status === 'en attente' ? 'En attente' : 
+                      order.status === 'livré' ? 'Livré' : 
+                      order.status === 'annulé' ? 'Annulé' : order.status}
                 </span>
             </td>
             <td>
