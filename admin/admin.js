@@ -14,7 +14,6 @@ console.log('🌐 API URL:', BASE_URL);
 
 // ========== FONCTIONS DE NOTIFICATION ==========
 function showNotification(message, type = 'success') {
-    // Supprimer l'ancienne notification si elle existe
     const oldNotification = document.querySelector('.custom-notification');
     if (oldNotification) oldNotification.remove();
     
@@ -110,16 +109,20 @@ function backupData() {
 function exportData() {
     showNotification('📥 Préparation de l\'export...', 'info');
     
-    // Créer un lien de téléchargement
     fetch(`${BASE_URL}/api/admin/export`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
-        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+        console.log('📥 Réponse status export:', res.status);
+        if (!res.ok) {
+            if (res.status === 404) {
+                throw new Error('Route export non trouvée');
+            }
+            throw new Error(`Erreur HTTP: ${res.status}`);
+        }
         return res.blob();
     })
     .then(blob => {
-        // Créer un lien de téléchargement
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -133,13 +136,12 @@ function exportData() {
     })
     .catch(err => {
         console.error('❌ Erreur export:', err);
-        showNotification('❌ Erreur lors de l\'export', 'error');
+        showNotification(`❌ ${err.message}`, 'error');
     });
 }
 
 // Restaurer les données
 function restoreData() {
-    // Créer un input file caché
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.json';
@@ -154,7 +156,17 @@ function restoreData() {
             try {
                 const backupData = JSON.parse(event.target.result);
                 
-                if (!confirm(`⚠️ Restaurer ${backupData.orders?.length || backupData.length || 0} commandes ? Cette action écrasera les données actuelles.`)) {
+                let ordersToRestore = [];
+                if (Array.isArray(backupData)) {
+                    ordersToRestore = backupData;
+                } else if (backupData.orders && Array.isArray(backupData.orders)) {
+                    ordersToRestore = backupData.orders;
+                } else {
+                    showNotification('❌ Format de backup invalide', 'error');
+                    return;
+                }
+                
+                if (!confirm(`⚠️ Restaurer ${ordersToRestore.length} commandes ? Cette action écrasera les données actuelles.`)) {
                     return;
                 }
                 
@@ -166,7 +178,7 @@ function restoreData() {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ backupData })
+                    body: JSON.stringify({ backupData: { orders: ordersToRestore } })
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -209,7 +221,6 @@ function showLogsPanel() {
             return;
         }
         
-        // Créer une modale pour afficher les logs
         const logModal = document.createElement('div');
         logModal.style.cssText = `
             position: fixed;
@@ -394,14 +405,14 @@ function displayOrders(ordersToShow) {
             <td>
                 ${order.status !== 'livré' ? 
                     `<button class="action-btn deliver-btn" onclick="updateStatus(${order.id}, 'livré')">
-                        Livrer
+                        ✓ Livrer
                     </button>` : ''}
                 ${order.status !== 'annulé' && order.status !== 'livré' ? 
                     `<button class="action-btn cancel-btn" onclick="updateStatus(${order.id}, 'annulé')" style="background: #ff9800;">
-                        Annuler
+                        ✗ Annuler
                     </button>` : ''}
                 <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})">
-                    Suppr
+                    🗑️ Suppr
                 </button>
             </td>
         </tr>
