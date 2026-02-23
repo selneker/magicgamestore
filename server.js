@@ -442,36 +442,6 @@ app.get('/api/orders/user/:pubgId', (req, res) => {
     }
 });
 
-// ========== ROUTES STATIQUES ==========
-
-// Servir l'admin en premier
-app.use('/admin', express.static(path.join(__dirname, 'admin')));
-
-// Servir les fichiers statiques généraux
-app.use(express.static(__dirname));
-
-// Route pour la racine
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Route de débogage admin
-app.get('/admin-test', (req, res) => {
-    const adminPath = path.join(__dirname, 'admin', 'admin.html');
-    const exists = fs.existsSync(adminPath);
-    res.json({
-        message: 'Test admin',
-        adminPath: adminPath,
-        fileExists: exists,
-        files: exists ? fs.readdirSync(path.join(__dirname, 'admin')) : []
-    });
-});
-
-// ========== GESTION DES ERREURS 404 ==========
-app.use((req, res) => {
-    res.status(404).json({ error: 'Route non trouvée' });
-});
-
 
 // ========== ROUTES DE SAUVEGARDE ==========
 app.get('/api/admin/backup', authenticateToken, isAdmin, (req, res) => {
@@ -511,6 +481,38 @@ app.get('/api/admin/export', authenticateToken, isAdmin, (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=orders-export.json');
     res.json(orders);
 });
+
+// ========== ROUTES STATIQUES ==========
+
+// Servir l'admin en premier
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
+// Servir les fichiers statiques généraux
+app.use(express.static(__dirname));
+
+// Route pour la racine
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Route de débogage admin
+app.get('/admin-test', (req, res) => {
+    const adminPath = path.join(__dirname, 'admin', 'admin.html');
+    const exists = fs.existsSync(adminPath);
+    res.json({
+        message: 'Test admin',
+        adminPath: adminPath,
+        fileExists: exists,
+        files: exists ? fs.readdirSync(path.join(__dirname, 'admin')) : []
+    });
+});
+
+// ========== GESTION DES ERREURS 404 ==========
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route non trouvée' });
+});
+
+
 
 // ========== DÉMARRAGE DU SERVEUR ==========
 const PORT = process.env.PORT || 3000;
