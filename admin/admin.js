@@ -1,18 +1,147 @@
 let token = localStorage.getItem('adminToken');
 let orders = [];
+let autoRefreshInterval;
 
 // ========== URL DYNAMIQUE ==========
 const BASE_URL = (() => {
-    // Si on est en local
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000';
     }
-    // En production (Render)
-    return 'https://magicgame.store';  // Votre URL Render
+    return 'https://magicgame.store';
 })();
 
-console.log('🌐 API URL:', BASE_URL); // Pour déboguer
+console.log('🌐 API URL:', BASE_URL);
 
+// ========== FONCTIONS DE NOTIFICATION ==========
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+        font-weight: 500;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Ajouter les animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// ========== FONCTIONS DE RAFRAÎCHISSEMENT AUTO ==========
+function startAutoRefresh() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
+    autoRefreshInterval = setInterval(() => {
+        console.log('🔄 Rafraîchissement auto des données...');
+        if (token) {
+            loadOrders();
+            loadStats();
+        }
+    }, 30000);
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('⏹️ Rafraîchissement auto arrêté');
+    }
+}
+
+// ========== FONCTIONS D'AFFICHAGE DES LOGS ==========
+function showLogsPanel() {
+    fetch(`${BASE_URL}/api/admin/debug/orders-log`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log('📋 Logs des commandes:', data);
+        
+        if (!data.logs || data.logs.length === 0) {
+            alert('Aucun log trouvé');
+            return;
+        }
+        
+        // Créer une modale pour afficher les logs
+        const logModal = document.createElement('div');
+        logModal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10001;
+            padding: 20px;
+            overflow: auto;
+        `;
+        
+        logModal.innerHTML = `
+            <h3 style="margin-top: 0;">📋 Historique des actions</h3>
+            <button onclick="this.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f5f5f5;">
+                        <th style="padding: 10px; text-align: left;">Date</th>
+                        <th style="padding: 10px; text-align: left;">Action</th>
+                        <th style="padding: 10px; text-align: left;">Commande</th>
+                        <th style="padding: 10px; text-align: left;">Détails</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.logs.map(log => `
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px;">${new Date(log.timestamp).toLocaleString()}</td>
+                            <td style="padding: 8px;">
+                                <span style="background: ${log.action === 'DELETE' ? '#f44336' : log.action === 'STATUS_UPDATE' ? '#ff9800' : '#4CAF50'}; color: white; padding: 3px 8px; border-radius: 3px;">
+                                    ${log.action}
+                                </span>
+                            </td>
+                            <td style="padding: 8px;">#${log.orderId}</td>
+                            <td style="padding: 8px;">${JSON.stringify(log.details || log.deletedOrder || '')}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        
+        document.body.appendChild(logModal);
+    })
+    .catch(err => {
+        console.error('❌ Erreur chargement logs:', err);
+        showNotification('Erreur chargement logs', 'error');
+    });
+}
+
+// ========== FONCTIONS D'AUTHENTIFICATION ==========
 function login() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -37,25 +166,33 @@ function login() {
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('adminSection').style.display = 'block';
             document.getElementById('adminEmail').textContent = data.user.email;
+            
             loadOrders();
             loadStats();
+            startAutoRefresh();
+            showNotification('✅ Connexion réussie', 'success');
         } else {
             document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
+            showNotification(data.error || 'Erreur de connexion', 'error');
         }
     })
     .catch(err => {
         console.error('❌ Erreur fetch:', err);
         document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
+        showNotification('Erreur de connexion au serveur', 'error');
     });
 }
 
 function logout() {
+    stopAutoRefresh();
     localStorage.removeItem('adminToken');
     token = null;
     document.getElementById('loginSection').style.display = 'flex';
     document.getElementById('adminSection').style.display = 'none';
+    showNotification('👋 Déconnexion réussie', 'success');
 }
 
+// ========== CHARGEMENT DES DONNÉES ==========
 function loadOrders() {
     if (!token) {
         console.log('⛔ Pas de token');
@@ -103,11 +240,12 @@ function loadStats() {
     .catch(err => console.error('❌ Erreur chargement stats:', err));
 }
 
+// ========== AFFICHAGE DES COMMANDES ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
     if (!ordersToShow || ordersToShow.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="loading">Aucune commande</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="loading">Aucune commande</td></tr>';
         return;
     }
 
@@ -123,7 +261,9 @@ function displayOrders(ordersToShow) {
             <td>${order.reference || ''}</td>
             <td>
                 <span class="status-badge status-${(order.status || 'en attente').replace(' ', '-')}">
-                    ${order.status || 'en attente'}
+                    ${order.status === 'en attente' ? '⏳ En attente' : 
+                      order.status === 'livré' ? '✅ Livré' : 
+                      order.status === 'annulé' ? '❌ Annulé' : order.status}
                 </span>
             </td>
             <td>
@@ -131,15 +271,19 @@ function displayOrders(ordersToShow) {
                     `<button class="action-btn deliver-btn" onclick="updateStatus(${order.id}, 'livré')">
                         ✓ Livrer
                     </button>` : ''}
+                ${order.status !== 'annulé' && order.status !== 'livré' ? 
+                    `<button class="action-btn cancel-btn" onclick="updateStatus(${order.id}, 'annulé')" style="background: #ff9800;">
+                        ✗ Annuler
+                    </button>` : ''}
                 <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})">
-                    ✗ Suppr
+                    🗑️ Suppr
                 </button>
             </td>
         </tr>
     `).join('');
 }
 
-// Filters
+// ========== FILTRES ==========
 document.getElementById('searchInput')?.addEventListener('input', filterOrders);
 document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
 
@@ -163,8 +307,11 @@ function filterOrders() {
     displayOrders(filtered);
 }
 
+// ========== ACTIONS SUR LES COMMANDES ==========
 function updateStatus(orderId, newStatus) {
-    if (!confirm('Confirmer le changement de statut ?')) return;
+    if (!confirm(`Confirmer le passage en "${newStatus}" ?`)) return;
+
+    console.log(`📤 Changement statut commande #${orderId} vers ${newStatus}`);
 
     fetch(`${BASE_URL}/api/admin/orders/${orderId}`, {
         method: 'PUT',
@@ -174,35 +321,54 @@ function updateStatus(orderId, newStatus) {
         },
         body: JSON.stringify({ status: newStatus })
     })
-    .then(res => res.json())
-    .then(() => {
+    .then(res => {
+        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        console.log('✅ Statut mis à jour:', data);
+        showNotification(`✅ Commande #${orderId} ${newStatus}`, 'success');
         loadOrders();
         loadStats();
     })
-    .catch(err => console.error('❌ Erreur mise à jour:', err));
+    .catch(err => {
+        console.error('❌ Erreur mise à jour:', err);
+        showNotification(`❌ Erreur: ${err.message}`, 'error');
+    });
 }
 
 function deleteOrder(orderId) {
-    if (!confirm('Supprimer définitivement cette commande ?')) return;
+    if (!confirm('⚠️ SUPPRESSION DÉFINITIVE\n\nCette action est irréversible. Confirmer ?')) return;
+
+    console.log(`🗑️ Tentative de suppression commande #${orderId}`);
 
     fetch(`${BASE_URL}/api/admin/orders/${orderId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(() => {
+    .then(res => {
+        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        console.log('✅ Suppression réussie:', data);
+        showNotification(`✅ Commande #${orderId} supprimée`, 'success');
         loadOrders();
         loadStats();
     })
-    .catch(err => console.error('❌ Erreur suppression:', err));
+    .catch(err => {
+        console.error('❌ Erreur suppression:', err);
+        showNotification(`❌ Erreur: ${err.message}`, 'error');
+    });
 }
 
 function refreshOrders() {
     loadOrders();
     loadStats();
+    showNotification('🔄 Données actualisées', 'success');
 }
 
-// Vérifier session au chargement
+// ========== VÉRIFICATION SESSION AU CHARGEMENT ==========
 if (token) {
     console.log('🔑 Token trouvé, vérification...');
     fetch(`${BASE_URL}/api/admin/orders`, {
@@ -214,6 +380,7 @@ if (token) {
             document.getElementById('adminSection').style.display = 'block';
             loadOrders();
             loadStats();
+            startAutoRefresh();
         } else {
             console.log('⛔ Token invalide');
             localStorage.removeItem('adminToken');
@@ -222,75 +389,5 @@ if (token) {
     .catch(err => console.error('❌ Erreur vérification token:', err));
 }
 
-
-// ========== RAFRAÎCHISSEMENT AUTOMATIQUE ==========
-let autoRefreshInterval;
-
-function startAutoRefresh() {
-    // Rafraîchir toutes les 30 secondes (30000 ms)
-    autoRefreshInterval = setInterval(() => {
-        console.log('🔄 Rafraîchissement auto des données...');
-        if (token) {
-            loadOrders();
-            loadStats();
-        }
-    }, 30000); // 30 secondes
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-        console.log('⏹️ Rafraîchissement auto arrêté');
-    }
-}
-
-// Modifiez la fonction login pour démarrer l'auto-refresh
-function login() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    console.log('📤 Tentative de connexion...');
-
-    fetch(`${BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    })
-    .then(res => {
-        console.log('📥 Réponse status:', res.status);
-        return res.json();
-    })
-    .then(data => {
-        console.log('📥 Données reçues:', data);
-        
-        if (data.token) {
-            token = data.token;
-            localStorage.setItem('adminToken', token);
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminSection').style.display = 'block';
-            document.getElementById('adminEmail').textContent = data.user.email;
-            
-            // Charger les données
-            loadOrders();
-            loadStats();
-            
-            // DÉMARRER LE RAFRAÎCHISSEMENT AUTO
-            startAutoRefresh();
-        } else {
-            document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
-        }
-    })
-    .catch(err => {
-        console.error('❌ Erreur fetch:', err);
-        document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
-    });
-}
-
-// Modifiez logout pour arrêter l'auto-refresh
-function logout() {
-    stopAutoRefresh(); // ARRÊTER LE RAFRAÎCHISSEMENT
-    localStorage.removeItem('adminToken');
-    token = null;
-    document.getElementById('loginSection').style.display = 'flex';
-    document.getElementById('adminSection').style.display = 'none';
-}
+// ========== AJOUT D'UN BOUTON LOGS DANS L'INTERFACE ==========
+// À ajouter dans admin.html si nécessaire
