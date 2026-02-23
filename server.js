@@ -14,8 +14,7 @@ dotenv.config();
 
 const app = express();
 
-
-// ========= CONFIANCE AU PROXY DE RENDER========
+// ========= CONFIANCE AU PROXY DE RENDER ========
 app.set('trust proxy', 1);
 
 // ========== MIDDLEWARE ==========
@@ -24,12 +23,11 @@ app.use(helmet({
 }));
 
 // CORS plus flexible
-// CORS plus flexible
 app.use(cors({
     origin: [
         'https://magicgame.store', 
         'https://www.magicgame.store', 
-        'https://magicgamestore.onrender.com',  // 👈 AJOUTEZ CETTE LIGNE
+        'https://magicgamestore.onrender.com',
         'http://localhost:3000'
     ],
     credentials: true
@@ -49,6 +47,7 @@ app.use('/api/', limiter);
 // ========== FICHIERS JSON ==========
 const ordersFile = path.join(__dirname, 'orders.json');
 const usersFile = path.join(__dirname, 'users.json');
+const logsFile = path.join(__dirname, 'orders.log');
 
 // Initialiser les fichiers
 if (!fs.existsSync(ordersFile)) {
@@ -72,6 +71,28 @@ function writeUsers(users) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 }
 
+// Fonction de logging pour les commandes
+function logOrderAction(action, orderId, details = {}) {
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        action: action,
+        orderId: orderId,
+        ...details
+    };
+    
+    console.log(`📝 [LOG] ${action} - Commande #${orderId}`, details);
+    
+    try {
+        const logs = fs.existsSync(logsFile) 
+            ? JSON.parse(fs.readFileSync(logsFile)) 
+            : [];
+        logs.push(logEntry);
+        fs.writeFileSync(logsFile, JSON.stringify(logs, null, 2));
+    } catch (error) {
+        console.error('❌ Erreur écriture log:', error);
+    }
+}
+
 // ========== MIDDLEWARE AUTH ==========
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -93,6 +114,15 @@ function isAdmin(req, res, next) {
     next();
 }
 
+// ========== FONCTION DE VALIDATION ID PUBG ==========
+function validatePubgId(pubgId) {
+    if (!pubgId) return { valid: false, message: 'ID PUBG requis' };
+    if (!/^\d+$/.test(pubgId)) return { valid: false, message: 'ID PUBG ne doit contenir que des chiffres' };
+    if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (minimum 5 chiffres)' };
+    if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (maximum 20 chiffres)' };
+    return { valid: true };
+}
+
 // ========== ROUTES API PUBLIQUES ==========
 
 // Login
@@ -100,7 +130,6 @@ app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Vérifier si users.json existe
         if (!fs.existsSync(usersFile)) {
             return res.status(500).json({ error: 'Base de données utilisateurs non initialisée' });
         }
@@ -144,8 +173,10 @@ app.post('/api/order', async (req, res) => {
             return res.status(400).json({ error: 'Tous les champs sont requis' });
         }
 
-        if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
-            return res.status(400).json({ error: 'ID PUBG doit être 11 chiffres' });
+        // NOUVELLE VALIDATION FLEXIBLE POUR ID PUBG
+        const validation = validatePubgId(pubgId);
+        if (!validation.valid) {
+            return res.status(400).json({ error: validation.message });
         }
 
         // Créer commande
@@ -165,6 +196,9 @@ app.post('/api/order', async (req, res) => {
         const orders = readOrders();
         orders.push(order);
         writeOrders(orders);
+        
+        // Logger la création
+        logOrderAction('CREATE', order.id, { pubgId, pseudo, pack, price });
 
         res.status(201).json({ 
             message: 'Commande enregistrée', 
@@ -198,28 +232,53 @@ app.put('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
             return res.status(404).json({ error: 'Commande non trouvée' });
         }
         
+        const oldStatus = orders[index].status;
         orders[index].status = status;
         writeOrders(orders);
+        
+        // Logger le changement de statut
+        logOrderAction('STATUS_UPDATE', orderId, { oldStatus, newStatus: status });
         
         res.json({ message: 'Statut mis à jour' });
         
     } catch (error) {
+        console.error('❌ Erreur mise à jour:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Supprimer commande
+// Supprimer commande - VERSION AVEC LOGS
 app.delete('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
     try {
         const orderId = parseInt(req.params.id);
         
-        let orders = readOrders();
-        orders = orders.filter(o => o.id !== orderId);
-        writeOrders(orders);
+        const orders = readOrders();
+        const orderToDelete = orders.find(o => o.id === orderId);
         
-        res.json({ message: 'Commande supprimée' });
+        if (!orderToDelete) {
+            return res.status(404).json({ error: 'Commande non trouvée' });
+        }
+        
+        // Sauvegarder les infos de la commande avant suppression
+        const deletedOrder = { ...orderToDelete };
+        
+        // Filtrer pour supprimer
+        const newOrders = orders.filter(o => o.id !== orderId);
+        writeOrders(newOrders);
+        
+        // Logger la suppression
+        logOrderAction('DELETE', orderId, { 
+            deletedOrder: deletedOrder,
+            deletedBy: req.user.email 
+        });
+        
+        res.json({ 
+            message: 'Commande supprimée',
+            deletedOrder: deletedOrder 
+        });
         
     } catch (error) {
+        console.error('❌ Erreur suppression:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -253,7 +312,7 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
     }
 });
 
-// ========== ROUTES DE DEBUG (à supprimer en production) ==========
+// ========== ROUTES DE DEBUG ==========
 
 // 1. VOIR l'état actuel
 app.get('/api/debug-auth', (req, res) => {
@@ -338,6 +397,20 @@ app.get('/api/test-login/:password', async (req, res) => {
     }
 });
 
+// 4. VOIR LES LOGS DES COMMANDES (admin seulement)
+app.get('/api/admin/debug/orders-log', authenticateToken, isAdmin, (req, res) => {
+    try {
+        if (!fs.existsSync(logsFile)) {
+            return res.json({ message: 'Aucun log trouvé', logs: [] });
+        }
+        
+        const logs = JSON.parse(fs.readFileSync(logsFile));
+        res.json({ logs });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // ========== ROUTE POUR L'HISTORIQUE CLIENT ==========
 app.get('/api/orders/user/:pubgId', (req, res) => {
@@ -346,22 +419,17 @@ app.get('/api/orders/user/:pubgId', (req, res) => {
         
         console.log(`📤 Recherche des commandes pour ID PUBG: ${pubgId}`);
         
-        // Vérifier que le fichier orders.json existe
         if (!fs.existsSync(ordersFile)) {
             return res.json([]);
         }
         
         const orders = readOrders();
         
-        // Vérifier que orders est bien un tableau
         if (!Array.isArray(orders)) {
             return res.json([]);
         }
         
-        // Filtrer les commandes pour cet ID PUBG
         const userOrders = orders.filter(order => order.pubgId === pubgId);
-        
-        // Trier par date (plus récent d'abord)
         const sortedOrders = userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         console.log(`📥 ${sortedOrders.length} commandes trouvées pour ${pubgId}`);
@@ -404,7 +472,6 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route non trouvée' });
 });
 
-
 // ========== DÉMARRAGE DU SERVEUR ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
@@ -414,5 +481,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🔐 Admin: https://magicgame.store/admin/admin.html`);
     console.log(`📊 Debug: https://magicgame.store/api/debug-auth`);
     console.log(`🛠️  Create Admin: https://magicgame.store/api/create-admin`);
+    console.log(`📝 Logs: https://magicgame.store/api/admin/debug/orders-log`);
     console.log(`=====================================\n`);
 });
