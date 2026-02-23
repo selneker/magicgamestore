@@ -269,14 +269,14 @@ function displayOrders(ordersToShow) {
             <td>
                 ${order.status !== 'livré' ? 
                     `<button class="action-btn deliver-btn" onclick="updateStatus(${order.id}, 'livré')">
-                        ✓ Livrer
+                        Livrer
                     </button>` : ''}
                 ${order.status !== 'annulé' && order.status !== 'livré' ? 
                     `<button class="action-btn cancel-btn" onclick="updateStatus(${order.id}, 'annulé')" style="background: #ff9800;">
-                        ✗ Annuler
+                        Annuler
                     </button>` : ''}
                 <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})">
-                    🗑️ Suppr
+                    Suppr
                 </button>
             </td>
         </tr>
