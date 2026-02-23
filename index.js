@@ -146,11 +146,6 @@ function validateOrder() {
         return false;
     }
     
-    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
-        showToast('ID PUBG doit être 11 chiffres', 'error');
-        return false;
-    }
-    
     return true;
 }
 
