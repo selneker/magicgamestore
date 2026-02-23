@@ -21,9 +21,75 @@
     <div id="adminSection" style="display: none;">
         <header class="admin-header">
             <h1><i class="fas fa-crown"></i> Magic Game Store - Admin</h1>
-            <div>
-                <span id="adminEmail"></span>
-                <button onclick="logout()" class="logout-btn">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <!-- Bouton Backup -->
+                <button onclick="backupData()" class="action-btn" style="
+                    background: #2196F3;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.3s;
+                ">
+                    <i class="fas fa-download"></i> Backup
+                </button>
+        
+                <!-- Bouton Exporter -->
+                <button onclick="exportData()" class="action-btn" style="
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.3s;
+                ">
+                    <i class="fas fa-file-export"></i> Exporter
+                </button>
+        
+                <!-- Bouton Logs -->
+                <button onclick="showLogsPanel()" class="action-btn" style="
+                    background: #FF9800;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.3s;
+                ">
+                    <i class="fa-solid fa-history"></i> Logs
+                </button>
+        
+                <!-- Email admin -->
+                <span id="adminEmail" style="font-weight: 500; color: #333;"></span>
+        
+                <!-- Bouton Déconnexion -->
+                <button onclick="logout()" class="logout-btn" style="
+                    background: #f44336;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.3s;
+                ">
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </button>
             </div>
