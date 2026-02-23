@@ -14,7 +14,12 @@ console.log('🌐 API URL:', BASE_URL);
 
 // ========== FONCTIONS DE NOTIFICATION ==========
 function showNotification(message, type = 'success') {
+    // Supprimer l'ancienne notification si elle existe
+    const oldNotification = document.querySelector('.custom-notification');
+    if (oldNotification) oldNotification.remove();
+    
     const notification = document.createElement('div');
+    notification.className = 'custom-notification';
     notification.style.cssText = `
         position: fixed;
         top: 20px;
@@ -72,6 +77,124 @@ function stopAutoRefresh() {
     }
 }
 
+// ========== FONCTIONS DE SAUVEGARDE ==========
+
+// Créer un backup
+function backupData() {
+    if (!confirm('💾 Créer une sauvegarde des commandes ?')) return;
+    
+    showNotification('📦 Création du backup...', 'info');
+    
+    fetch(`${BASE_URL}/api/admin/backup`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        if (data.error) {
+            showNotification('❌ ' + data.error, 'error');
+        } else {
+            showNotification(`✅ Backup créé: ${data.count} commandes`, 'success');
+            console.log('📁 Backup:', data);
+        }
+    })
+    .catch(err => {
+        console.error('❌ Erreur backup:', err);
+        showNotification('❌ Erreur lors du backup', 'error');
+    });
+}
+
+// Exporter les données
+function exportData() {
+    showNotification('📥 Préparation de l\'export...', 'info');
+    
+    // Créer un lien de téléchargement
+    fetch(`${BASE_URL}/api/admin/export`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+        return res.blob();
+    })
+    .then(blob => {
+        // Créer un lien de téléchargement
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `orders-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        showNotification('✅ Export terminé', 'success');
+    })
+    .catch(err => {
+        console.error('❌ Erreur export:', err);
+        showNotification('❌ Erreur lors de l\'export', 'error');
+    });
+}
+
+// Restaurer les données
+function restoreData() {
+    // Créer un input file caché
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    
+    fileInput.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const backupData = JSON.parse(event.target.result);
+                
+                if (!confirm(`⚠️ Restaurer ${backupData.orders?.length || backupData.length || 0} commandes ? Cette action écrasera les données actuelles.`)) {
+                    return;
+                }
+                
+                showNotification('📦 Restauration en cours...', 'info');
+                
+                fetch(`${BASE_URL}/api/admin/restore`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ backupData })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification('❌ ' + data.error, 'error');
+                    } else {
+                        showNotification(`✅ Restauration réussie: ${data.count} commandes`, 'success');
+                        loadOrders();
+                        loadStats();
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Erreur restauration:', err);
+                    showNotification('❌ Erreur lors de la restauration', 'error');
+                });
+                
+            } catch (error) {
+                showNotification('❌ Fichier de backup invalide', 'error');
+            }
+        };
+        reader.readAsText(file);
+    };
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+}
+
 // ========== FONCTIONS D'AFFICHAGE DES LOGS ==========
 function showLogsPanel() {
     fetch(`${BASE_URL}/api/admin/debug/orders-log`, {
@@ -126,7 +249,9 @@ function showLogsPanel() {
                                 </span>
                             </td>
                             <td style="padding: 8px;">#${log.orderId}</td>
-                            <td style="padding: 8px;">${JSON.stringify(log.details || log.deletedOrder || '')}</td>
+                            <td style="padding: 8px; max-width: 300px; overflow: auto;">
+                                ${JSON.stringify(log.details || log.deletedOrder || '').substring(0, 50)}...
+                            </td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -261,22 +386,22 @@ function displayOrders(ordersToShow) {
             <td>${order.reference || ''}</td>
             <td>
                 <span class="status-badge status-${(order.status || 'en attente').replace(' ', '-')}">
-                    ${order.status === 'en attente' ? 'En attente' : 
-                      order.status === 'livré' ? 'Livré' : 
-                      order.status === 'annulé' ? 'Annulé' : order.status}
+                    ${order.status === 'en attente' ? '⏳ En attente' : 
+                      order.status === 'livré' ? '✅ Livré' : 
+                      order.status === 'annulé' ? '❌ Annulé' : order.status}
                 </span>
             </td>
             <td>
                 ${order.status !== 'livré' ? 
                     `<button class="action-btn deliver-btn" onclick="updateStatus(${order.id}, 'livré')">
-                        Livrer
+                        ✓ Livrer
                     </button>` : ''}
                 ${order.status !== 'annulé' && order.status !== 'livré' ? 
                     `<button class="action-btn cancel-btn" onclick="updateStatus(${order.id}, 'annulé')" style="background: #ff9800;">
-                        Annuler
+                        ✗ Annuler
                     </button>` : ''}
                 <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})">
-                    Suppr
+                    🗑️ Suppr
                 </button>
             </td>
         </tr>
@@ -388,6 +513,3 @@ if (token) {
     })
     .catch(err => console.error('❌ Erreur vérification token:', err));
 }
-
-// ========== AJOUT D'UN BOUTON LOGS DANS L'INTERFACE ==========
-// À ajouter dans admin.html si nécessaire
