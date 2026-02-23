@@ -472,6 +472,46 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route non trouvée' });
 });
 
+
+// ========== ROUTES DE SAUVEGARDE ==========
+app.get('/api/admin/backup', authenticateToken, isAdmin, (req, res) => {
+    const orders = readOrders();
+    const backup = {
+        timestamp: new Date().toISOString(),
+        orders: orders,
+        count: orders.length
+    };
+    
+    // Sauvegarder dans un fichier
+    const backupFile = path.join(__dirname, `backup-${Date.now()}.json`);
+    fs.writeFileSync(backupFile, JSON.stringify(backup, null, 2));
+    
+    res.json({ 
+        message: '✅ Backup créé', 
+        file: backupFile,
+        count: orders.length 
+    });
+});
+
+app.post('/api/admin/restore', authenticateToken, isAdmin, (req, res) => {
+    const { backupData } = req.body;
+    
+    if (backupData && backupData.orders) {
+        writeOrders(backupData.orders);
+        res.json({ message: '✅ Données restaurées', count: backupData.orders.length });
+    } else {
+        res.status(400).json({ error: 'Données de backup invalides' });
+    }
+});
+
+// Route pour exporter en JSON
+app.get('/api/admin/export', authenticateToken, isAdmin, (req, res) => {
+    const orders = readOrders();
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', 'attachment; filename=orders-export.json');
+    res.json(orders);
+});
+
 // ========== DÉMARRAGE DU SERVEUR ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
