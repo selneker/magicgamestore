@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Sitemap: https://magicgame.store/sitemap.xml
+
+# Disallow les pages admin
+Disallow: /admin/
+Disallow: /api/
