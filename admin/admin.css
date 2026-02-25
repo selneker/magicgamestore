@@ -353,7 +353,7 @@ tr:hover {
     background: #f8f9fa;
 }
 
-/* ========== MODE 2 COLONNES PAR COMMANDE POUR MOBILE ========== */
+/* ========== MODE INLINE 2 LIGNES POUR MOBILE ========== */
 
 @media (max-width: 768px) {
     /* Header plus compact */
@@ -422,7 +422,7 @@ tr:hover {
         padding: 10px;
     }
     
-    /* MODE 2 COLONNES POUR CHAQUE COMMANDE */
+    /* STYLE INLINE 2 LIGNES POUR LES COMMANDES */
     .table-container {
         padding: 0 10px 10px;
     }
@@ -451,115 +451,115 @@ tr:hover {
         margin-bottom: 12px;
     }
     
-    /* Disposition en grille 2 colonnes pour les infos de la commande */
+    /* Style inline pour chaque élément */
     .table-container tbody tr td {
-        display: inline-block;
-        width: 48%;
-        padding: 6px 4px;
+        display: inline;
+        padding: 0 4px;
         border-bottom: none;
         font-size: 12px;
-        vertical-align: top;
-        box-sizing: border-box;
+        white-space: nowrap;
     }
     
-    /* Forcer les éléments pairs à droite */
-    .table-container tbody tr td:nth-child(odd) {
-        clear: left;
-        margin-right: 2%;
-    }
-    
-    .table-container tbody tr td:nth-child(even) {
-        margin-left: 2%;
+    /* Séparateur entre les éléments */
+    .table-container tbody tr td:not(:last-child)::after {
+        content: " • ";
+        color: #ccc;
+        margin: 0 2px;
     }
     
     /* Style pour les cellules avec label */
     .table-container tbody tr td::before {
-        content: attr(data-label);
-        display: block;
+        content: attr(data-label) ": ";
         font-weight: 600;
         color: #666;
-        font-size: 10px;
-        margin-bottom: 2px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
+        font-size: 11px;
     }
     
-    /* La cellule d'actions prend toute la largeur */
+    /* Ligne 1 : ID, Référence, Statut */
+    .table-container tbody tr td:nth-child(1),
+    .table-container tbody tr td:nth-child(8),
+    .table-container tbody tr td:nth-child(9) {
+        display: inline;
+    }
+    
+    /* Ligne 2 : Pseudo, Pack, Prix, Paiement */
+    .table-container tbody tr td:nth-child(4),
+    .table-container tbody tr td:nth-child(5),
+    .table-container tbody tr td:nth-child(6),
+    .table-container tbody tr td:nth-child(7) {
+        display: inline;
+    }
+    
+    /* Actions sur nouvelle ligne */
     .table-container tbody tr td:last-child {
-        width: 100%;
-        margin-top: 10px;
+        display: block;
+        text-align: right;
+        margin-top: 8px;
         padding-top: 8px;
-        border-top: 1px solid #eee;
+        border-top: 1px dashed #eee;
     }
     
     .table-container tbody tr td:last-child::before {
         display: none;
     }
     
+    /* Cacher les colonnes inutiles */
+    .table-container tbody tr td:nth-child(2),
+    .table-container tbody tr td:nth-child(3) {
+        display: none;
+    }
+    
+    /* Style pour le statut en badge */
+    .table-container tbody tr td:nth-child(9)::before {
+        content: "";
+        display: none;
+    }
+    
+    .table-container tbody tr td:nth-child(9) .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 10px;
+        margin-left: 4px;
+    }
+    
     /* Style pour les cellules de copie */
     .copy-cell {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 4px;
-        width: 100%;
+        gap: 2px;
     }
     
     .copy-cell span {
-        flex: 1;
+        max-width: 80px;
         overflow: hidden;
         text-overflow: ellipsis;
         background: #f5f5f5;
-        padding: 3px 5px;
+        padding: 2px 6px;
         border-radius: 3px;
         font-family: monospace;
         font-size: 11px;
+        display: inline-block;
     }
     
     .copy-cell button {
-        flex-shrink: 0;
-    }
-    
-    /* Badge de statut */
-    .status-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        font-size: 11px;
-        border-radius: 12px;
+        width: 22px;
+        height: 22px;
+        font-size: 10px;
     }
     
     /* Boutons d'action */
     .action-buttons {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-end;
+        display: inline-flex;
+        gap: 6px;
     }
     
     .icon-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
-        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
     }
     
-    /* Style spécial pour l'ID de commande */
-    .table-container tbody tr td:first-child {
-        width: 100%;
-        font-size: 14px;
-        font-weight: 700;
-        color: #333;
-        padding-bottom: 8px;
-        margin-bottom: 4px;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .table-container tbody tr td:first-child::before {
-        content: "COMMANDE";
-        color: #999;
-        font-size: 10px;
-        font-weight: normal;
-    }
-    
-    /* Amélioration du touch sur mobile */
+    /* Amélioration du touch */
     button, 
     .icon-btn,
     .action-btn,
@@ -569,7 +569,7 @@ tr:hover {
     }
     
     .icon-btn {
-        min-height: 32px;
+        min-height: 28px;
     }
     
     input,
@@ -607,18 +607,24 @@ tr:hover {
         margin: 2px 0;
     }
     
-    /* Passe en 1 colonne sur très petit écran */
+    /* Réduire la taille sur très petit écran */
     .table-container tbody tr td {
-        width: 100% !important;
-        margin: 0 !important;
+        font-size: 11px;
     }
     
-    .table-container tbody tr td:nth-child(odd) {
-        margin-right: 0;
+    .copy-cell span {
+        max-width: 60px;
+        font-size: 10px;
     }
     
-    .table-container tbody tr td:nth-child(even) {
-        margin-left: 0;
+    .table-container tbody tr td::before {
+        font-size: 10px;
+    }
+    
+    .icon-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
     }
 }
 
