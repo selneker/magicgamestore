@@ -466,6 +466,23 @@ function displayOrders(ordersToShow) {
     `}).join('');
 }
 
+
+// ========== FONCTION DE COPIE ==========
+function copyToClipboard(text) {
+    if (!text) {
+        showNotification('❌ Rien à copier', 'error');
+        return;
+    }
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Copié !', 'success');
+    }).catch(() => {
+        showNotification('❌ Erreur de copie', 'error');
+    });
+}
+
+
+
 // ========== FILTRES ==========
 document.getElementById('searchInput')?.addEventListener('input', filterOrders);
 document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
