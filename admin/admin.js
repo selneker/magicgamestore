@@ -376,6 +376,44 @@ function loadStats() {
     .catch(err => console.error('❌ Erreur chargement stats:', err));
 }
 
+
+// ========== FONCTION DE COPIE ==========
+function copyToClipboard(text) {
+    if (!text) {
+        showNotification('❌ Rien à copier', 'error');
+        return;
+    }
+    
+    //API Clipboard moderne
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('✅ Copié !', 'success');
+    }).catch((err) => {
+        console.error('Erreur de copie:', err);
+        // Fallback pour les anciens navigateurs
+        fallbackCopy(text);
+    });
+}
+
+// Fallback pour les navigateurs qui ne supportent pas clipboard API
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        document.execCommand('copy');
+        showNotification('✅ Copié ! (fallback)', 'success');
+    } catch (err) {
+        showNotification('❌ Erreur de copie', 'error');
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+
 // ========== AFFICHAGE DES COMMANDES AVEC NOUVEAUX STYLES ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
@@ -464,21 +502,6 @@ function displayOrders(ordersToShow) {
             </td>
         </tr>
     `}).join('');
-}
-
-
-// ========== FONCTION DE COPIE ==========
-function copyToClipboard(text) {
-    if (!text) {
-        showNotification('❌ Rien à copier', 'error');
-        return;
-    }
-    
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('✅ Copié !', 'success');
-    }).catch(() => {
-        showNotification('❌ Erreur de copie', 'error');
-    });
 }
 
 
