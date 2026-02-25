@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const mongoose = require('mongoose'); // AJOUTÉ
 
 // Charger variables d'environnement
 dotenv.config();
@@ -17,12 +18,64 @@ const app = express();
 // ========= CONFIANCE AU PROXY DE RENDER ========
 app.set('trust proxy', 1);
 
+// ========== CONNEXION MONGODB ATLAS ==========
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://magicgame:TON_MDP@cluster0.xxxxx.mongodb.net/magicgame';
+
+mongoose.connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+
+mongoose.connection.on('connected', () => {
+    console.log('✅ Connecté à MongoDB Atlas');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('❌ Erreur MongoDB:', err);
+});
+
+// ========== MODÈLES MONGODB ==========
+
+// Schéma pour les commandes
+const orderSchema = new mongoose.Schema({
+    id: { type: Number, required: true, unique: true },
+    date: { type: Date, default: Date.now },
+    pubgId: { type: String, required: true },
+    pseudo: { type: String, required: true },
+    pack: { type: String, required: true },
+    price: { type: String, required: true },
+    paymentMethod: { type: String, default: 'MVola' },
+    reference: { type: String, required: true },
+    status: { type: String, default: 'en attente' }
+});
+
+const Order = mongoose.model('Order', orderSchema);
+
+// Schéma pour les utilisateurs
+const userSchema = new mongoose.Schema({
+    id: { type: Number, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'admin' },
+    createdAt: { type: Date, default: Date.now }
+});
+
+// Hash le mot de passe avant sauvegarde
+userSchema.pre('save', async function(next) {
+    if (this.isModified('password')) {
+        this.password = await bcrypt.hash(this.password, 10);
+    }
+    next();
+});
+
+const User = mongoose.model('User', userSchema);
+
 // ========== MIDDLEWARE ==========
 app.use(helmet({
     contentSecurityPolicy: false,
 }));
 
-// CORS plus flexible
+// CORS
 app.use(cors({
     origin: [
         'https://magicgame.store', 
@@ -36,62 +89,36 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan('combined'));
 
-// Rate limiting - avec message personnalisé
+// Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 100,
     message: { error: 'Trop de requêtes, veuillez attendre 15 minutes' }
 });
 app.use('/api/', limiter);
 
-// ========== FICHIERS JSON ==========
-const ordersFile = path.join(__dirname, 'orders.json');
-const usersFile = path.join(__dirname, 'users.json');
-const logsFile = path.join(__dirname, 'orders.log');
-
-// Initialiser les fichiers
-if (!fs.existsSync(ordersFile)) {
-    fs.writeFileSync(ordersFile, JSON.stringify([]));
-}
-
-// ========== FONCTIONS UTILITAIRES ==========
-function readOrders() {
-    return JSON.parse(fs.readFileSync(ordersFile));
-}
-
-function writeOrders(orders) {
-    fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2));
-}
-
-function readUsers() {
-    return JSON.parse(fs.readFileSync(usersFile));
-}
-
-function writeUsers(users) {
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-}
-
-// Fonction de logging pour les commandes
-function logOrderAction(action, orderId, details = {}) {
-    const logEntry = {
-        timestamp: new Date().toISOString(),
-        action: action,
-        orderId: orderId,
-        ...details
-    };
-    
-    console.log(`📝 [LOG] ${action} - Commande #${orderId}`, details);
-    
+// ========== FONCTIONS UTILITAIRES POUR MONGODB ==========
+async function initializeAdmin() {
     try {
-        const logs = fs.existsSync(logsFile) 
-            ? JSON.parse(fs.readFileSync(logsFile)) 
-            : [];
-        logs.push(logEntry);
-        fs.writeFileSync(logsFile, JSON.stringify(logs, null, 2));
+        const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
+        
+        if (!adminExists) {
+            const admin = new User({
+                id: 1,
+                email: process.env.ADMIN_EMAIL,
+                password: process.env.ADMIN_PASSWORD,
+                role: 'admin'
+            });
+            await admin.save();
+            console.log('✅ Admin créé dans MongoDB');
+        }
     } catch (error) {
-        console.error('❌ Erreur écriture log:', error);
+        console.error('❌ Erreur création admin:', error);
     }
 }
+
+// Initialiser l'admin au démarrage
+initializeAdmin();
 
 // ========== MIDDLEWARE AUTH ==========
 function authenticateToken(req, res, next) {
@@ -130,12 +157,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        if (!fs.existsSync(usersFile)) {
-            return res.status(500).json({ error: 'Base de données utilisateurs non initialisée' });
-        }
-        
-        const users = readUsers();
-        const user = users.find(u => u.email === email);
+        const user = await User.findOne({ email });
         
         if (!user) {
             return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
@@ -173,16 +195,15 @@ app.post('/api/order', async (req, res) => {
             return res.status(400).json({ error: 'Tous les champs sont requis' });
         }
 
-        // NOUVELLE VALIDATION FLEXIBLE POUR ID PUBG
         const validation = validatePubgId(pubgId);
         if (!validation.valid) {
             return res.status(400).json({ error: validation.message });
         }
 
-        // Créer commande
-        const order = {
+        // Créer commande dans MongoDB
+        const order = new Order({
             id: Date.now(),
-            date: new Date().toISOString(),
+            date: new Date(),
             pubgId,
             pseudo,
             pack,
@@ -190,15 +211,9 @@ app.post('/api/order', async (req, res) => {
             paymentMethod,
             reference,
             status: 'en attente'
-        };
+        });
 
-        // Sauvegarder
-        const orders = readOrders();
-        orders.push(order);
-        writeOrders(orders);
-        
-        // Logger la création
-        logOrderAction('CREATE', order.id, { pubgId, pseudo, pack, price });
+        await order.save();
 
         res.status(201).json({ 
             message: 'Commande enregistrée', 
@@ -214,30 +229,30 @@ app.post('/api/order', async (req, res) => {
 // ========== ROUTES ADMIN (protégées) ==========
 
 // Récupérer toutes les commandes
-app.get('/api/admin/orders', authenticateToken, isAdmin, (req, res) => {
-    const orders = readOrders();
-    res.json(orders);
+app.get('/api/admin/orders', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ date: -1 });
+        res.json(orders);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Mettre à jour statut
-app.put('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
+app.put('/api/admin/orders/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const orderId = parseInt(req.params.id);
         const { status } = req.body;
         
-        const orders = readOrders();
-        const index = orders.findIndex(o => o.id === orderId);
+        const order = await Order.findOne({ id: orderId });
         
-        if (index === -1) {
+        if (!order) {
             return res.status(404).json({ error: 'Commande non trouvée' });
         }
         
-        const oldStatus = orders[index].status;
-        orders[index].status = status;
-        writeOrders(orders);
-        
-        // Logger le changement de statut
-        logOrderAction('STATUS_UPDATE', orderId, { oldStatus, newStatus: status });
+        const oldStatus = order.status;
+        order.status = status;
+        await order.save();
         
         res.json({ message: 'Statut mis à jour' });
         
@@ -247,35 +262,20 @@ app.put('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
     }
 });
 
-// Supprimer commande - VERSION AVEC LOGS
-app.delete('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
+// Supprimer commande
+app.delete('/api/admin/orders/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const orderId = parseInt(req.params.id);
         
-        const orders = readOrders();
-        const orderToDelete = orders.find(o => o.id === orderId);
+        const order = await Order.findOne({ id: orderId });
         
-        if (!orderToDelete) {
+        if (!order) {
             return res.status(404).json({ error: 'Commande non trouvée' });
         }
         
-        // Sauvegarder les infos de la commande avant suppression
-        const deletedOrder = { ...orderToDelete };
+        await Order.deleteOne({ id: orderId });
         
-        // Filtrer pour supprimer
-        const newOrders = orders.filter(o => o.id !== orderId);
-        writeOrders(newOrders);
-        
-        // Logger la suppression
-        logOrderAction('DELETE', orderId, { 
-            deletedOrder: deletedOrder,
-            deletedBy: req.user.email 
-        });
-        
-        res.json({ 
-            message: 'Commande supprimée',
-            deletedOrder: deletedOrder 
-        });
+        res.json({ message: 'Commande supprimée' });
         
     } catch (error) {
         console.error('❌ Erreur suppression:', error);
@@ -284,9 +284,9 @@ app.delete('/api/admin/orders/:id', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Statistiques
-app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
+app.get('/api/admin/stats', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const orders = readOrders();
+        const orders = await Order.find();
         
         const totalOrders = orders.length;
         const totalRevenue = orders.reduce((sum, o) => {
@@ -300,112 +300,14 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, (req, res) => {
             'annulé': orders.filter(o => o.status === 'annulé').length
         };
         
+        const lastOrders = await Order.find().sort({ date: -1 }).limit(10);
+        
         res.json({
             totalOrders,
             totalRevenue,
             statusCount,
-            lastOrders: orders.slice(-10).reverse()
+            lastOrders
         });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ========== ROUTES DE DEBUG ==========
-
-// 1. VOIR l'état actuel
-app.get('/api/debug-auth', (req, res) => {
-    const users = fs.existsSync(usersFile) ? readUsers() : [];
-    const admin = users.find(u => u.email === process.env.ADMIN_EMAIL);
-    
-    res.json({
-        env: {
-            adminEmail: process.env.ADMIN_EMAIL,
-            adminPasswordDefined: !!process.env.ADMIN_PASSWORD
-        },
-        file: {
-            usersFileExists: fs.existsSync(usersFile),
-            usersCount: users.length
-        },
-        admin: admin ? {
-            email: admin.email,
-            role: admin.role,
-            hash: admin.password.substring(0, 20) + '...'
-        } : null
-    });
-});
-
-// 2. CRÉER un nouvel admin
-app.get('/api/create-admin', async (req, res) => {
-    try {
-        if (!process.env.ADMIN_PASSWORD) {
-            return res.status(500).json({ error: 'ADMIN_PASSWORD non défini dans les variables d\'environnement' });
-        }
-        
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
-        
-        const newAdmin = [{
-            id: 1,
-            email: process.env.ADMIN_EMAIL,
-            password: hash,
-            role: 'admin',
-            createdAt: new Date().toISOString()
-        }];
-        
-        fs.writeFileSync(usersFile, JSON.stringify(newAdmin, null, 2));
-        
-        res.json({ 
-            success: true, 
-            message: '✅ Admin créé avec succès',
-            email: process.env.ADMIN_EMAIL,
-            password: process.env.ADMIN_PASSWORD
-        });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 3. TESTER la connexion
-app.get('/api/test-login/:password', async (req, res) => {
-    try {
-        if (!fs.existsSync(usersFile)) {
-            return res.json({ error: 'users.json n\'existe pas' });
-        }
-        
-        const testPassword = req.params.password;
-        const users = readUsers();
-        const admin = users.find(u => u.email === process.env.ADMIN_EMAIL);
-        
-        if (!admin) {
-            return res.json({ error: 'Admin non trouvé' });
-        }
-        
-        const valid = await bcrypt.compare(testPassword, admin.password);
-        
-        res.json({
-            email: admin.email,
-            passwordTested: testPassword,
-            isValid: valid,
-            storedHash: admin.password.substring(0, 20) + '...'
-        });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 4. VOIR LES LOGS DES COMMANDES (admin seulement)
-app.get('/api/admin/debug/orders-log', authenticateToken, isAdmin, (req, res) => {
-    try {
-        if (!fs.existsSync(logsFile)) {
-            return res.json({ message: 'Aucun log trouvé', logs: [] });
-        }
-        
-        const logs = JSON.parse(fs.readFileSync(logsFile));
-        res.json({ logs });
         
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -413,73 +315,22 @@ app.get('/api/admin/debug/orders-log', authenticateToken, isAdmin, (req, res) =>
 });
 
 // ========== ROUTE POUR L'HISTORIQUE CLIENT ==========
-app.get('/api/orders/user/:pubgId', (req, res) => {
+app.get('/api/orders/user/:pubgId', async (req, res) => {
     try {
         const pubgId = req.params.pubgId;
         
         console.log(`📤 Recherche des commandes pour ID PUBG: ${pubgId}`);
         
-        if (!fs.existsSync(ordersFile)) {
-            return res.json([]);
-        }
+        const orders = await Order.find({ pubgId }).sort({ date: -1 });
         
-        const orders = readOrders();
+        console.log(`📥 ${orders.length} commandes trouvées pour ${pubgId}`);
         
-        if (!Array.isArray(orders)) {
-            return res.json([]);
-        }
-        
-        const userOrders = orders.filter(order => order.pubgId === pubgId);
-        const sortedOrders = userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        console.log(`📥 ${sortedOrders.length} commandes trouvées pour ${pubgId}`);
-        
-        res.json(sortedOrders);
+        res.json(orders);
         
     } catch (error) {
         console.error('❌ Erreur historique client:', error);
         res.json([]);
     }
-});
-
-
-// ========== ROUTES DE SAUVEGARDE ==========
-app.get('/api/admin/backup', authenticateToken, isAdmin, (req, res) => {
-    const orders = readOrders();
-    const backup = {
-        timestamp: new Date().toISOString(),
-        orders: orders,
-        count: orders.length
-    };
-    
-    // Sauvegarder dans un fichier
-    const backupFile = path.join(__dirname, `backup-${Date.now()}.json`);
-    fs.writeFileSync(backupFile, JSON.stringify(backup, null, 2));
-    
-    res.json({ 
-        message: '✅ Backup créé', 
-        file: backupFile,
-        count: orders.length 
-    });
-});
-
-app.post('/api/admin/restore', authenticateToken, isAdmin, (req, res) => {
-    const { backupData } = req.body;
-    
-    if (backupData && backupData.orders) {
-        writeOrders(backupData.orders);
-        res.json({ message: '✅ Données restaurées', count: backupData.orders.length });
-    } else {
-        res.status(400).json({ error: 'Données de backup invalides' });
-    }
-});
-
-// Route pour exporter en JSON
-app.get('/api/admin/export', authenticateToken, isAdmin, (req, res) => {
-    const orders = readOrders();
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename=orders-export.json');
-    res.json(orders);
 });
 
 // ========== ROUTES STATIQUES ==========
@@ -512,8 +363,6 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route non trouvée' });
 });
 
-
-
 // ========== DÉMARRAGE DU SERVEUR ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
@@ -521,8 +370,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Serveur démarré sur le port ${PORT}`);
     console.log(`🌐 Site: https://magicgame.store`);
     console.log(`🔐 Admin: https://magicgame.store/admin/admin.html`);
-    console.log(`📊 Debug: https://magicgame.store/api/debug-auth`);
-    console.log(`🛠️  Create Admin: https://magicgame.store/api/create-admin`);
-    console.log(`📝 Logs: https://magicgame.store/api/admin/debug/orders-log`);
+    console.log(`📊 MongoDB: Connecté`);
     console.log(`=====================================\n`);
 });
