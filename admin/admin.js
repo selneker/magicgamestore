@@ -328,7 +328,7 @@ function logout() {
     showNotification('Déconnexion réussie', 'success');
 }
 
-// ========== CHARGEMENT DES DONNÉES ==========
+// ========== CHARGEMENT DES COMMANDES (VERSION AMÉLIORÉE) ==========
 function loadOrders() {
     if (!token) {
         console.log('⛔ Pas de token');
@@ -345,35 +345,41 @@ function loadOrders() {
     })
     .then(res => {
         console.log('📥 Réponse status:', res.status);
-        if (res.status === 401) {
+        
+        // Si token invalide ou expiré
+        if (res.status === 401 || res.status === 403) {
+            console.log('⛔ Token invalide ou expiré');
             logout();
+            showNotification('Session expirée - Veuillez vous reconnecter', 'error');
             throw new Error('Non autorisé');
         }
+        
+        if (!res.ok) {
+            throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+        
         return res.json();
     })
     .then(data => {
-        console.log(`📥 ${data.length} commandes reçues`);
-        orders = data;
-        displayOrders(data);
+        console.log(`📥 Données reçues:`, data);
+        
+        // Vérifier que data est un tableau
+        if (Array.isArray(data)) {
+            orders = data;
+            displayOrders(data);
+        } else {
+            console.error('❌ Données non tableau:', data);
+            orders = [];
+            displayOrders([]);
+        }
     })
-    .catch(err => console.error('❌ Erreur chargement commandes:', err));
-}
-
-function loadStats() {
-    if (!token) return;
-
-    fetch(`${BASE_URL}/api/admin/stats`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log('📊 Stats:', data);
-        document.getElementById('totalOrders').textContent = data.totalOrders || 0;
-        document.getElementById('totalRevenue').textContent = (data.totalRevenue || 0).toLocaleString() + ' Ar';
-        document.getElementById('pendingOrders').textContent = data.statusCount?.['en attente'] || 0;
-        document.getElementById('deliveredOrders').textContent = data.statusCount?.['livré'] || 0;
-    })
-    .catch(err => console.error('❌ Erreur chargement stats:', err));
+    .catch(err => {
+        console.error('❌ Erreur chargement commandes:', err);
+        showNotification('Erreur chargement commandes', 'error');
+        
+        // Afficher tableau vide en cas d'erreur
+        displayOrders([]);
+    });
 }
 
 
@@ -414,96 +420,112 @@ function fallbackCopy(text) {
 }
 
 
-// ========== AFFICHAGE DES COMMANDES AVEC NOUVEAUX STYLES ==========
+// ========== AFFICHAGE DES COMMANDES (VERSION ROBUSTE) ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
-    if (!ordersToShow || ordersToShow.length === 0) {
+    // Vérifier que ordersToShow est bien un tableau
+    if (!ordersToShow || !Array.isArray(ordersToShow)) {
+        console.error('❌ Données invalides:', ordersToShow);
+        tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur: Données invalides</td></tr>';
+        return;
+    }
+    
+    if (ordersToShow.length === 0) {
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Aucune commande</td></tr>';
         return;
     }
 
-    tbody.innerHTML = ordersToShow.map(order => {
-        // Déterminer l'icône de statut
-        let statusIcon = '';
-        let statusClass = '';
-        
-        switch(order.status) {
-            case 'en attente':
-                statusIcon = '⏳';
-                statusClass = 'status-en-attente';
-                break;
-            case 'livré':
-                statusIcon = '✓';
-                statusClass = 'status-livré';
-                break;
-            case 'annulé':
-                statusIcon = '✗';
-                statusClass = 'status-annulé';
-                break;
-            default:
-                statusIcon = '•';
-                statusClass = 'status-en-attente';
-        }
+    try {
+        tbody.innerHTML = ordersToShow.map(order => {
+            // Vérifier que order est valide
+            if (!order || typeof order !== 'object') {
+                return '';
+            }
+            
+            // Déterminer l'icône de statut
+            let statusIcon = '';
+            let statusClass = '';
+            
+            switch(order.status) {
+                case 'en attente':
+                    statusIcon = '⏳';
+                    statusClass = 'status-en-attente';
+                    break;
+                case 'livré':
+                    statusIcon = '✓';
+                    statusClass = 'status-livré';
+                    break;
+                case 'annulé':
+                    statusIcon = '✗';
+                    statusClass = 'status-annulé';
+                    break;
+                default:
+                    statusIcon = '•';
+                    statusClass = 'status-en-attente';
+            }
 
-        return `
-        <tr>
-            <td>#${order.id}</td>
-            <td>${new Date(order.date).toLocaleString()}</td>
-            <td>
-                <div class="copy-cell">
-                    <span>${order.pubgId || ''}</span>
-                    <button class="icon-btn copy-id-btn" 
-                            onclick="copyToClipboard('${order.pubgId || ''}')" 
-                            title="Copier l'ID">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-            </td>
-            <td>${order.pseudo || ''}</td>
-            <td>${order.pack || ''}</td>
-            <td>${order.price || ''}</td>
-            <td>${order.paymentMethod || ''}</td>
-            <td>
-                <div class="copy-cell">
-                    <span>${order.reference || ''}</span>
-                    <button class="icon-btn copy-ref-btn" 
-                            onclick="copyToClipboard('${order.reference || ''}')" 
-                            title="Copier la référence">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-            </td>
-            <td>
-                <span class="status-badge ${statusClass}">
-                    <i class="fas ${statusIcon}"></i> ${order.status || 'en attente'}
-                </span>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    ${order.status !== 'livré' ? 
-                        `<button class="icon-btn deliver-btn" 
-                                onclick="updateStatus(${order.id}, 'livré')"
-                                title="Livrer">
-                            <i class="fas fa-check"></i>
-                        </button>` : ''}
-                    ${order.status !== 'annulé' && order.status !== 'livré' ? 
-                        `<button class="icon-btn cancel-btn" 
-                                onclick="updateStatus(${order.id}, 'annulé')"
-                                title="Annuler">
-                            <i class="fas fa-times"></i>
-                        </button>` : ''}
-                    <button class="icon-btn delete-btn" 
-                            onclick="deleteOrder(${order.id})"
-                            title="Supprimer">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `}).join('');
+            return `
+            <tr>
+                <td>#${order.id || 'N/A'}</td>
+                <td>${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</td>
+                <td>
+                    <div class="copy-cell">
+                        <span>${order.pubgId || ''}</span>
+                        <button class="icon-btn copy-id-btn" 
+                                onclick="copyToClipboard('${order.pubgId || ''}', 'ID')" 
+                                title="Copier l'ID">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>${order.pseudo || ''}</td>
+                <td>${order.pack || ''}</td>
+                <td>${order.price || ''}</td>
+                <td>${order.paymentMethod || ''}</td>
+                <td>
+                    <div class="copy-cell">
+                        <span>${order.reference || ''}</span>
+                        <button class="icon-btn copy-ref-btn" 
+                                onclick="copyToClipboard('${order.reference || ''}', 'référence')" 
+                                title="Copier la référence">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">
+                        <i class="fas ${statusIcon}"></i> ${order.status || 'en attente'}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        ${order.status !== 'livré' ? 
+                            `<button class="icon-btn deliver-btn" 
+                                    onclick="updateStatus(${order.id}, 'livré')"
+                                    title="Livrer">
+                                <i class="fas fa-check"></i>
+                            </button>` : ''}
+                        ${order.status !== 'annulé' && order.status !== 'livré' ? 
+                            `<button class="icon-btn cancel-btn" 
+                                    onclick="updateStatus(${order.id}, 'annulé')"
+                                    title="Annuler">
+                                <i class="fas fa-times"></i>
+                            </button>` : ''}
+                        <button class="icon-btn delete-btn" 
+                                onclick="deleteOrder(${order.id})"
+                                title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `}).join('');
+    } catch (error) {
+        console.error('❌ Erreur affichage:', error);
+        tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur d\'affichage</td></tr>';
+    }
 }
-
 
 
 // ========== FILTRES ==========
