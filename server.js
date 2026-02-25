@@ -19,12 +19,17 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ========== CONNEXION MONGODB ATLAS ==========
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://magicgame:TON_MDP@cluster0.xxxxx.mongodb.net/magicgame';
+const MONGODB_URI = process.env.MONGODB_URI;
 
-mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+if (!MONGODB_URI) {
+    console.error('❌ ERREUR CRITIQUE: MONGODB_URI non définie dans les variables d\'environnement');
+    console.error('👉 Va sur Render Dashboard → Environment → Ajoute:');
+    console.error('   MONGODB_URI=mongodb+srv://Selneker:%23322%2Astr%28Dino%29%23@magicgamestore.ja8rxah.mongodb.net/');
+    process.exit(1);
+}
+
+// Connexion SANS les options dépréciées
+mongoose.connect(MONGODB_URI);
 
 mongoose.connection.on('connected', () => {
     console.log('✅ Connecté à MongoDB Atlas');
@@ -69,7 +74,6 @@ userSchema.pre('save', async function(next) {
 });
 
 const User = mongoose.model('User', userSchema);
-
 // ========== MIDDLEWARE ==========
 app.use(helmet({
     contentSecurityPolicy: false,
@@ -320,7 +324,7 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
         const pubgId = req.params.pubgId;
         
         console.log(`📤 Recherche des commandes pour ID PUBG: ${pubgId}`);
-        
+    
         const orders = await Order.find({ pubgId }).sort({ date: -1 });
         
         console.log(`📥 ${orders.length} commandes trouvées pour ${pubgId}`);

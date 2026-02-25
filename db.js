@@ -1,14 +1,17 @@
 // db.js - Configuration MongoDB
 const mongoose = require('mongoose');
 
-// Récupère l'URL depuis les variables d'environnement
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Selneker:#322*str(Dino)#@magicgamestore.ja8rxah.mongodb.net/';
+// Récupère l'URL depuis les variables d'environnement UNIQUEMENT
+const MONGODB_URI = process.env.MONGODB_URI;
 
-// Connexion
-mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+if (!MONGODB_URI) {
+    console.error('❌ ERREUR CRITIQUE: MONGODB_URI non définie dans les variables d\'environnement');
+    console.error('👉 Va sur Render Dashboard → Environment → Ajoute MONGODB_URI');
+    process.exit(1); // Arrête le serveur si pas d'URL
+}
+
+// Connexion SANS les options dépréciées
+mongoose.connect(MONGODB_URI);
 
 // Gestionnaire d'événements
 mongoose.connection.on('connected', () => {
@@ -17,6 +20,17 @@ mongoose.connection.on('connected', () => {
 
 mongoose.connection.on('error', (err) => {
     console.error('❌ Erreur MongoDB:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('⚠️ Déconnecté de MongoDB');
+});
+
+// Pour fermer proprement la connexion
+process.on('SIGINT', async () => {
+    await mongoose.connection.close();
+    console.log('🔌 Connexion MongoDB fermée');
+    process.exit(0);
 });
 
 module.exports = mongoose;

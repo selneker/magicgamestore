@@ -150,6 +150,21 @@ function validateOrder() {
 }
 
 // ===========================================
+// FONCTIONS DE VALIDATION ID PUBG
+// ===========================================
+
+/**
+ * Valide un ID PUBG (5-20 chiffres)
+ */
+function validatePubgId(pubgId) {
+    if (!pubgId) return { valid: false, message: 'ID PUBG requis' };
+    if (!/^\d+$/.test(pubgId)) return { valid: false, message: 'ID PUBG ne doit contenir que des chiffres' };
+    if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (minimum 5 chiffres)' };
+    if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (maximum 20 chiffres)' };
+    return { valid: true };
+}
+
+// ===========================================
 // FONCTIONS DE PAIEMENT DIRECT MVOLA
 // ===========================================
 
@@ -211,6 +226,7 @@ function initMvolaDirectButton() {
 
 /**
  * Fonction appelée quand on clique sur le bouton de paiement direct
+ * Version corrigée avec validation 5-20 chiffres
  */
 window.handleMvolaDirectClick = function(pack, price) {
     // Vérifier que l'ID PUBG et le pseudo sont remplis
@@ -222,8 +238,10 @@ window.handleMvolaDirectClick = function(pack, price) {
         return false;
     }
     
-    if (pubgId.length !== 11 || !/^\d+$/.test(pubgId)) {
-        alert('❌ L\'ID PUBG doit contenir 11 chiffres');
+    // ✅ NOUVELLE VALIDATION 5-20 chiffres
+    const validation = validatePubgId(pubgId);
+    if (!validation.valid) {
+        alert('❌ ' + validation.message);
         return false;
     }
     
