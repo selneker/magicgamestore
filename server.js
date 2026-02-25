@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const mongoose = require('mongoose'); // AJOUTÉ
+const mongoose = require('mongoose');
 
 // Charger variables d'environnement
 dotenv.config();
@@ -18,68 +18,11 @@ const app = express();
 // ========= CONFIANCE AU PROXY DE RENDER ========
 app.set('trust proxy', 1);
 
-// ========== CONNEXION MONGODB ATLAS ==========
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-    console.error('❌ ERREUR CRITIQUE: MONGODB_URI non définie dans les variables d\'environnement');
-    console.error('👉 Va sur Render Dashboard → Environment → Ajoute:');
-    console.error('   MONGODB_URI=mongodb+srv://Selneker:%23322%2Astr%28Dino%29%23@magicgamestore.ja8rxah.mongodb.net/');
-    process.exit(1);
-}
-
-// Connexion SANS les options dépréciées
-mongoose.connect(MONGODB_URI);
-
-mongoose.connection.on('connected', () => {
-    console.log('✅ Connecté à MongoDB Atlas');
-});
-
-mongoose.connection.on('error', (err) => {
-    console.error('❌ Erreur MongoDB:', err);
-});
-
-// ========== MODÈLES MONGODB ==========
-
-// Schéma pour les commandes
-const orderSchema = new mongoose.Schema({
-    id: { type: Number, required: true, unique: true },
-    date: { type: Date, default: Date.now },
-    pubgId: { type: String, required: true },
-    pseudo: { type: String, required: true },
-    pack: { type: String, required: true },
-    price: { type: String, required: true },
-    paymentMethod: { type: String, default: 'MVola' },
-    reference: { type: String, required: true },
-    status: { type: String, default: 'en attente' }
-});
-
-const Order = mongoose.model('Order', orderSchema);
-
-// Schéma pour les utilisateurs
-const userSchema = new mongoose.Schema({
-    id: { type: Number, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, default: 'admin' },
-    createdAt: { type: Date, default: Date.now }
-});
-
-// Hash le mot de passe avant sauvegarde
-userSchema.pre('save', async function(next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 10);
-    }
-    next();
-});
-
-const User = mongoose.model('User', userSchema);
 // ========== MIDDLEWARE ==========
 app.use(helmet({
     contentSecurityPolicy: false,
 }));
 
-// CORS
 app.use(cors({
     origin: [
         'https://magicgame.store', 
@@ -101,7 +44,57 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// ========== FONCTIONS UTILITAIRES POUR MONGODB ==========
+// ========== CONNEXION MONGODB ATLAS ==========
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+    console.error('❌ ERREUR: MONGODB_URI non définie');
+    process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI);
+
+mongoose.connection.on('connected', () => {
+    console.log('✅ Connecté à MongoDB Atlas');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('❌ Erreur MongoDB:', err);
+});
+
+// ========== MODÈLES MONGODB ==========
+const orderSchema = new mongoose.Schema({
+    id: { type: Number, required: true, unique: true },
+    date: { type: Date, default: Date.now },
+    pubgId: { type: String, required: true },
+    pseudo: { type: String, required: true },
+    pack: { type: String, required: true },
+    price: { type: String, required: true },
+    paymentMethod: { type: String, default: 'MVola' },
+    reference: { type: String, required: true },
+    status: { type: String, default: 'en attente' }
+});
+
+const Order = mongoose.model('Order', orderSchema);
+
+const userSchema = new mongoose.Schema({
+    id: { type: Number, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'admin' },
+    createdAt: { type: Date, default: Date.now }
+});
+
+userSchema.pre('save', async function(next) {
+    if (this.isModified('password')) {
+        this.password = await bcrypt.hash(this.password, 10);
+    }
+    next();
+});
+
+const User = mongoose.model('User', userSchema);
+
+// ========== FONCTIONS UTILITAIRES ==========
 async function initializeAdmin() {
     try {
         const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
@@ -121,8 +114,30 @@ async function initializeAdmin() {
     }
 }
 
-// Initialiser l'admin au démarrage
 initializeAdmin();
+
+// ========== FONCTION DE LOGGING ==========
+function logOrderAction(action, orderId, details = {}) {
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        action: action,
+        orderId: orderId,
+        ...details
+    };
+    
+    console.log(`📝 [LOG] ${action} - Commande #${orderId}`, details);
+    
+    try {
+        const logsFile = path.join(__dirname, 'orders.log');
+        const logs = fs.existsSync(logsFile) 
+            ? JSON.parse(fs.readFileSync(logsFile)) 
+            : [];
+        logs.push(logEntry);
+        fs.writeFileSync(logsFile, JSON.stringify(logs, null, 2));
+    } catch (error) {
+        console.error('❌ Erreur écriture log:', error);
+    }
+}
 
 // ========== MIDDLEWARE AUTH ==========
 function authenticateToken(req, res, next) {
@@ -194,7 +209,6 @@ app.post('/api/order', async (req, res) => {
     try {
         const { pubgId, pseudo, pack, price, paymentMethod, reference } = req.body;
 
-        // Validation
         if (!pubgId || !pseudo || !pack || !price || !paymentMethod || !reference) {
             return res.status(400).json({ error: 'Tous les champs sont requis' });
         }
@@ -204,7 +218,6 @@ app.post('/api/order', async (req, res) => {
             return res.status(400).json({ error: validation.message });
         }
 
-        // Créer commande dans MongoDB
         const order = new Order({
             id: Date.now(),
             date: new Date(),
@@ -218,6 +231,8 @@ app.post('/api/order', async (req, res) => {
         });
 
         await order.save();
+
+        logOrderAction('CREATE', order.id, { pubgId, pseudo, pack, price });
 
         res.status(201).json({ 
             message: 'Commande enregistrée', 
@@ -258,10 +273,11 @@ app.put('/api/admin/orders/:id', authenticateToken, isAdmin, async (req, res) =>
         order.status = status;
         await order.save();
         
+        logOrderAction('STATUS_UPDATE', orderId, { oldStatus, newStatus: status });
+        
         res.json({ message: 'Statut mis à jour' });
         
     } catch (error) {
-        console.error('❌ Erreur mise à jour:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -279,10 +295,11 @@ app.delete('/api/admin/orders/:id', authenticateToken, isAdmin, async (req, res)
         
         await Order.deleteOne({ id: orderId });
         
+        logOrderAction('DELETE', orderId, { deletedBy: req.user.email });
+        
         res.json({ message: 'Commande supprimée' });
         
     } catch (error) {
-        console.error('❌ Erreur suppression:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -318,16 +335,16 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ========== ROUTE POUR L'HISTORIQUE CLIENT ==========
+// ========== ROUTES POUR L'HISTORIQUE CLIENT ==========
 app.get('/api/orders/user/:pubgId', async (req, res) => {
     try {
         const pubgId = req.params.pubgId;
         
         console.log(`📤 Recherche des commandes pour ID PUBG: ${pubgId}`);
-    
+        
         const orders = await Order.find({ pubgId }).sort({ date: -1 });
         
-        console.log(`📥 ${orders.length} commandes trouvées pour ${pubgId}`);
+        console.log(`📥 ${orders.length} commandes trouvées`);
         
         res.json(orders);
         
@@ -337,20 +354,132 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
+// ========== ROUTES DE DEBUG ==========
+app.get('/api/debug-auth', (req, res) => {
+    res.json({ 
+        message: 'API OK',
+        env: {
+            adminEmail: process.env.ADMIN_EMAIL,
+            mongoConnected: mongoose.connection.readyState === 1
+        }
+    });
+});
+
+app.get('/api/create-admin', async (req, res) => {
+    try {
+        if (!process.env.ADMIN_PASSWORD) {
+            return res.status(500).json({ error: 'ADMIN_PASSWORD non défini' });
+        }
+        
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
+        
+        const newAdmin = [{
+            id: 1,
+            email: process.env.ADMIN_EMAIL,
+            password: hash,
+            role: 'admin',
+            createdAt: new Date().toISOString()
+        }];
+        
+        fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(newAdmin, null, 2));
+        
+        res.json({ 
+            success: true, 
+            message: '✅ Admin créé',
+            email: process.env.ADMIN_EMAIL
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ========== ROUTES DE SAUVEGARDE ET LOGS ==========
+
+// 1. Exporter les commandes
+app.get('/api/admin/export', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ date: -1 });
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename=orders-export-${Date.now()}.json`);
+        res.json(orders);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 2. Créer un backup
+app.get('/api/admin/backup', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ date: -1 });
+        const backup = {
+            timestamp: new Date().toISOString(),
+            count: orders.length,
+            orders: orders
+        };
+        
+        const backupFile = path.join(__dirname, `backup-${Date.now()}.json`);
+        fs.writeFileSync(backupFile, JSON.stringify(backup, null, 2));
+        
+        res.json({ 
+            message: '✅ Backup créé', 
+            file: path.basename(backupFile),
+            count: orders.length 
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 3. Voir les logs
+app.get('/api/admin/debug/orders-log', authenticateToken, isAdmin, (req, res) => {
+    try {
+        const logsFile = path.join(__dirname, 'orders.log');
+        
+        if (!fs.existsSync(logsFile)) {
+            return res.json({ message: 'Aucun log trouvé', logs: [] });
+        }
+        
+        const logs = JSON.parse(fs.readFileSync(logsFile));
+        res.json({ logs });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 4. Restaurer depuis un backup
+app.post('/api/admin/restore', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { backupData } = req.body;
+        
+        if (!backupData || !backupData.orders) {
+            return res.status(400).json({ error: 'Données de backup invalides' });
+        }
+        
+        // Vider la collection et insérer les nouvelles données
+        await Order.deleteMany({});
+        await Order.insertMany(backupData.orders);
+        
+        res.json({ 
+            message: '✅ Données restaurées', 
+            count: backupData.orders.length 
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========== ROUTES STATIQUES ==========
-
-// Servir l'admin en premier
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
-
-// Servir les fichiers statiques généraux
 app.use(express.static(__dirname));
 
-// Route pour la racine
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route de débogage admin
 app.get('/admin-test', (req, res) => {
     const adminPath = path.join(__dirname, 'admin', 'admin.html');
     const exists = fs.existsSync(adminPath);
@@ -375,5 +504,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🌐 Site: https://magicgame.store`);
     console.log(`🔐 Admin: https://magicgame.store/admin/admin.html`);
     console.log(`📊 MongoDB: Connecté`);
+    console.log(`📝 Routes: /api/admin/export, /api/admin/backup, /api/admin/debug/orders-log`);
     console.log(`=====================================\n`);
 });
