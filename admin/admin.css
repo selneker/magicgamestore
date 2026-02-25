@@ -225,7 +225,7 @@ tr:hover {
     color: #666;
 }
 
-/* ========== NOUVEAUX STYLES ADMIN ========== */
+/* ========== NOUVEAUX STYLES ADMIN - VERSION SOBRE ========== */
 
 /* Boutons d'action en ligne */
 .action-buttons {
@@ -234,11 +234,13 @@ tr:hover {
     justify-content: center;
 }
 
-/* Style des boutons d'action (icônes seulement) */
+/* Style des boutons d'action (icônes seulement) - VERSION SANS COULEURS */
 .icon-btn {
     width: 32px;
     height: 32px;
-    border: none;
+    border: 1px solid #ddd;
+    background: white;
+    color: #666;
     border-radius: 6px;
     cursor: pointer;
     display: flex;
@@ -249,53 +251,31 @@ tr:hover {
 }
 
 .icon-btn:hover {
+    background: #f5f5f5;
+    border-color: #999;
+    color: #333;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.icon-btn.deliver-btn {
-    background: #4CAF50;
-    color: white;
-}
-
-.icon-btn.deliver-btn:hover {
-    background: #45a049;
-}
-
-.icon-btn.cancel-btn {
-    background: #FF9800;
-    color: white;
-}
-
-.icon-btn.cancel-btn:hover {
-    background: #f57c00;
-}
-
-.icon-btn.delete-btn {
-    background: #f44336;
-    color: white;
-}
-
-.icon-btn.delete-btn:hover {
-    background: #d32f2f;
-}
-
-.icon-btn.copy-id-btn {
-    background: #2196F3;
-    color: white;
-}
-
-.icon-btn.copy-id-btn:hover {
-    background: #1976D2;
-}
-
+/* Suppression des couleurs spécifiques */
+.icon-btn.deliver-btn,
+.icon-btn.cancel-btn,
+.icon-btn.delete-btn,
+.icon-btn.copy-id-btn,
 .icon-btn.copy-ref-btn {
-    background: #9C27B0;
-    color: white;
+    background: white;
+    color: #666;
+    border: 1px solid #ddd;
 }
 
+.icon-btn.deliver-btn:hover,
+.icon-btn.cancel-btn:hover,
+.icon-btn.delete-btn:hover,
+.icon-btn.copy-id-btn:hover,
 .icon-btn.copy-ref-btn:hover {
-    background: #7B1FA2;
+    background: #f5f5f5;
+    color: #333;
 }
 
 /* Badges de statut modernes */
@@ -315,26 +295,14 @@ tr:hover {
     color: #E65100;
 }
 
-.status-en-attente i {
-    color: #FF9800;
-}
-
 .status-livré {
     background: #E8F5E9;
     color: #2E7D32;
 }
 
-.status-livré i {
-    color: #4CAF50;
-}
-
 .status-annulé {
     background: #FFEBEE;
     color: #C62828;
-}
-
-.status-annulé i {
-    color: #f44336;
 }
 
 /* Style pour les boutons de copie dans le tableau */
@@ -567,7 +535,7 @@ tr:hover {
         font-weight: 600;
     }
     
-    /* Boutons d'action */
+    /* Boutons d'action sans couleurs */
     .action-buttons {
         display: flex;
         gap: 8px;
@@ -579,6 +547,13 @@ tr:hover {
         height: 36px;
         border-radius: 8px;
         font-size: 16px;
+        background: white;
+        color: #666;
+        border: 1px solid #ddd;
+    }
+    
+    .icon-btn:hover {
+        background: #f5f5f5;
     }
     
     /* Style spécial pour l'ID de commande */
@@ -603,7 +578,7 @@ tr:hover {
     .action-btn,
     .filter-btn,
     .refresh-btn {
-        min-height: 44px; /* Taille minimale recommandée pour le touch */
+        min-height: 44px;
     }
     
     .icon-btn {
@@ -612,7 +587,7 @@ tr:hover {
     
     input,
     select {
-        font-size: 16px !important; /* Empêche le zoom sur iOS */
+        font-size: 16px !important;
     }
     
     /* Animation pour les boutons sur mobile */
