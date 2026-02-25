@@ -41,14 +41,89 @@ const API_URL = (() => {
 console.log('🌐 API URL:', API_URL);
 
 // ===========================================
+// SAUVEGARDE DE SESSION POUR LE PACK CHOISI
+// ===========================================
+
+/**
+ * Sauvegarde le pack sélectionné par l'utilisateur
+ * Valable 30 minutes
+ */
+function saveSelectedPack(pack, price) {
+    const selectedPack = {
+        pack: pack,
+        price: price,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + (30 * 60 * 1000) // 30 minutes
+    };
+    
+    localStorage.setItem('selectedPack', JSON.stringify(selectedPack));
+    console.log('💾 Pack sauvegardé:', pack);
+}
+
+/**
+ * Restaure le pack sauvegardé s'il n'a pas expiré
+ */
+function restoreSelectedPack() {
+    const saved = localStorage.getItem('selectedPack');
+    
+    if (!saved) return null;
+    
+    try {
+        const selectedPack = JSON.parse(saved);
+        
+        // Vérifier si le pack a expiré (plus de 30 minutes)
+        if (selectedPack.expiresAt && selectedPack.expiresAt < Date.now()) {
+            console.log('⏰ Pack expiré (plus de 30 minutes)');
+            localStorage.removeItem('selectedPack');
+            return null;
+        }
+        
+        console.log('🔄 Pack restauré:', selectedPack);
+        return selectedPack;
+        
+    } catch (error) {
+        console.error('❌ Erreur restauration:', error);
+        localStorage.removeItem('selectedPack');
+        return null;
+    }
+}
+
+/**
+ * Efface la sélection sauvegardée
+ */
+function clearSelectedPack() {
+    localStorage.removeItem('selectedPack');
+    console.log('🗑️ Sélection effacée');
+}
+
+// ===========================================
 // INITIALISATION
 // ===========================================
 document.addEventListener("DOMContentLoaded", () => {
+    // Appliquer le mode sauvegardé (UC ou Abonnements)
     if (mode === 'abonnements') {
         showAbonnements();
     } else {
         showTarifs();
     }
+    
+    // Restaurer le pack si existant
+    const savedPack = restoreSelectedPack();
+    if (savedPack) {
+        // Afficher une notification
+        showToast('🔄 Votre sélection a été restaurée', 'info');
+        
+        // Remplir les informations
+        OrderPack.textContent = savedPack.pack;
+        OrderPrice.textContent = savedPack.price;
+        
+        // Ouvrir la modale automatiquement après un court délai
+        setTimeout(() => {
+            openModal(modalInfo);
+        }, 1000);
+    }
+    
+    // Initialiser les écouteurs
     initEventListeners();
 });
 
@@ -110,9 +185,13 @@ function closeAllModals() {
     modalPay.style.display = 'none';
     document.body.style.overflow = 'auto';
     
+    // Vider les inputs
     if (pubgIdInput) pubgIdInput.value = '';
     if (pseudoInput) pseudoInput.value = '';
     if (referenceInput) referenceInput.value = '';
+    
+    // Effacer la sélection sauvegardée quand la modale est fermée
+    clearSelectedPack();
 }
 
 function showToast(message, type = 'success') {
@@ -273,7 +352,6 @@ function submitOrder() {
         return;
     }
     
-    
     // La référence MVola est obligatoire
     if (!reference) {
         showToast('Veuillez entrer la référence MVola reçue par SMS', 'error');
@@ -307,6 +385,7 @@ function submitOrder() {
             showToast('Erreur : ' + data.error, 'error');
         } else {
             showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
+            clearSelectedPack(); // Effacer après achat réussi
             closeAllModals();
         }
     })
@@ -337,11 +416,18 @@ function initEventListeners() {
         });
     }
     
-    // Boutons acheter
+    // Boutons acheter - MODIFIÉ POUR SAUVEGARDER LE PACK
     acheterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            OrderPack.textContent = btn.dataset.pack;
-            OrderPrice.textContent = btn.dataset.price;
+            const pack = btn.dataset.pack;
+            const price = btn.dataset.price;
+            
+            // Sauvegarder le pack choisi
+            saveSelectedPack(pack, price);
+            
+            OrderPack.textContent = pack;
+            OrderPrice.textContent = price;
+            
             openModal(modalInfo);
         });
     });
