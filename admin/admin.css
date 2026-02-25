@@ -246,3 +246,187 @@ tr:hover {
             justify-content: center;
         }
     }
+
+
+/* ========== NOUVEAUX STYLES ADMIN ========== */
+
+/* Boutons d'action en ligne */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+/* Style des boutons d'action (icônes seulement) */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.icon-btn.deliver-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.icon-btn.deliver-btn:hover {
+    background: #45a049;
+}
+
+.icon-btn.cancel-btn {
+    background: #FF9800;
+    color: white;
+}
+
+.icon-btn.cancel-btn:hover {
+    background: #f57c00;
+}
+
+.icon-btn.delete-btn {
+    background: #f44336;
+    color: white;
+}
+
+.icon-btn.delete-btn:hover {
+    background: #d32f2f;
+}
+
+.icon-btn.copy-id-btn {
+    background: #2196F3;
+    color: white;
+}
+
+.icon-btn.copy-id-btn:hover {
+    background: #1976D2;
+}
+
+.icon-btn.copy-ref-btn {
+    background: #9C27B0;
+    color: white;
+}
+
+.icon-btn.copy-ref-btn:hover {
+    background: #7B1FA2;
+}
+
+/* Badges de statut modernes */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+}
+
+.status-en-attente {
+    background: #FFF3E0;
+    color: #E65100;
+}
+
+.status-en-attente i {
+    color: #FF9800;
+}
+
+.status-livré {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.status-livré i {
+    color: #4CAF50;
+}
+
+.status-annulé {
+    background: #FFEBEE;
+    color: #C62828;
+}
+
+.status-annulé i {
+    color: #f44336;
+}
+
+/* Style pour les boutons de copie dans le tableau */
+.copy-cell {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.copy-cell span {
+    font-family: monospace;
+    background: #f5f5f5;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Tooltip pour les boutons */
+.icon-btn {
+    position: relative;
+}
+
+.icon-btn:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+/* Style pour le tableau */
+.table-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-container th {
+    background: #2c3e50;
+    color: white;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.table-container td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+.table-container tr:hover {
+    background: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .copy-cell {
+        flex-direction: column;
+    }
+}

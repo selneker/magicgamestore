@@ -306,7 +306,7 @@ function login() {
             loadOrders();
             loadStats();
             startAutoRefresh();
-            showNotification('✅ Connexion réussie', 'success');
+            showNotification('Connexion réussie', 'success');
         } else {
             document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
             showNotification(data.error || 'Erreur de connexion', 'error');
@@ -325,7 +325,7 @@ function logout() {
     token = null;
     document.getElementById('loginSection').style.display = 'flex';
     document.getElementById('adminSection').style.display = 'none';
-    showNotification('👋 Déconnexion réussie', 'success');
+    showNotification('Déconnexion réussie', 'success');
 }
 
 // ========== CHARGEMENT DES DONNÉES ==========
@@ -376,7 +376,7 @@ function loadStats() {
     .catch(err => console.error('❌ Erreur chargement stats:', err));
 }
 
-// ========== AFFICHAGE DES COMMANDES ==========
+// ========== AFFICHAGE DES COMMANDES AVEC NOUVEAUX STYLES ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
@@ -385,38 +385,85 @@ function displayOrders(ordersToShow) {
         return;
     }
 
-    tbody.innerHTML = ordersToShow.map(order => `
+    tbody.innerHTML = ordersToShow.map(order => {
+        // Déterminer l'icône de statut
+        let statusIcon = '';
+        let statusClass = '';
+        
+        switch(order.status) {
+            case 'en attente':
+                statusIcon = '⏳';
+                statusClass = 'status-en-attente';
+                break;
+            case 'livré':
+                statusIcon = '✓';
+                statusClass = 'status-livré';
+                break;
+            case 'annulé':
+                statusIcon = '✗';
+                statusClass = 'status-annulé';
+                break;
+            default:
+                statusIcon = '•';
+                statusClass = 'status-en-attente';
+        }
+
+        return `
         <tr>
             <td>#${order.id}</td>
             <td>${new Date(order.date).toLocaleString()}</td>
-            <td>${order.pubgId || ''}</td>
+            <td>
+                <div class="copy-cell">
+                    <span>${order.pubgId || ''}</span>
+                    <button class="icon-btn copy-id-btn" 
+                            onclick="copyToClipboard('${order.pubgId || ''}')" 
+                            title="Copier l'ID">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </td>
             <td>${order.pseudo || ''}</td>
             <td>${order.pack || ''}</td>
             <td>${order.price || ''}</td>
             <td>${order.paymentMethod || ''}</td>
-            <td>${order.reference || ''}</td>
             <td>
-                <span class="status-badge status-${(order.status || 'en attente').replace(' ', '-')}">
-                    ${order.status === 'en attente' ? '⏳ En attente' : 
-                      order.status === 'livré' ? '✅ Livré' : 
-                      order.status === 'annulé' ? '❌ Annulé' : order.status}
+                <div class="copy-cell">
+                    <span>${order.reference || ''}</span>
+                    <button class="icon-btn copy-ref-btn" 
+                            onclick="copyToClipboard('${order.reference || ''}')" 
+                            title="Copier la référence">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </td>
+            <td>
+                <span class="status-badge ${statusClass}">
+                    <i class="fas ${statusIcon}"></i> ${order.status || 'en attente'}
                 </span>
             </td>
             <td>
-                ${order.status !== 'livré' ? 
-                    `<button class="action-btn deliver-btn" onclick="updateStatus(${order.id}, 'livré')">
-                        Livrer
-                    </button>` : ''}
-                ${order.status !== 'annulé' && order.status !== 'livré' ? 
-                    `<button class="action-btn cancel-btn" onclick="updateStatus(${order.id}, 'annulé')" style="background: #ff9800;">
-                        Annuler
-                    </button>` : ''}
-                <button class="action-btn delete-btn" onclick="deleteOrder(${order.id})">
-                    Suppr
-                </button>
+                <div class="action-buttons">
+                    ${order.status !== 'livré' ? 
+                        `<button class="icon-btn deliver-btn" 
+                                onclick="updateStatus(${order.id}, 'livré')"
+                                title="Livrer">
+                            <i class="fas fa-check"></i>
+                        </button>` : ''}
+                    ${order.status !== 'annulé' && order.status !== 'livré' ? 
+                        `<button class="icon-btn cancel-btn" 
+                                onclick="updateStatus(${order.id}, 'annulé')"
+                                title="Annuler">
+                            <i class="fas fa-times"></i>
+                        </button>` : ''}
+                    <button class="icon-btn delete-btn" 
+                            onclick="deleteOrder(${order.id})"
+                            title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 // ========== FILTRES ==========
