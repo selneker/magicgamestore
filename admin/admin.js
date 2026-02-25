@@ -456,7 +456,7 @@ function fallbackCopy(text, type = '') {
     document.body.removeChild(textarea);
 }
 
-// ========== AFFICHAGE DES COMMANDES ==========
+// ========== AFFICHAGE DES COMMANDES AVEC LABELS POUR MOBILE ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
@@ -475,32 +475,29 @@ function displayOrders(ordersToShow) {
         tbody.innerHTML = ordersToShow.map(order => {
             if (!order || typeof order !== 'object') return '';
             
-            let statusIcon = '';
+            // Déterminer la classe de statut pour la bordure
             let statusClass = '';
+            let statusText = order.status || 'en attente';
             
             switch(order.status) {
                 case 'en attente':
-                    statusIcon = '⏳';
                     statusClass = 'status-en-attente';
                     break;
                 case 'livré':
-                    statusIcon = '✓';
                     statusClass = 'status-livré';
                     break;
                 case 'annulé':
-                    statusIcon = '✗';
                     statusClass = 'status-annulé';
                     break;
                 default:
-                    statusIcon = '•';
                     statusClass = 'status-en-attente';
             }
 
             return `
-            <tr>
-                <td>#${order.id || 'N/A'}</td>
-                <td>${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</td>
-                <td>
+            <tr class="${statusClass}">
+                <td data-label="ID">#${order.id || 'N/A'}</td>
+                <td data-label="Date">${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</td>
+                <td data-label="ID PUBG">
                     <div class="copy-cell">
                         <span>${order.pubgId || ''}</span>
                         <button class="icon-btn copy-id-btn" 
@@ -510,11 +507,11 @@ function displayOrders(ordersToShow) {
                         </button>
                     </div>
                 </td>
-                <td>${order.pseudo || ''}</td>
-                <td>${order.pack || ''}</td>
-                <td>${order.price || ''}</td>
-                <td>${order.paymentMethod || ''}</td>
-                <td>
+                <td data-label="Pseudo">${order.pseudo || ''}</td>
+                <td data-label="Pack">${order.pack || ''}</td>
+                <td data-label="Prix">${order.price || ''}</td>
+                <td data-label="Paiement">${order.paymentMethod || ''}</td>
+                <td data-label="Référence">
                     <div class="copy-cell">
                         <span>${order.reference || ''}</span>
                         <button class="icon-btn copy-ref-btn" 
@@ -524,12 +521,12 @@ function displayOrders(ordersToShow) {
                         </button>
                     </div>
                 </td>
-                <td>
+                <td data-label="Statut">
                     <span class="status-badge ${statusClass}">
                         ${order.status || 'en attente'}
                     </span>
                 </td>
-                <td>
+                <td data-label="Actions">
                     <div class="action-buttons">
                         ${order.status !== 'livré' ? 
                             `<button class="icon-btn deliver-btn" 

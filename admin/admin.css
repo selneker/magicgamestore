@@ -1,3 +1,4 @@
+/* ========== STYLES DE BASE ========== */
 * {
     margin: 0;
     padding: 0;
@@ -9,7 +10,7 @@ body {
     background: #f5f5f5;
 }
 
-/* Login */
+/* ========== LOGIN ========== */
 .login-container {
     height: 100vh;
     display: flex;
@@ -61,7 +62,7 @@ body {
     margin-top: 0.5rem;
 }
 
-/* Admin Header */
+/* ========== ADMIN HEADER ========== */
 .admin-header {
     background: white;
     padding: 1rem 2rem;
@@ -90,7 +91,7 @@ body {
     cursor: pointer;
 }
 
-/* Stats */
+/* ========== STATS ========== */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -122,7 +123,7 @@ body {
     color: #666;
 }
 
-/* Filters */
+/* ========== FILTRES ========== */
 .filters {
     padding: 0 2rem 1rem;
     display: flex;
@@ -147,7 +148,7 @@ body {
     cursor: pointer;
 }
 
-/* Table */
+/* ========== TABLEAU ========== */
 .table-container {
     padding: 0 2rem 2rem;
     overflow-x: auto;
@@ -176,6 +177,7 @@ tr:hover {
     background: #f9f9f9;
 }
 
+/* ========== BADGES DE STATUT ========== */
 .status-badge {
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
@@ -198,6 +200,7 @@ tr:hover {
     color: white;
 }
 
+/* ========== BOUTONS D'ACTION ========== */
 .action-btn {
     padding: 0.3rem 0.8rem;
     margin: 0 0.2rem;
@@ -221,32 +224,6 @@ tr:hover {
     padding: 2rem;
     color: #666;
 }
-
-
- .action-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-    
-    .logout-btn:hover {
-        background: #d32f2f !important;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
-    }
-    
-    @media (max-width: 768px) {
-        .admin-header {
-            flex-direction: column;
-            gap: 15px;
-            text-align: center;
-        }
-        
-        .admin-header div {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-    }
-
 
 /* ========== NOUVEAUX STYLES ADMIN ========== */
 
@@ -420,36 +397,20 @@ tr:hover {
     background: #f8f9fa;
 }
 
-/* Responsive */
+/* ========== MODE COLONNE POUR MOBILE ========== */
+
 @media (max-width: 768px) {
-    .action-buttons {
-        flex-wrap: wrap;
-    }
-    
-    .copy-cell {
-        flex-direction: column;
-    }
-}
-
-
-/* ===========================================
-   ADMIN - VERSION MOBILE AMÉLIORÉE
-   =========================================== */
-
-/* Pour très petits écrans (moins de 600px) */
-@media (max-width: 600px) {
-    
-    /* ========== HEADER ========== */
+    /* Header plus compact */
     .admin-header {
+        padding: 10px 15px;
         flex-direction: column;
-        gap: 15px;
-        padding: 15px 10px;
+        gap: 10px;
         text-align: center;
     }
     
     .admin-header h1 {
-        font-size: 1.3rem;
-        margin-bottom: 5px;
+        font-size: 1.2rem;
+        margin: 0;
     }
     
     .admin-header div {
@@ -458,54 +419,38 @@ tr:hover {
         gap: 8px;
     }
     
-    .admin-header button {
-        padding: 6px 12px;
-        font-size: 0.9rem;
-    }
-    
-    /* ========== STATS CARTES PLUS PETITES ========== */
+    /* Stats plus petites et en ligne */
     .stats-container {
-        display: flex;
-        overflow-x: auto;
-        gap: 10px;
-        padding: 15px 10px;
-        margin: 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
     }
     
     .stat-card {
-        min-width: 130px;
-        padding: 12px;
-        scroll-snap-align: start;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 12px 8px;
+        gap: 8px;
     }
     
     .stat-card i {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
     
     .stat-card h3 {
         font-size: 1.1rem;
-        margin: 5px 0 2px;
+        margin: 0;
     }
     
     .stat-card p {
         font-size: 0.7rem;
-        color: #666;
+        margin: 0;
+        white-space: nowrap;
     }
     
-    /* Cacher les stats moins importantes sur mobile */
-    .stat-card:not(:first-child):not(:nth-child(2)) {
-        opacity: 0.9;
-    }
-    
-    /* ========== FILTRES ========== */
+    /* Filtres plus compacts */
     .filters {
         flex-direction: column;
-        padding: 0 10px 10px;
+        padding: 10px;
         gap: 8px;
     }
     
@@ -513,242 +458,343 @@ tr:hover {
     .filters select {
         width: 100%;
         padding: 10px;
-        font-size: 0.9rem;
+        font-size: 14px;
     }
     
-    .filters button {
+    .refresh-btn {
         width: 100%;
         padding: 10px;
-        font-size: 0.9rem;
     }
     
-    /* ========== TABLEAU ========== */
-    .table-container {
-        padding: 0 10px 15px;
-        overflow-x: auto;
+    /* MODE COLONNE POUR LES COMMANDES */
+    .table-container table,
+    .table-container thead,
+    .table-container tbody,
+    .table-container tr {
+        display: block;
+        width: 100%;
     }
     
-    table {
-        min-width: 800px; /* Force le scroll horizontal */
-        font-size: 0.8rem;
+    /* Cacher l'en-tête du tableau */
+    .table-container thead {
+        display: none;
     }
     
-    th, td {
-        padding: 8px 5px;
-        white-space: nowrap;
+    /* Chaque commande devient une carte */
+    .table-container tbody tr {
+        display: block;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        padding: 15px;
+        border-left: 4px solid #ddd;
     }
     
-    td .copy-cell {
-        min-width: 100px;
+    /* Style pour chaque ligne de données */
+    .table-container tbody tr td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
     }
     
-    td .copy-cell span {
-        max-width: 80px;
+    .table-container tbody tr td:last-child {
+        border-bottom: none;
+    }
+    
+    /* Ajouter des labels avant chaque valeur */
+    .table-container tbody tr td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #666;
+        width: 40%;
+        font-size: 13px;
+    }
+    
+    /* Style spécial pour le statut */
+    .table-container tbody tr td:nth-child(9) {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table-container tbody tr td:nth-child(9)::before {
+        content: "Statut:";
+    }
+    
+    /* Style pour les actions */
+    .table-container tbody tr td:last-child {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        border-bottom: none;
+        padding-top: 12px;
+    }
+    
+    .table-container tbody tr td:last-child::before {
+        display: none;
+    }
+    
+    /* Style pour les cellules de copie */
+    .copy-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .copy-cell span {
+        max-width: 60%;
         overflow: hidden;
         text-overflow: ellipsis;
+        background: #f5f5f5;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-family: monospace;
     }
     
-    /* ========== BOUTONS D'ACTION ========== */
+    /* Badge de statut */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    /* Boutons d'action */
     .action-buttons {
-        gap: 3px;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
     }
     
     .icon-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        font-size: 16px;
     }
     
-    /* ========== BADGES ========== */
-    .status-badge {
-        padding: 3px 6px;
-        font-size: 0.7rem;
+    /* Style spécial pour l'ID de commande */
+    .table-container tbody tr td:first-child {
+        font-size: 16px;
+        font-weight: 700;
+        color: #333;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 12px;
+        margin-bottom: 5px;
     }
     
-    /* ========== LOGS MODAL ========== */
+    .table-container tbody tr td:first-child::before {
+        content: "Commande #";
+        color: #666;
+        font-weight: 600;
+    }
+    
+    /* Amélioration du touch sur mobile */
+    button, 
+    .icon-btn,
+    .action-btn,
+    .filter-btn,
+    .refresh-btn {
+        min-height: 44px; /* Taille minimale recommandée pour le touch */
+    }
+    
+    .icon-btn {
+        min-height: 36px;
+    }
+    
+    input,
+    select {
+        font-size: 16px !important; /* Empêche le zoom sur iOS */
+    }
+    
+    /* Animation pour les boutons sur mobile */
+    .icon-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .refresh-btn:active {
+        transform: scale(0.98);
+    }
+    
+    /* Loader plus petit sur mobile */
+    .loading::after {
+        width: 15px;
+        height: 15px;
+        margin: -7.5px 0 0 -7.5px;
+    }
+}
+
+/* ========== VERSION ENCORE PLUS PETITE ========== */
+@media (max-width: 480px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+    
+    .stat-card {
+        padding: 8px 5px;
+    }
+    
+    .stat-card h3 {
+        font-size: 1rem;
+    }
+    
+    .stat-card p {
+        font-size: 0.65rem;
+    }
+    
+    .admin-header div {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .admin-header button {
+        width: 100%;
+        margin: 2px 0;
+    }
+    
+    .table-container tbody tr td {
+        font-size: 13px;
+        padding: 6px 0;
+    }
+    
+    .table-container tbody tr td::before {
+        width: 35%;
+        font-size: 12px;
+    }
+    
+    .copy-cell {
+        gap: 5px;
+    }
+    
+    .copy-cell span {
+        max-width: 50%;
+        font-size: 12px;
+    }
+    
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    /* Cacher certains champs sur très petit écran */
+    .table-container tbody tr td:nth-child(4), /* Pseudo */
+    .table-container tbody tr td:nth-child(7) /* Payment Method */ {
+        display: none;
+    }
+}
+
+/* ========== COULEURS DE BORDURE SELON STATUT ========== */
+.table-container tbody tr.status-en-attente {
+    border-left-color: #ff9800;
+}
+
+.table-container tbody tr.status-livré {
+    border-left-color: #4CAF50;
+}
+
+.table-container tbody tr.status-annulé {
+    border-left-color: #f44336;
+}
+
+/* ========== MODAL DES LOGS ========== */
+.log-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 10001;
+    overflow: hidden;
+}
+
+.log-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.log-modal-header {
+    padding: 15px 20px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.log-modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.log-modal-body {
+    padding: 20px;
+    overflow: auto;
+    max-height: calc(80vh - 70px);
+}
+
+.log-modal table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.log-modal th {
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: left;
+}
+
+.log-modal td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Responsive pour le modal des logs */
+@media (max-width: 768px) {
     .log-modal {
-        width: 95%;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        width: auto;
         max-width: none;
-        left: 2.5%;
-        right: 2.5%;
-        transform: translateY(-50%);
-        padding: 15px;
+        transform: none;
     }
     
     .log-modal table {
-        min-width: 100%;
         font-size: 0.7rem;
     }
     
     .log-modal th,
     .log-modal td {
-        padding: 5px;
+        padding: 4px 2px;
     }
 }
 
-/* ===========================================
-   TABLETTE (600px - 900px)
-   =========================================== */
-@media (min-width: 601px) and (max-width: 900px) {
-    
+/* ========== MODE PAYSAGE SUR MOBILE ========== */
+@media (max-width: 900px) and (orientation: landscape) {
     .stats-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-    
-    .stat-card {
-        padding: 15px;
-    }
-    
-    .filters {
-        flex-wrap: wrap;
-    }
-    
-    .filters input,
-    .filters select {
-        flex: 1 1 200px;
+        grid-template-columns: repeat(4, 1fr);
     }
     
     .table-container {
-        overflow-x: auto;
+        max-height: 60vh;
+        overflow-y: auto;
     }
-}
-
-/* ===========================================
-   PETITS BUREAU (901px - 1200px)
-   =========================================== */
-@media (min-width: 901px) and (max-width: 1200px) {
-    
-    .stats-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-}
-
-/* ===========================================
-   AMÉLIORATIONS GÉNÉRALES
-   =========================================== */
-
-/* Style pour les cellules avec copie */
-.copy-cell {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.copy-cell span {
-    font-family: monospace;
-    background: #f5f5f5;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-}
-
-.copy-cell span:active {
-    background: #e0e0e0;
-}
-
-/* Animation pour les stats */
-.stat-card {
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    transform: scaleX(0);
-    transition: transform 0.3s;
-}
-
-.stat-card:hover::after {
-    transform: scaleX(1);
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-}
-
-/* Bouton refresh amélioré */
-.refresh-btn {
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 16px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.refresh-btn:hover {
-    background: #5a67d8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.refresh-btn i {
-    transition: transform 0.3s;
-}
-
-.refresh-btn:hover i {
-    transform: rotate(180deg);
-}
-
-/* Scrollbar personnalisée pour mobile */
-@media (max-width: 600px) {
-    ::-webkit-scrollbar {
-        height: 4px;
-        width: 4px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-}
-
-/* Loading amélioré */
-.loading {
-    text-align: center;
-    padding: 40px;
-    color: #667eea;
-    position: relative;
-}
-
-.loading::after {
-    content: '';
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-left: 10px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
