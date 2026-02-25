@@ -225,23 +225,23 @@ tr:hover {
     color: #666;
 }
 
-/* ========== NOUVEAUX STYLES ADMIN - VERSION SOBRE ========== */
+/* ========== NOUVEAUX STYLES ADMIN ========== */
 
-/* Boutons d'action en ligne */
+/* Boutons d'action en ligne - SANS COULEURS */
 .action-buttons {
     display: flex;
     gap: 5px;
     justify-content: center;
 }
 
-/* Style des boutons d'action (icônes seulement) - VERSION SANS COULEURS */
+/* Style des boutons d'action (icônes seulement) - NEUTRES */
 .icon-btn {
     width: 32px;
     height: 32px;
     border: 1px solid #ddd;
     background: white;
-    color: #666;
-    border-radius: 6px;
+    color: #333;
+    border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -251,31 +251,8 @@ tr:hover {
 }
 
 .icon-btn:hover {
-    background: #f5f5f5;
+    background: #f0f0f0;
     border-color: #999;
-    color: #333;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-/* Suppression des couleurs spécifiques */
-.icon-btn.deliver-btn,
-.icon-btn.cancel-btn,
-.icon-btn.delete-btn,
-.icon-btn.copy-id-btn,
-.icon-btn.copy-ref-btn {
-    background: white;
-    color: #666;
-    border: 1px solid #ddd;
-}
-
-.icon-btn.deliver-btn:hover,
-.icon-btn.cancel-btn:hover,
-.icon-btn.delete-btn:hover,
-.icon-btn.copy-id-btn:hover,
-.icon-btn.copy-ref-btn:hover {
-    background: #f5f5f5;
-    color: #333;
 }
 
 /* Badges de statut modernes */
@@ -305,7 +282,7 @@ tr:hover {
     color: #C62828;
 }
 
-/* Style pour les boutons de copie dans le tableau */
+/* Style pour les boutons de copie dans le tableau - NEUTRES */
 .copy-cell {
     display: flex;
     gap: 5px;
@@ -318,6 +295,17 @@ tr:hover {
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.9rem;
+    color: #333;
+}
+
+.copy-id-btn, .copy-ref-btn {
+    background: white;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.copy-id-btn:hover, .copy-ref-btn:hover {
+    background: #f0f0f0;
 }
 
 /* Tooltip pour les boutons */
@@ -365,7 +353,7 @@ tr:hover {
     background: #f8f9fa;
 }
 
-/* ========== MODE COLONNE POUR MOBILE ========== */
+/* ========== MODE 2 COLONNES POUR MOBILE ========== */
 
 @media (max-width: 768px) {
     /* Header plus compact */
@@ -434,7 +422,11 @@ tr:hover {
         padding: 10px;
     }
     
-    /* MODE COLONNE POUR LES COMMANDES */
+    /* MODE 2 COLONNES POUR LES COMMANDES */
+    .table-container {
+        padding: 0 10px 10px;
+    }
+    
     .table-container table,
     .table-container thead,
     .table-container tbody,
@@ -448,15 +440,22 @@ tr:hover {
         display: none;
     }
     
+    /* Grille 2 colonnes pour les commandes */
+    .table-container tbody {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
     /* Chaque commande devient une carte */
     .table-container tbody tr {
         display: block;
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 15px;
-        padding: 15px;
-        border-left: 4px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 10px;
+        border-left: 3px solid #ddd;
+        margin-bottom: 0;
     }
     
     /* Style pour chaque ligne de données */
@@ -464,9 +463,9 @@ tr:hover {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 8px 0;
+        padding: 5px 0;
         border-bottom: 1px solid #eee;
-        font-size: 14px;
+        font-size: 12px;
     }
     
     .table-container tbody tr td:last-child {
@@ -479,7 +478,7 @@ tr:hover {
         font-weight: 600;
         color: #666;
         width: 40%;
-        font-size: 13px;
+        font-size: 11px;
     }
     
     /* Style spécial pour le statut */
@@ -497,9 +496,9 @@ tr:hover {
     .table-container tbody tr td:last-child {
         display: flex;
         justify-content: flex-end;
-        gap: 8px;
+        gap: 5px;
         border-bottom: none;
-        padding-top: 12px;
+        padding-top: 8px;
     }
     
     .table-container tbody tr td:last-child::before {
@@ -510,7 +509,7 @@ tr:hover {
     .copy-cell {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 4px;
         width: 100%;
         justify-content: flex-end;
     }
@@ -520,56 +519,47 @@ tr:hover {
         overflow: hidden;
         text-overflow: ellipsis;
         background: #f5f5f5;
-        padding: 4px 8px;
-        border-radius: 4px;
+        padding: 3px 5px;
+        border-radius: 3px;
         font-family: monospace;
+        font-size: 11px;
     }
     
-    /* Badge de statut */
+    /* Badge de statut plus petit */
     .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
+        padding: 4px 8px;
+        font-size: 11px;
     }
     
-    /* Boutons d'action sans couleurs */
+    /* Boutons d'action plus petits */
     .action-buttons {
         display: flex;
-        gap: 8px;
+        gap: 4px;
         justify-content: flex-end;
     }
     
     .icon-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        font-size: 16px;
-        background: white;
-        color: #666;
-        border: 1px solid #ddd;
-    }
-    
-    .icon-btn:hover {
-        background: #f5f5f5;
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+        border-radius: 3px;
     }
     
     /* Style spécial pour l'ID de commande */
     .table-container tbody tr td:first-child {
-        font-size: 16px;
+        font-size: 13px;
         font-weight: 700;
         color: #333;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 12px;
-        margin-bottom: 5px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 8px;
+        margin-bottom: 3px;
     }
     
     .table-container tbody tr td:first-child::before {
         content: "Commande #";
         color: #666;
         font-weight: 600;
+        font-size: 11px;
     }
     
     /* Amélioration du touch sur mobile */
@@ -578,11 +568,11 @@ tr:hover {
     .action-btn,
     .filter-btn,
     .refresh-btn {
-        min-height: 44px;
+        min-height: 40px;
     }
     
     .icon-btn {
-        min-height: 36px;
+        min-height: 28px;
     }
     
     input,
@@ -636,35 +626,31 @@ tr:hover {
         margin: 2px 0;
     }
     
+    /* Garder 2 colonnes même sur très petit écran */
+    .table-container tbody {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
     .table-container tbody tr td {
-        font-size: 13px;
-        padding: 6px 0;
+        font-size: 11px;
+        padding: 4px 0;
     }
     
     .table-container tbody tr td::before {
         width: 35%;
-        font-size: 12px;
-    }
-    
-    .copy-cell {
-        gap: 5px;
+        font-size: 10px;
     }
     
     .copy-cell span {
-        max-width: 50%;
-        font-size: 12px;
+        max-width: 55%;
+        font-size: 10px;
     }
     
     .icon-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
-    }
-    
-    /* Cacher certains champs sur très petit écran */
-    .table-container tbody tr td:nth-child(4), /* Pseudo */
-    .table-container tbody tr td:nth-child(7) /* Payment Method */ {
-        display: none;
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
     }
 }
 
@@ -766,10 +752,5 @@ tr:hover {
 @media (max-width: 900px) and (orientation: landscape) {
     .stats-container {
         grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .table-container {
-        max-height: 60vh;
-        overflow-y: auto;
     }
 }
