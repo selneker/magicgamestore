@@ -41,59 +41,63 @@ const API_URL = (() => {
 console.log('🌐 API URL:', API_URL);
 
 // ===========================================
-// SAUVEGARDE DE SESSION POUR LE PACK CHOISI
+// SAUVEGARDE DE SESSION AMÉLIORÉE
 // ===========================================
 
 /**
- * Sauvegarde le pack sélectionné par l'utilisateur
- * Valable 30 minutes
+ * Sauvegarde l'état complet de la commande
  */
-function saveSelectedPack(pack, price) {
-    const selectedPack = {
-        pack: pack,
-        price: price,
+function saveOrderState() {
+    const state = {
+        pack: OrderPack?.textContent || '',
+        price: OrderPrice?.textContent || '',
+        pubgId: pubgIdInput?.value.trim() || '',
+        pseudo: pseudoInput?.value.trim() || '',
+        reference: referenceInput?.value.trim() || '',
+        currentModal: modalInfo.style.display === 'flex' ? 'info' : 
+                      modalPay.style.display === 'flex' ? 'pay' : 'none',
         timestamp: Date.now(),
         expiresAt: Date.now() + (30 * 60 * 1000) // 30 minutes
     };
     
-    localStorage.setItem('selectedPack', JSON.stringify(selectedPack));
-    console.log('💾 Pack sauvegardé:', pack);
+    localStorage.setItem('orderState', JSON.stringify(state));
+    console.log('💾 État sauvegardé:', state.currentModal);
 }
 
 /**
- * Restaure le pack sauvegardé s'il n'a pas expiré
+ * Restaure l'état sauvegardé
  */
-function restoreSelectedPack() {
-    const saved = localStorage.getItem('selectedPack');
+function restoreOrderState() {
+    const saved = localStorage.getItem('orderState');
     
     if (!saved) return null;
     
     try {
-        const selectedPack = JSON.parse(saved);
+        const state = JSON.parse(saved);
         
-        // Vérifier si le pack a expiré (plus de 30 minutes)
-        if (selectedPack.expiresAt && selectedPack.expiresAt < Date.now()) {
-            console.log('⏰ Pack expiré (plus de 30 minutes)');
-            localStorage.removeItem('selectedPack');
+        // Vérifier l'expiration
+        if (state.expiresAt && state.expiresAt < Date.now()) {
+            console.log('⏰ État expiré');
+            localStorage.removeItem('orderState');
             return null;
         }
         
-        console.log('🔄 Pack restauré:', selectedPack);
-        return selectedPack;
+        console.log('🔄 État restauré:', state.currentModal);
+        return state;
         
     } catch (error) {
         console.error('❌ Erreur restauration:', error);
-        localStorage.removeItem('selectedPack');
+        localStorage.removeItem('orderState');
         return null;
     }
 }
 
 /**
- * Efface la sélection sauvegardée
+ * Efface l'état sauvegardé
  */
-function clearSelectedPack() {
-    localStorage.removeItem('selectedPack');
-    console.log('🗑️ Sélection effacée');
+function clearOrderState() {
+    localStorage.removeItem('orderState');
+    console.log('🗑️ État effacé');
 }
 
 // ===========================================
@@ -107,20 +111,31 @@ document.addEventListener("DOMContentLoaded", () => {
         showTarifs();
     }
     
-    // Restaurer le pack si existant
-    const savedPack = restoreSelectedPack();
-    if (savedPack) {
+    // Restaurer l'état sauvegardé
+    const savedState = restoreOrderState();
+    
+    if (savedState && savedState.pack) {
+        // Restaurer les valeurs
+        OrderPack.textContent = savedState.pack;
+        OrderPrice.textContent = savedState.price;
+        
+        if (pubgIdInput) pubgIdInput.value = savedState.pubgId || '';
+        if (pseudoInput) pseudoInput.value = savedState.pseudo || '';
+        if (referenceInput) referenceInput.value = savedState.reference || '';
+        
         // Afficher une notification
-        showToast('🔄 Votre sélection a été restaurée', 'info');
+        showToast('🔄 Reprise de votre commande', 'info');
         
-        // Remplir les informations
-        OrderPack.textContent = savedPack.pack;
-        OrderPrice.textContent = savedPack.price;
-        
-        // Ouvrir la modale automatiquement après un court délai
+        // Ouvrir la bonne modale
         setTimeout(() => {
-            openModal(modalInfo);
-        }, 1000);
+            if (savedState.currentModal === 'pay') {
+                // Aller directement à la modale de paiement
+                openModal(modalPay);
+            } else if (savedState.currentModal === 'info') {
+                // Ouvrir la modale d'information
+                openModal(modalInfo);
+            }
+        }, 500);
     }
     
     // Initialiser les écouteurs
@@ -168,11 +183,19 @@ function showAbonnements() {
 // FONCTIONS MODALES
 // ===========================================
 function openModal(modal) {
+    // Fermer l'autre modale d'abord
+    modalInfo.style.display = 'none';
+    modalPay.style.display = 'none';
+    
+    // Ouvrir la modale demandée
     modal.style.display = 'flex';
     modal.classList.remove('fade-in');
     void modal.offsetWidth;
     modal.classList.add('fade-in');
     document.body.style.overflow = 'hidden';
+    
+    // Sauvegarder l'état après ouverture
+    setTimeout(saveOrderState, 100);
     
     // Si c'est la modale de paiement, initialiser le bouton MVola direct
     if (modal.id === 'modalPay') {
@@ -190,8 +213,8 @@ function closeAllModals() {
     if (pseudoInput) pseudoInput.value = '';
     if (referenceInput) referenceInput.value = '';
     
-    // Effacer la sélection sauvegardée quand la modale est fermée
-    clearSelectedPack();
+    // Effacer l'état sauvegardé
+    clearOrderState();
 }
 
 function showToast(message, type = 'success') {
@@ -225,6 +248,9 @@ function validateOrder() {
         return false;
     }
     
+    // Sauvegarder après validation
+    saveOrderState();
+    
     return true;
 }
 
@@ -249,7 +275,6 @@ function validatePubgId(pubgId) {
 
 /**
  * Génère le code USSD MVola pour un montant donné
- * Format: #111**1*2*0383905692*MONTANT*2*0#
  */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
@@ -263,7 +288,6 @@ function initMvolaDirectButton() {
     const container = document.getElementById('payBtnContainer');
     if (!container) return;
     
-    // Récupérer les infos
     const pack = OrderPack?.textContent || '';
     const priceText = OrderPrice?.textContent || '';
     const priceNumber = priceText.replace(/[^0-9]/g, '');
@@ -273,10 +297,8 @@ function initMvolaDirectButton() {
         return;
     }
     
-    // Générer le code USSD
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Créer le bouton (SANS afficher le code)
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;"
@@ -305,10 +327,8 @@ function initMvolaDirectButton() {
 
 /**
  * Fonction appelée quand on clique sur le bouton de paiement direct
- * Version corrigée avec validation 5-20 chiffres
  */
 window.handleMvolaDirectClick = function(pack, price) {
-    // Vérifier que l'ID PUBG et le pseudo sont remplis
     const pubgId = pubgIdInput?.value.trim();
     const pseudo = pseudoInput?.value.trim();
     
@@ -317,22 +337,19 @@ window.handleMvolaDirectClick = function(pack, price) {
         return false;
     }
     
-    // ✅ NOUVELLE VALIDATION 5-20 chiffres
     const validation = validatePubgId(pubgId);
     if (!validation.valid) {
         alert('❌ ' + validation.message);
         return false;
     }
     
-    // Message de confirmation
     showToast('📱 Code USSD lancé - Après paiement, entrez la référence reçue', 'success');
     
-    // Mettre le focus sur le champ référence après 5 secondes
     setTimeout(() => {
         referenceInput?.focus();
     }, 5000);
     
-    return true; // Permet l'ouverture du lien tel:
+    return true;
 };
 
 // ===========================================
@@ -346,27 +363,23 @@ function submitOrder() {
     const reference = referenceInput?.value.trim();
     const paymentMethod = 'MVola';
     
-    // Validation
     if (!pubgId || !pseudo) {
         showToast('Veuillez remplir tous les champs', 'error');
         return;
     }
     
-    // La référence MVola est obligatoire
     if (!reference) {
         showToast('Veuillez entrer la référence MVola reçue par SMS', 'error');
         referenceInput?.focus();
         return;
     }
     
-    // Désactiver le bouton
     confirmBtn.disabled = true;
     confirmBtn.textContent = 'Envoi...';
     confirmBtn.classList.add('loading');
     
     console.log('📤 Envoi commande:', { pubgId, pseudo, pack, price, reference });
     
-    // Envoyer au backend
     fetch(`${API_URL}/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -376,7 +389,7 @@ function submitOrder() {
             pack,
             price,
             paymentMethod,
-            reference // La vraie référence MVola de l'utilisateur
+            reference
         })
     })
     .then(res => res.json())
@@ -385,7 +398,7 @@ function submitOrder() {
             showToast('Erreur : ' + data.error, 'error');
         } else {
             showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
-            clearSelectedPack(); // Effacer après achat réussi
+            clearOrderState(); // Effacer après achat réussi
             closeAllModals();
         }
     })
@@ -404,7 +417,6 @@ function submitOrder() {
 // ÉCOUTEURS D'ÉVÉNEMENTS
 // ===========================================
 function initEventListeners() {
-    // Switch abonnements/uc
     if (aboLink) {
         aboLink.addEventListener("click", (e) => {
             e.preventDefault();
@@ -416,14 +428,10 @@ function initEventListeners() {
         });
     }
     
-    // Boutons acheter - MODIFIÉ POUR SAUVEGARDER LE PACK
     acheterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const pack = btn.dataset.pack;
             const price = btn.dataset.price;
-            
-            // Sauvegarder le pack choisi
-            saveSelectedPack(pack, price);
             
             OrderPack.textContent = pack;
             OrderPrice.textContent = price;
@@ -432,12 +440,10 @@ function initEventListeners() {
         });
     });
     
-    // Fermeture modales
     if (closeInfo) closeInfo.addEventListener('click', closeAllModals);
     if (closeInfo2) closeInfo2.addEventListener('click', closeAllModals);
     if (closePay) closePay.addEventListener('click', closeAllModals);
     
-    // Passer à l'étape suivante
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             if (!validateOrder()) return;
@@ -446,7 +452,6 @@ function initEventListeners() {
         });
     }
     
-    // Retour
     if (retourBtn) {
         retourBtn.addEventListener('click', () => {
             modalPay.style.display = 'none';
@@ -454,17 +459,19 @@ function initEventListeners() {
         });
     }
     
-    // Confirmer commande
     if (confirmBtn) {
         confirmBtn.addEventListener('click', submitOrder);
     }
     
-    // Fermer modale avec Escape
+    // Sauvegarder l'état à chaque changement dans les inputs
+    if (pubgIdInput) pubgIdInput.addEventListener('input', saveOrderState);
+    if (pseudoInput) pseudoInput.addEventListener('input', saveOrderState);
+    if (referenceInput) referenceInput.addEventListener('input', saveOrderState);
+    
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeAllModals();
     });
     
-    // Fermer en cliquant hors modale
     window.addEventListener('click', (e) => {
         if (e.target === modalInfo || e.target === modalPay) closeAllModals();
     });
