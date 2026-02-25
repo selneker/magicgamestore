@@ -328,7 +328,7 @@ function logout() {
     showNotification('Déconnexion réussie', 'success');
 }
 
-// ========== CHARGEMENT DES COMMANDES (VERSION AMÉLIORÉE) ==========
+// ========== CHARGEMENT DES COMMANDES ==========
 function loadOrders() {
     if (!token) {
         console.log('⛔ Pas de token');
@@ -346,7 +346,6 @@ function loadOrders() {
     .then(res => {
         console.log('📥 Réponse status:', res.status);
         
-        // Si token invalide ou expiré
         if (res.status === 401 || res.status === 403) {
             console.log('⛔ Token invalide ou expiré');
             logout();
@@ -363,7 +362,6 @@ function loadOrders() {
     .then(data => {
         console.log(`📥 Données reçues:`, data);
         
-        // Vérifier que data est un tableau
         if (Array.isArray(data)) {
             orders = data;
             displayOrders(data);
@@ -376,32 +374,71 @@ function loadOrders() {
     .catch(err => {
         console.error('❌ Erreur chargement commandes:', err);
         showNotification('Erreur chargement commandes', 'error');
-        
-        // Afficher tableau vide en cas d'erreur
         displayOrders([]);
     });
 }
 
-
-// ========== FONCTION DE COPIE ==========
-function copyToClipboard(text) {
-    if (!text) {
-        showNotification('❌ Rien à copier', 'error');
+// ========== CHARGEMENT DES STATISTIQUES ==========
+function loadStats() {
+    if (!token) {
+        console.log('⛔ Pas de token pour les stats');
         return;
     }
-    
-    //API Clipboard moderne
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('✅ Copié !', 'success');
-    }).catch((err) => {
-        console.error('Erreur de copie:', err);
-        // Fallback pour les anciens navigateurs
-        fallbackCopy(text);
+
+    console.log('📊 Chargement des statistiques...');
+
+    fetch(`${BASE_URL}/api/admin/stats`, {
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => {
+        console.log('📥 Réponse stats status:', res.status);
+        
+        if (res.status === 401 || res.status === 403) {
+            console.log('⛔ Token invalide pour les stats');
+            return;
+        }
+        
+        if (!res.ok) {
+            throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+        
+        return res.json();
+    })
+    .then(data => {
+        if (!data) return;
+        
+        console.log('📊 Stats reçues:', data);
+        
+        document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+        document.getElementById('totalRevenue').textContent = (data.totalRevenue || 0).toLocaleString() + ' Ar';
+        document.getElementById('pendingOrders').textContent = data.statusCount?.['en attente'] || 0;
+        document.getElementById('deliveredOrders').textContent = data.statusCount?.['livré'] || 0;
+    })
+    .catch(err => {
+        console.error('❌ Erreur chargement stats:', err);
+        showNotification('Erreur chargement statistiques', 'error');
     });
 }
 
-// Fallback pour les navigateurs qui ne supportent pas clipboard API
-function fallbackCopy(text) {
+// ========== FONCTION DE COPIE ==========
+function copyToClipboard(text, type = '') {
+    if (!text) {
+        showNotification(`❌ Aucun${type ? ' ' + type : ''} à copier`, 'error');
+        return;
+    }
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification(`✅ ${type || 'Élément'} copié !`, 'success');
+    }).catch((err) => {
+        console.error('Erreur de copie:', err);
+        fallbackCopy(text, type);
+    });
+}
+
+function fallbackCopy(text, type = '') {
     const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.style.position = 'fixed';
@@ -411,20 +448,18 @@ function fallbackCopy(text) {
     
     try {
         document.execCommand('copy');
-        showNotification('✅ Copié ! (fallback)', 'success');
+        showNotification(`✅ ${type || 'Élément'} copié ! (fallback)`, 'success');
     } catch (err) {
-        showNotification('❌ Erreur de copie', 'error');
+        showNotification(`❌ Erreur de copie`, 'error');
     }
     
     document.body.removeChild(textarea);
 }
 
-
-// ========== AFFICHAGE DES COMMANDES (VERSION ROBUSTE) ==========
+// ========== AFFICHAGE DES COMMANDES ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
-    // Vérifier que ordersToShow est bien un tableau
     if (!ordersToShow || !Array.isArray(ordersToShow)) {
         console.error('❌ Données invalides:', ordersToShow);
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur: Données invalides</td></tr>';
@@ -438,12 +473,8 @@ function displayOrders(ordersToShow) {
 
     try {
         tbody.innerHTML = ordersToShow.map(order => {
-            // Vérifier que order est valide
-            if (!order || typeof order !== 'object') {
-                return '';
-            }
+            if (!order || typeof order !== 'object') return '';
             
-            // Déterminer l'icône de statut
             let statusIcon = '';
             let statusClass = '';
             
@@ -495,7 +526,7 @@ function displayOrders(ordersToShow) {
                 </td>
                 <td>
                     <span class="status-badge ${statusClass}">
-                        <i class="fas ${statusIcon}"></i> ${order.status || 'en attente'}
+                        ${order.status || 'en attente'}
                     </span>
                 </td>
                 <td>
@@ -526,7 +557,6 @@ function displayOrders(ordersToShow) {
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur d\'affichage</td></tr>';
     }
 }
-
 
 // ========== FILTRES ==========
 document.getElementById('searchInput')?.addEventListener('input', filterOrders);
