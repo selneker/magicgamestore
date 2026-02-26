@@ -303,6 +303,10 @@ function login() {
             document.getElementById('adminSection').style.display = 'block';
             document.getElementById('adminEmail').textContent = data.user.email;
             
+            // Mettre en ligne automatiquement
+            adminOnline = true;
+            updateClientStatus(true);
+            
             loadOrders();
             loadStats();
             startAutoRefresh();
@@ -320,12 +324,15 @@ function login() {
 }
 
 function logout() {
-    stopAutoRefresh();
-    localStorage.removeItem('adminToken');
-    token = null;
-    document.getElementById('loginSection').style.display = 'flex';
-    document.getElementById('adminSection').style.display = 'none';
-    showNotification('Déconnexion réussie', 'success');
+    // Mettre hors ligne avant de déconnecter
+    updateClientStatus(false).finally(() => {
+        stopAutoRefresh();
+        localStorage.removeItem('adminToken');
+        token = null;
+        document.getElementById('loginSection').style.display = 'flex';
+        document.getElementById('adminSection').style.display = 'none';
+        showNotification('Déconnexion réussie', 'success');
+    });
 }
 
 // ========== CHARGEMENT DES COMMANDES ==========
@@ -475,9 +482,7 @@ function displayOrders(ordersToShow) {
         tbody.innerHTML = ordersToShow.map(order => {
             if (!order || typeof order !== 'object') return '';
             
-            // Déterminer la classe de statut pour la bordure
             let statusClass = '';
-            let statusText = order.status || 'en attente';
             
             switch(order.status) {
                 case 'en attente':
@@ -640,14 +645,16 @@ function refreshOrders() {
     showNotification('🔄 Données actualisées', 'success');
 }
 
-
 // ========== GESTION DU STATUT ADMIN AMÉLIORÉE ==========
 
 let adminOnline = true;
 
 // Fonction pour mettre à jour le statut et notifier immédiatement
 async function updateClientStatus(online) {
-    if (!token) return;
+    if (!token) {
+        console.log('⛔ Pas de token pour mise à jour statut');
+        return;
+    }
     
     console.log(`📡 Changement de statut: ${online ? 'en ligne' : 'hors ligne'}`);
     
@@ -693,7 +700,44 @@ function toggleAdminStatus() {
     updateClientStatus(!adminOnline);
 }
 
+// Détection de sortie de l'interface
+function handleAdminExit() {
+    if (token) {
+        console.log('👋 Admin quitte l\'interface - mise hors ligne');
+        
+        // Envoyer la mise hors ligne
+        navigator.sendBeacon(`${BASE_URL}/api/admin/status`, 
+            JSON.stringify({ online: false })
+        );
+    }
+}
 
+// Événements de sortie
+window.addEventListener('beforeunload', handleAdminExit);
+window.addEventListener('pagehide', handleAdminExit);
+window.addEventListener('unload', handleAdminExit);
+
+// Détection d'inactivité
+let inactivityTimer;
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        console.log('⏰ Inactivité détectée - mise hors ligne automatique');
+        if (adminOnline) {
+            updateClientStatus(false);
+        }
+    }, 5 * 60 * 1000); // 5 minutes
+}
+
+// Réinitialiser le timer à chaque action
+document.addEventListener('mousemove', resetInactivityTimer);
+document.addEventListener('keypress', resetInactivityTimer);
+document.addEventListener('click', resetInactivityTimer);
+document.addEventListener('scroll', resetInactivityTimer);
+
+// Démarrer le timer au chargement
+resetInactivityTimer();
 
 // ========== VÉRIFICATION SESSION AU CHARGEMENT ==========
 if (token) {
@@ -705,6 +749,11 @@ if (token) {
         if (res.ok) {
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('adminSection').style.display = 'block';
+            
+            // Mettre en ligne automatiquement
+            adminOnline = true;
+            updateClientStatus(true);
+            
             loadOrders();
             loadStats();
             startAutoRefresh();

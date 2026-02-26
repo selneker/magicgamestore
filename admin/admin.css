@@ -727,65 +727,65 @@ tr:hover {
 
 
 /* ========== BOUTON DE STATUT ADMIN ========== */
-.admin-status-control {
-    margin-right: 10px;
-}
 
-.status-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.status-btn.online {
-    background: #4CAF50;
-    color: white;
-}
-
-.status-btn.offline {
-    background: #f44336;
-    color: white;
-}
-
-.status-btn .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 10px currentColor;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-.status-btn.online .status-dot {
-    background: #fff;
-}
-
-.status-btn.offline .status-dot {
-    background: #fff;
-}
-
-/* Style pour mobile */
-@media (max-width: 768px) {
-    .status-btn {
-        padding: 6px 12px;
-        font-size: 0.8rem;
+   .admin-status-control {
+        margin-right: 5px;
     }
-}
+    
+    .status-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .status-btn.online {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .status-btn.offline {
+        background: #f44336;
+        color: white;
+    }
+    
+    .status-btn .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 10px currentColor;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-btn.online .status-dot {
+        background: #fff;
+    }
+    
+    .status-btn.offline .status-dot {
+        background: #fff;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+        .status-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+    }
 
 
 
