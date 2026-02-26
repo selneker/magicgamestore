@@ -475,14 +475,14 @@
                                     <p><i class="fa-regular fa-credit-card"></i> ${order.paymentMethod}</p>
                                     <p><i class="fa-regular fa-user"></i> ${order.pseudo}</p>
                                     <p><i class="fa-regular fa-id-card"></i> ${order.pubgId}</p>
-                                    <p><i class="fa-regular fa-hashtag"></i> Réf: ${order.reference}</p>
+                                    <p><i class="fa-regular fa-hashtag"></i> Réf: ${maskReference(order.reference)}</p>
                                 </div>
                             </div>
                             <div class="order-status">
                                 <span class="status-badge status-${order.status.replace(' ', '-')}">
                                     ${order.status === 'en attente' ? '⏳ En attente' : 
-                                      order.status === 'livré' ? '✅ Livré' : 
-                                      order.status === 'annulé' ? '❌ Annulé' : order.status}
+                                    order.status === 'livré' ? '✅ Livré' : 
+                                    order.status === 'annulé' ? '❌ Annulé' : order.status}
                                 </span>
                                 <span class="order-date">#${order.id}</span>
                             </div>
@@ -490,6 +490,23 @@
                     `).join('')}
                 </div>
             `;
+        }
+
+        // ========== FONCTION POUR MASQUER LA RÉFÉRENCE ==========
+        function maskReference(ref) {
+            if (!ref) return '********';
+            
+            // Si la référence est courte (< 8 caractères)
+            if (ref.length < 8) {
+                return '*'.repeat(ref.length);
+            }
+            
+            // Montre seulement les 4 premiers et 4 derniers chiffres
+            const debut = ref.substring(0, 4);
+            const fin = ref.substring(ref.length - 4);
+            const etoiles = '*'.repeat(Math.min(ref.length - 8, 4));
+            
+            return debut + etoiles + fin;
         }
 
         // ========== FILTRER LES COMMANDES ==========
