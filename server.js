@@ -354,27 +354,47 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
-
 // ========== GESTION DU STATUT ADMIN ==========
 
 let adminStatus = {
     online: false,
     lastUpdate: null,
     adminEmail: null,
-    subscribers: [] // Pour les clients qui attendent des mises à jour
+    waitingClients: [] // Pour stocker les clients en attente de mise à jour
 };
 
 // Route pour mettre à jour le statut (admin)
 app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
     const { online } = req.body;
     
+    const statusChanged = adminStatus.online !== online;
+    
     adminStatus = {
         online: online,
         lastUpdate: new Date().toISOString(),
-        adminEmail: req.user.email
+        adminEmail: req.user.email,
+        waitingClients: adminStatus.waitingClients || []
     };
     
-    console.log(`📡 Statut admin mis à jour: ${online ? 'en ligne' : 'hors ligne'}`);
+    console.log(`📡 Statut admin mis à jour: ${online ? 'en ligne' : 'hors ligne'} ${statusChanged ? '(changement)' : '(identique)'}`);
+    
+    // Si le statut a changé, notifier tous les clients en attente
+    if (statusChanged) {
+        console.log(`📢 Notification de ${adminStatus.waitingClients.length} clients en attente`);
+        
+        adminStatus.waitingClients.forEach(client => {
+            try {
+                client.res.json({ 
+                    online: adminStatus.online,
+                    lastUpdate: adminStatus.lastUpdate,
+                    changed: true
+                });
+            } catch (e) {
+                console.log('Client déjà déconnecté');
+            }
+        });
+        adminStatus.waitingClients = []; // Vider la liste
+    }
     
     res.json({ 
         success: true, 
@@ -402,37 +422,38 @@ app.get('/api/admin/status', (req, res) => {
 
 // Route pour le long polling (mise à jour instantanée)
 app.get('/api/admin/status/poll', (req, res) => {
+    console.log('📱 Client en attente de mise à jour statut');
+    
+    // Configurer un timeout de 25 secondes
     const timeout = setTimeout(() => {
-        // Si pas de changement après 25 secondes, on renvoie le statut actuel
+        console.log('⏰ Timeout long polling - envoi statut actuel');
+        
+        // Retirer le client de la liste d'attente
+        adminStatus.waitingClients = adminStatus.waitingClients.filter(
+            client => client.res !== res
+        );
+        
         res.json({ 
             online: adminStatus.online,
             lastUpdate: adminStatus.lastUpdate,
             timeout: true
         });
-    }, 25000); // Timeout après 25 secondes
+    }, 25000);
     
-    // Fonction pour vérifier si le statut a changé
-    const checkStatus = () => {
-        if (adminStatus.changed) {
-            clearTimeout(timeout);
-            res.json({ 
-                online: adminStatus.online,
-                lastUpdate: adminStatus.lastUpdate,
-                changed: true
-            });
-        }
-    };
-    
-    // Vérifier toutes les secondes
-    const interval = setInterval(checkStatus, 1000);
+    // Ajouter ce client à la liste d'attente
+    adminStatus.waitingClients.push({
+        res: res,
+        timestamp: Date.now()
+    });
     
     // Nettoyer quand la réponse est envoyée
     res.on('finish', () => {
-        clearInterval(interval);
         clearTimeout(timeout);
+        adminStatus.waitingClients = adminStatus.waitingClients.filter(
+            client => client.res !== res
+        );
     });
 });
-
 
 // ========== ROUTES DE DEBUG ==========
 app.get('/api/debug-auth', (req, res) => {

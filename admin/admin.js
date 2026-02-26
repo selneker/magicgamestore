@@ -1,6 +1,7 @@
 let token = localStorage.getItem('adminToken');
 let orders = [];
 let autoRefreshInterval;
+let adminOnline = true; // Déclaration globale déplacée au début
 
 // ========== URL DYNAMIQUE ==========
 const BASE_URL = (() => {
@@ -647,8 +648,6 @@ function refreshOrders() {
 
 // ========== GESTION DU STATUT ADMIN AMÉLIORÉE ==========
 
-let adminOnline = true;
-
 // Fonction pour mettre à jour le statut et notifier immédiatement
 async function updateClientStatus(online) {
     if (!token) {
@@ -668,26 +667,32 @@ async function updateClientStatus(online) {
             body: JSON.stringify({ online })
         });
         
-        if (!response.ok) throw new Error('Erreur réseau');
+        if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
         
-        adminOnline = online;
+        const data = await response.json();
         
-        // Mettre à jour l'interface du bouton
-        const statusBtn = document.getElementById('toggleAdminStatusBtn');
-        const statusText = document.getElementById('adminStatusText');
-        
-        if (statusBtn && statusText) {
-            if (online) {
-                statusBtn.className = 'status-btn online';
-                statusText.textContent = 'En ligne';
-            } else {
-                statusBtn.className = 'status-btn offline';
-                statusText.textContent = 'Hors ligne';
+        if (data.success) {
+            adminOnline = online;
+            
+            // Mettre à jour l'interface du bouton
+            const statusBtn = document.getElementById('toggleAdminStatusBtn');
+            const statusText = document.getElementById('adminStatusText');
+            
+            if (statusBtn && statusText) {
+                if (online) {
+                    statusBtn.className = 'status-btn online';
+                    statusText.textContent = 'En ligne';
+                } else {
+                    statusBtn.className = 'status-btn offline';
+                    statusText.textContent = 'Hors ligne';
+                }
             }
+            
+            showNotification(online ? '✅ Mode en ligne activé' : '📴 Mode hors ligne activé', 
+                           online ? 'success' : 'info');
+        } else {
+            throw new Error('Réponse invalide');
         }
-        
-        showNotification(online ? '✅ Mode en ligne activé' : '📴 Mode hors ligne activé', 
-                       online ? 'success' : 'info');
         
     } catch (error) {
         console.error('❌ Erreur mise à jour statut:', error);
@@ -705,10 +710,10 @@ function handleAdminExit() {
     if (token) {
         console.log('👋 Admin quitte l\'interface - mise hors ligne');
         
-        // Envoyer la mise hors ligne
-        navigator.sendBeacon(`${BASE_URL}/api/admin/status`, 
-            JSON.stringify({ online: false })
-        );
+        // Envoyer la mise hors ligne avec sendBeacon
+        const blob = new Blob([JSON.stringify({ online: false })], 
+            { type: 'application/json' });
+        navigator.sendBeacon(`${BASE_URL}/api/admin/status`, blob);
     }
 }
 
