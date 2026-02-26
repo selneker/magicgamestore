@@ -66,15 +66,7 @@ function startAutoRefresh() {
             loadOrders();
             loadStats();
         }
-    }, 30000);
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-        autoRefreshInterval = null;
-        console.log('⏹️ Rafraîchissement auto arrêté');
-    }
+    }, 60000); // ← Changé à 60 secondes
 }
 
 // ========== FONCTIONS DE SAUVEGARDE ==========
