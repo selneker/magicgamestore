@@ -211,7 +211,15 @@ function closeAllModals() {
     // Vider les inputs
     if (pubgIdInput) pubgIdInput.value = '';
     if (pseudoInput) pseudoInput.value = '';
-    if (referenceInput) referenceInput.value = '';
+    if (referenceInput) {
+        referenceInput.value = '';
+        referenceInput.style.border = '';
+        referenceInput.style.backgroundColor = '';
+    }
+    
+    // Supprimer le message d'aide
+    const helpText = document.getElementById('refHelp');
+    if (helpText) helpText.remove();
     
     // Effacer l'état sauvegardé
     clearOrderState();
@@ -270,7 +278,7 @@ function validatePubgId(pubgId) {
 }
 
 // ===========================================
-// FONCTIONS DE PAIEMENT DIRECT MVOLA AMÉLIORÉES
+// FONCTIONS DE PAIEMENT DIRECT MVOLA - UX AMÉLIORÉE
 // ===========================================
 
 /**
@@ -278,93 +286,8 @@ function validatePubgId(pubgId) {
  */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
-    // Version raw et encodée
-    const rawCode = `#111*1*2*0383905692*${cleanPrice}*2*0#`;
-    const encodedCode = encodeURIComponent(rawCode);
-    return { raw: rawCode, encoded: encodedCode };
+    return `#111*1*2*0383905692*${cleanPrice}*2*0#`;
 }
-
-/**
- * Affiche une boîte de dialogue avec le code à composer
- */
-function showManualCodeDialog(ussdCode, amount) {
-    // Créer une modale temporaire
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        z-index: 10001;
-        text-align: center;
-        max-width: 300px;
-        width: 90%;
-    `;
-    
-    modal.innerHTML = `
-        <h3 style="margin-top: 0; color: #00A651;">📞 Paiement MVola</h3>
-        <p style="margin-bottom: 15px;">Composez ce code sur votre téléphone :</p>
-        <div style="
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            font-family: monospace;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin: 15px 0;
-            word-break: break-all;
-        ">${ussdCode}</div>
-        <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
-            Montant: <strong>${amount} Ar</strong>
-        </p>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="copyToClipboardManual('${ussdCode}')" style="
-                flex: 1;
-                background: #2196F3;
-                color: white;
-                border: none;
-                padding: 12px;
-                border-radius: 8px;
-                font-weight: bold;
-                cursor: pointer;
-            ">
-                📋 Copier
-            </button>
-            <button onclick="this.parentElement.parentElement.remove()" style="
-                flex: 1;
-                background: #ddd;
-                color: #333;
-                border: none;
-                padding: 12px;
-                border-radius: 8px;
-                font-weight: bold;
-                cursor: pointer;
-            ">
-                Fermer
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Fermer en cliquant à l'extérieur
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
-}
-
-// Fonction de copie pour la modale manuelle
-window.copyToClipboardManual = function(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert('✅ Code copié ! Ouvrez votre application téléphone et composez-le.');
-    }).catch(() => {
-        alert('❌ Erreur de copie');
-    });
-};
 
 /**
  * Initialise le bouton de paiement direct dans la modale
@@ -382,37 +305,39 @@ function initMvolaDirectButton() {
         return;
     }
     
-    const { raw } = generateUSSDCode(priceNumber);
+    const ussdCode = generateUSSDCode(priceNumber);
     
-    // Créer un bouton au lieu d'un lien
+    // Créer un bouton avec lien direct
     container.innerHTML = `
-        <button onclick="handleMvolaDirectClick('${pack}', '${priceText}')" style="
-            background: #00A651;
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,166,81,0.3);
-        ">
-            <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
-        </button>
-        <p style="font-size: 0.7rem; color: #999; margin-top: 5px; text-align: center;">
-            Code: ${raw}
-        </p>
+        <a href="tel:${ussdCode}" 
+           style="display: block; text-decoration: none; width: 100%;"
+           onclick="return handleMvolaDirectClick('${pack}', '${priceText}')">
+            <button style="
+                background: #00A651;
+                color: white;
+                border: none;
+                padding: 15px 20px;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 1.1rem;
+                cursor: pointer;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                transition: all 0.3s;
+                box-shadow: 0 4px 10px rgba(0,166,81,0.3);
+            ">
+                <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
+            </button>
+        </a>
     `;
 }
 
 /**
  * Fonction appelée quand on clique sur le bouton de paiement direct
+ * UX AMÉLIORÉE : guide l'utilisateur vers le champ référence
  */
 window.handleMvolaDirectClick = function(pack, price) {
     const pubgId = pubgIdInput?.value.trim();
@@ -429,56 +354,82 @@ window.handleMvolaDirectClick = function(pack, price) {
         return false;
     }
     
-    // Récupérer le montant
-    const priceText = OrderPrice?.textContent || price;
-    const priceNumber = priceText.replace(/[^0-9]/g, '');
-    const { raw, encoded } = generateUSSDCode(priceNumber);
+    // Notification de confirmation
+    showToast('📞 Paiement lancé - Entrez la référence ci-dessous', 'success');
     
-    // Détection du type d'appareil
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // === AMÉLIORATION UX : Mise en évidence du champ référence ===
     
-    console.log('📱 Appareil détecté:', isAndroid ? 'Android' : isIOS ? 'iOS' : 'Autre');
-    console.log('📞 Code USSD:', raw);
+    // 1. Changer le style du champ référence pour le mettre en évidence
+    referenceInput.style.border = '3px solid #00A651';
+    referenceInput.style.backgroundColor = '#f0fff0';
+    referenceInput.style.transition = 'all 0.3s';
     
-    // Afficher une notification
-    showToast('📱 Préparation du paiement MVola...', 'info');
+    // 2. Ajouter un message d'aide au-dessus du champ
+    const helpText = document.createElement('div');
+    helpText.id = 'refHelp';
+    helpText.style.cssText = `
+        color: #00A651;
+        font-size: 0.9rem;
+        margin: 10px 0 5px;
+        padding: 8px;
+        background: #e8f5e9;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: 500;
+        animation: pulse 2s infinite;
+    `;
+    helpText.innerHTML = `
+        <i class="fa-solid fa-hand-pointer"></i> 
+        Après paiement, collez ici la référence reçue par SMS
+        <i class="fa-solid fa-arrow-down"></i>
+    `;
     
-    // Différentes méthodes selon l'appareil
-    if (isAndroid) {
-        // Pour Android: utiliser l'intent tel: avec le code encodé
-        const intentUrl = `tel:${encoded}`;
-        window.location.href = intentUrl;
-        
-        // Fallback si l'intent ne fonctionne pas
-        setTimeout(() => {
-            if (confirm('📞 Le code ne s\'est pas lancé automatiquement?\n\nVoulez-vous voir le code à composer manuellement?')) {
-                showManualCodeDialog(raw, priceNumber);
-            }
-        }, 2000);
-        
-    } else if (isIOS) {
-        // Pour iOS: afficher directement la boîte de dialogue
-        showManualCodeDialog(raw, priceNumber);
-    } else {
-        // Pour les autres: essayer le lien direct
-        window.location.href = `tel:${raw}`;
-        setTimeout(() => {
-            showManualCodeDialog(raw, priceNumber);
-        }, 2000);
-    }
+    // Supprimer l'ancien message s'il existe
+    const oldHelp = document.getElementById('refHelp');
+    if (oldHelp) oldHelp.remove();
     
-    // Mettre le focus sur la référence après 10 secondes
+    // Insérer le message avant le champ référence
+    referenceInput.parentNode.insertBefore(helpText, referenceInput);
+    
+    // 3. Animation pulse sur le bouton Confirmer pour attirer l'attention
+    confirmBtn.style.animation = 'pulse 2s infinite';
+    confirmBtn.style.boxShadow = '0 0 0 0 rgba(0,0,0,0.5)';
+    
+    // 4. Mettre le focus sur le champ référence après 3 secondes
     setTimeout(() => {
-        referenceInput?.focus();
-        showToast('💰 Entrez la référence reçue par SMS', 'success');
-    }, 10000);
+        referenceInput.focus();
+        referenceInput.placeholder = 'Collez votre référence ici...';
+    }, 3000);
     
-    return false; // Empêcher le comportement par défaut
+    // 5. Auto-détection de la référence collée (optionnel)
+    referenceInput.addEventListener('paste', function() {
+        // Quand l'utilisateur colle quelque chose, enlever l'aide
+        setTimeout(() => {
+            if (referenceInput.value.trim()) {
+                const helpText = document.getElementById('refHelp');
+                if (helpText) {
+                    helpText.style.background = '#c8e6c9';
+                    helpText.innerHTML = `
+                        <i class="fa-solid fa-check-circle"></i> 
+                        Référence détectée ! Vous pouvez confirmer.
+                    `;
+                    
+                    // Faire briller le bouton Confirmer
+                    confirmBtn.style.background = '#4CAF50';
+                    confirmBtn.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        confirmBtn.style.transform = '';
+                    }, 200);
+                }
+            }
+        }, 100);
+    }, { once: true });
+    
+    return true; // Permet l'ouverture du lien tel:
 };
 
 // ===========================================
-// ENVOI DE COMMANDE
+// ENVOI DE COMMANDE - UX AMÉLIORÉE
 // ===========================================
 function submitOrder() {
     const pubgId = pubgIdInput?.value.trim();
@@ -495,12 +446,51 @@ function submitOrder() {
     
     if (!reference) {
         showToast('Veuillez entrer la référence MVola reçue par SMS', 'error');
-        referenceInput?.focus();
+        
+        // UX : Mettre en évidence le champ manquant
+        referenceInput.style.border = '3px solid #f44336';
+        referenceInput.style.backgroundColor = '#ffebee';
+        referenceInput.focus();
+        
+        // Ajouter un message d'erreur temporaire
+        const errorMsg = document.createElement('div');
+        errorMsg.id = 'refError';
+        errorMsg.style.cssText = `
+            color: #f44336;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            text-align: center;
+        `;
+        errorMsg.innerHTML = '❌ La référence est obligatoire pour valider la commande';
+        
+        const oldError = document.getElementById('refError');
+        if (oldError) oldError.remove();
+        
+        referenceInput.parentNode.appendChild(errorMsg);
+        
+        setTimeout(() => {
+            referenceInput.style.border = '';
+            referenceInput.style.backgroundColor = '';
+            const err = document.getElementById('refError');
+            if (err) err.remove();
+        }, 3000);
+        
         return;
     }
     
+    // Nettoyer les éléments d'aide
+    const helpText = document.getElementById('refHelp');
+    if (helpText) helpText.remove();
+    
+    const errorMsg = document.getElementById('refError');
+    if (errorMsg) errorMsg.remove();
+    
+    referenceInput.style.border = '';
+    referenceInput.style.backgroundColor = '';
+    confirmBtn.style.animation = '';
+    
     confirmBtn.disabled = true;
-    confirmBtn.textContent = 'Envoi...';
+    confirmBtn.textContent = 'Envoi en cours...';
     confirmBtn.classList.add('loading');
     
     console.log('📤 Envoi commande:', { pubgId, pseudo, pack, price, reference });
@@ -523,7 +513,7 @@ function submitOrder() {
             showToast('Erreur : ' + data.error, 'error');
         } else {
             showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
-            clearOrderState(); // Effacer après achat réussi
+            clearOrderState();
             closeAllModals();
         }
     })
