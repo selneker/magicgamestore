@@ -419,25 +419,24 @@ async function checkAdminStatus() {
     const statusDot = document.querySelector('.status-dot');
     const statusText = document.querySelector('.status-text');
     
+    if (!statusDot || !statusText) return;
+    
     try {
-        // Tentative de ping vers une route admin protégée
+        // Tentative de ping vers une route admin (juste pour vérifier si le serveur répond)
         const response = await fetch(`${API_URL.replace('/api', '')}/admin-test`, {
             method: 'HEAD',
-            cache: 'no-cache',
-            timeout: 5000
+            cache: 'no-cache'
         });
         
         if (response.ok) {
             statusDot.className = 'status-dot online';
             statusText.textContent = 'Admin en ligne';
-            console.log('✅ Admin en ligne');
         } else {
             throw new Error('Admin hors ligne');
         }
     } catch (error) {
         statusDot.className = 'status-dot offline';
         statusText.textContent = 'Admin hors ligne';
-        console.log('❌ Admin hors ligne');
     }
 }
 
