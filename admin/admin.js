@@ -306,7 +306,15 @@ function login() {
             
             // Mettre en ligne automatiquement
             adminOnline = true;
-            updateClientStatus(true);
+            localStorage.setItem('adminStatus', 'online');
+            
+            // Met à jour le bouton
+            const btn = document.getElementById('toggleAdminStatusBtn');
+            const text = document.getElementById('adminStatusText');
+            if (btn && text) {
+                btn.className = 'status-btn online';
+                text.textContent = 'En ligne';
+            }
             
             loadOrders();
             loadStats();
@@ -326,14 +334,15 @@ function login() {
 
 function logout() {
     // Mettre hors ligne avant de déconnecter
-    updateClientStatus(false).finally(() => {
-        stopAutoRefresh();
-        localStorage.removeItem('adminToken');
-        token = null;
-        document.getElementById('loginSection').style.display = 'flex';
-        document.getElementById('adminSection').style.display = 'none';
-        showNotification('Déconnexion réussie', 'success');
-    });
+    adminOnline = false;
+    localStorage.setItem('adminStatus', 'offline');
+    
+    stopAutoRefresh();
+    localStorage.removeItem('adminToken');
+    token = null;
+    document.getElementById('loginSection').style.display = 'flex';
+    document.getElementById('adminSection').style.display = 'none';
+    showNotification('Déconnexion réussie', 'success');
 }
 
 // ========== CHARGEMENT DES COMMANDES ==========
@@ -665,7 +674,10 @@ window.toggleAdminStatus = function() {
         showNotification('📴 Admin hors ligne', 'info');
     }
     
-    // Sauvegarde sur le serveur via une requête
+    // Sauvegarde dans localStorage pour le client
+    localStorage.setItem('adminStatus', adminOnline ? 'online' : 'offline');
+    
+    // Sauvegarde sur le serveur
     fetch(`${BASE_URL}/api/admin/status`, {
         method: 'POST',
         headers: {
@@ -673,9 +685,8 @@ window.toggleAdminStatus = function() {
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ online: adminOnline })
-    }).catch(err => console.log('Statut sauvegardé'));
+    }).catch(err => console.log('Statut sauvegardé sur serveur'));
 }
-
 
 // ========== VÉRIFICATION SESSION AU CHARGEMENT ==========
 if (token) {
@@ -690,7 +701,15 @@ if (token) {
             
             // Mettre en ligne automatiquement
             adminOnline = true;
-            updateClientStatus(true);
+            localStorage.setItem('adminStatus', 'online');
+            
+            // Met à jour le bouton
+            const btn = document.getElementById('toggleAdminStatusBtn');
+            const text = document.getElementById('adminStatusText');
+            if (btn && text) {
+                btn.className = 'status-btn online';
+                text.textContent = 'En ligne';
+            }
             
             loadOrders();
             loadStats();
