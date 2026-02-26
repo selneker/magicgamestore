@@ -42,7 +42,7 @@ const API_URL = (() => {
 
 console.log('🌐 API URL:', API_URL);
 
-// ========== STATUT ADMIN - SIMPLE ==========
+// ========== STATUT ADMIN - VÉRIFICATION SIMPLE ==========
 
 function checkAdminStatus() {
     const dot = document.querySelector('.status-dot');
@@ -50,23 +50,27 @@ function checkAdminStatus() {
     
     if (!dot || !text) return;
     
-    // Lit le statut que l'admin a mis dans localStorage
-    const adminStatus = localStorage.getItem('adminStatus');
-    
-    if (adminStatus === 'online' || !adminStatus) {
-        dot.className = 'status-dot online';
-        text.textContent = 'Admin en ligne';
-    } else {
-        dot.className = 'status-dot offline';
-        text.textContent = 'Admin hors ligne';
-    }
+    // Requête simple pour savoir si admin est en ligne
+    fetch(`${API_URL}/admin/status`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.online) {
+                dot.className = 'status-dot online';
+                text.textContent = 'Admin en ligne';
+            } else {
+                dot.className = 'status-dot offline';
+                text.textContent = 'Admin hors ligne';
+            }
+        })
+        .catch(() => {
+            dot.className = 'status-dot offline';
+            text.textContent = 'Serveur indisponible';
+        });
 }
 
-// Vérifie toutes les 2 secondes
-setInterval(checkAdminStatus, 2000);
-
-// Vérifie au chargement
-checkAdminStatus();
+// Vérifie toutes les 3 secondes
+setInterval(checkAdminStatus, 3000);
+checkAdminStatus(); // Vérifie au chargement
 
 // ========== SAUVEGARDE DE SESSION ==========
 

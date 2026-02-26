@@ -81,29 +81,7 @@ function stopAutoRefresh() {
     }
 }
 
-// ========== STATUT ADMIN SIMPLE ==========
-
-// Initialiser le statut au chargement
-function initAdminStatus() {
-    const saved = localStorage.getItem('adminStatus');
-    adminOnline = saved !== 'offline'; // 'online' par défaut
-    
-    const btn = document.getElementById('toggleAdminStatusBtn');
-    const text = document.getElementById('adminStatusText');
-    
-    if (btn && text) {
-        if (adminOnline) {
-            btn.className = 'status-btn online';
-            text.textContent = 'En ligne';
-        } else {
-            btn.className = 'status-btn offline';
-            text.textContent = 'Hors ligne';
-        }
-    }
-    
-    // Sauvegarde initiale
-    localStorage.setItem('adminStatus', adminOnline ? 'online' : 'offline');
-}
+// ========== STATUT ADMIN - SIMPLE ==========
 
 // Fonction pour basculer le statut (appelée par le bouton)
 window.toggleAdminStatus = function() {
@@ -122,12 +100,17 @@ window.toggleAdminStatus = function() {
         showNotification('📴 Admin hors ligne', 'info');
     }
     
-    // Sauvegarde dans localStorage pour le client
-    localStorage.setItem('adminStatus', adminOnline ? 'online' : 'offline');
-    
-    // Optionnel : envoi au serveur si tu veux
-    // updateClientStatus(adminOnline);
+    // Sauvegarde sur le serveur via une requête
+    fetch(`${BASE_URL}/api/admin/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ online: adminOnline })
+    }).catch(err => console.log('Statut sauvegardé'));
 }
+
 
 // ========== BACKUP ==========
 function backupData() {
