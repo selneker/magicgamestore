@@ -277,8 +277,8 @@ function validatePubgId(pubgId) {
     return { valid: true };
 }
 
-/// ===========================================
-// FONCTIONS DE PAIEMENT DIRECT MVOLA - DIRECT SANS FALLBACK
+// ===========================================
+// FONCTIONS DE PAIEMENT DIRECT MVOLA - VERSION SIMPLE
 // ===========================================
 
 /**
@@ -296,7 +296,6 @@ function initMvolaDirectButton() {
     const container = document.getElementById('payBtnContainer');
     if (!container) return;
     
-    const pack = OrderPack?.textContent || '';
     const priceText = OrderPrice?.textContent || '';
     const priceNumber = priceText.replace(/[^0-9]/g, '');
     
@@ -307,11 +306,10 @@ function initMvolaDirectButton() {
     
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Lien direct vers téléphone
+    // Lien direct vers l'application téléphone
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
-           style="display: block; text-decoration: none; width: 100%;"
-           onclick="return handleMvolaDirectClick('${pack}', '${priceText}')">
+           style="display: block; text-decoration: none; width: 100%;">
             <button style="
                 background: #00A651;
                 color: white;
@@ -334,53 +332,6 @@ function initMvolaDirectButton() {
         </a>
     `;
 }
-
-/**
- * Fonction appelée quand on clique sur le bouton de paiement direct
- */
-window.handleMvolaDirectClick = function(pack, price) {
-    const pubgId = pubgIdInput?.value.trim();
-    const pseudo = pseudoInput?.value.trim();
-    
-    if (!pubgId || !pseudo) {
-        alert('❌ Veuillez remplir vos informations (ID PUBG et pseudo)');
-        return false;
-    }
-    
-    const validation = validatePubgId(pubgId);
-    if (!validation.valid) {
-        alert('❌ ' + validation.message);
-        return false;
-    }
-    
-    // Pas d'alert, pas de fallback - juste le champ référence qui devient vert
-    referenceInput.style.border = '3px solid #00A651';
-    referenceInput.style.backgroundColor = '#f0fff0';
-    
-    // Message d'aise discret
-    const helpText = document.getElementById('refHelp');
-    if (!helpText) {
-        const newHelp = document.createElement('div');
-        newHelp.id = 'refHelp';
-        newHelp.style.cssText = `
-            color: #00A651;
-            font-size: 0.9rem;
-            margin: 10px 0 5px;
-            padding: 8px;
-            background: #e8f5e9;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: 500;
-        `;
-        newHelp.innerHTML = `
-            <i class="fa-solid fa-hand-pointer"></i> 
-            Entrez la référence reçue par SMS
-        `;
-        referenceInput.parentNode.insertBefore(newHelp, referenceInput);
-    }
-    
-    return true; // Lien s'ouvre directement
-};
 
 // ===========================================
 // ENVOI DE COMMANDE - UX AMÉLIORÉE
