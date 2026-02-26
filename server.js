@@ -291,13 +291,12 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, async (req, res) => {
 
 // ========== STATUT ADMIN SIMPLE ==========
 
-let adminStatus = { online: false, lastUpdate: null };
+let adminStatus = { online: false };
 
 // Mettre à jour statut (admin)
 app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
     adminStatus = {
-        online: req.body.online,
-        lastUpdate: new Date().toISOString()
+        online: req.body.online
     };
     console.log(`📡 Admin ${adminStatus.online ? 'en ligne' : 'hors ligne'}`);
     res.json({ success: true, online: adminStatus.online });
@@ -305,15 +304,9 @@ app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
 
 // Vérifier statut (client)
 app.get('/api/admin/status', (req, res) => {
-    // Timeout après 5 min d'inactivité
-    if (adminStatus.lastUpdate) {
-        const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-        if (new Date(adminStatus.lastUpdate).getTime() < fiveMinutesAgo) {
-            adminStatus.online = false;
-        }
-    }
     res.json({ online: adminStatus.online });
 });
+
 
 // ========== ROUTES DE SAUVEGARDE ==========
 
