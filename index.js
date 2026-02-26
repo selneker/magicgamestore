@@ -42,7 +42,7 @@ const API_URL = (() => {
 
 console.log('🌐 API URL:', API_URL);
 
-// ========== STATUT ADMIN - VÉRIFICATION SIMPLE ==========
+// ========== STATUT ADMIN - VERSION SIMPLE ==========
 
 function checkAdminStatus() {
     const dot = document.querySelector('.status-dot');
@@ -68,8 +68,8 @@ function checkAdminStatus() {
         });
 }
 
-// Vérifie toutes les 3 secondes
-setInterval(checkAdminStatus, 3000);
+// Vérifie toutes les 10 secondes (pas 2)
+setInterval(checkAdminStatus, 10000);
 checkAdminStatus(); // Vérifie au chargement
 
 // ========== SAUVEGARDE DE SESSION ==========
