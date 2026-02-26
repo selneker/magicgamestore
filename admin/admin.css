@@ -737,7 +737,7 @@ tr:hover {
     gap: 8px;
     padding: 8px 16px;
     border: none;
-    border-radius: 30px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;

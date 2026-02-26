@@ -357,14 +357,14 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
 
 // ========== GESTION DU STATUT ADMIN ==========
 
-// Stockage du statut (en mémoire, pas persistant)
 let adminStatus = {
     online: false,
     lastUpdate: null,
-    adminEmail: null
+    adminEmail: null,
+    subscribers: [] // Pour les clients qui attendent des mises à jour
 };
 
-// Route pour mettre à jour le statut
+// Route pour mettre à jour le statut (admin)
 app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
     const { online } = req.body;
     
@@ -400,15 +400,37 @@ app.get('/api/admin/status', (req, res) => {
     });
 });
 
-// Route pour réinitialiser le statut (utile en cas de déconnexion forcée)
-app.post('/api/admin/status/reset', authenticateToken, isAdmin, (req, res) => {
-    adminStatus = {
-        online: false,
-        lastUpdate: null,
-        adminEmail: null
+// Route pour le long polling (mise à jour instantanée)
+app.get('/api/admin/status/poll', (req, res) => {
+    const timeout = setTimeout(() => {
+        // Si pas de changement après 25 secondes, on renvoie le statut actuel
+        res.json({ 
+            online: adminStatus.online,
+            lastUpdate: adminStatus.lastUpdate,
+            timeout: true
+        });
+    }, 25000); // Timeout après 25 secondes
+    
+    // Fonction pour vérifier si le statut a changé
+    const checkStatus = () => {
+        if (adminStatus.changed) {
+            clearTimeout(timeout);
+            res.json({ 
+                online: adminStatus.online,
+                lastUpdate: adminStatus.lastUpdate,
+                changed: true
+            });
+        }
     };
     
-    res.json({ success: true });
+    // Vérifier toutes les secondes
+    const interval = setInterval(checkStatus, 1000);
+    
+    // Nettoyer quand la réponse est envoyée
+    res.on('finish', () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+    });
 });
 
 

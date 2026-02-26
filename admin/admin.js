@@ -641,15 +641,18 @@ function refreshOrders() {
 }
 
 
-// ========== GESTION DU STATUT ADMIN ==========
+// ========== GESTION DU STATUT ADMIN AMÉLIORÉE ==========
 
-// Statut actuel (par défaut: en ligne si connecté)
 let adminOnline = true;
 
-// Fonction pour mettre à jour le statut sur le site client
+// Fonction pour mettre à jour le statut et notifier immédiatement
 async function updateClientStatus(online) {
+    if (!token) return;
+    
+    console.log(`📡 Changement de statut: ${online ? 'en ligne' : 'hors ligne'}`);
+    
     try {
-        await fetch(`${BASE_URL}/api/admin/status`, {
+        const response = await fetch(`${BASE_URL}/api/admin/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -657,107 +660,38 @@ async function updateClientStatus(online) {
             },
             body: JSON.stringify({ online })
         });
-        console.log(`📡 Statut client mis à jour: ${online ? 'en ligne' : 'hors ligne'}`);
+        
+        if (!response.ok) throw new Error('Erreur réseau');
+        
+        adminOnline = online;
+        
+        // Mettre à jour l'interface du bouton
+        const statusBtn = document.getElementById('toggleAdminStatusBtn');
+        const statusText = document.getElementById('adminStatusText');
+        
+        if (statusBtn && statusText) {
+            if (online) {
+                statusBtn.className = 'status-btn online';
+                statusText.textContent = 'En ligne';
+            } else {
+                statusBtn.className = 'status-btn offline';
+                statusText.textContent = 'Hors ligne';
+            }
+        }
+        
+        showNotification(online ? '✅ Mode en ligne activé' : '📴 Mode hors ligne activé', 
+                       online ? 'success' : 'info');
+        
     } catch (error) {
-        console.error('❌ Erreur mise à jour statut client:', error);
+        console.error('❌ Erreur mise à jour statut:', error);
+        showNotification('❌ Erreur de communication avec le serveur', 'error');
     }
 }
 
 // Fonction pour basculer le statut manuellement
 function toggleAdminStatus() {
-    adminOnline = !adminOnline;
-    
-    const statusBtn = document.getElementById('toggleAdminStatusBtn');
-    const statusText = document.getElementById('adminStatusText');
-    
-    if (adminOnline) {
-        statusBtn.className = 'status-btn online';
-        statusText.textContent = 'En ligne';
-        showNotification('✅ Mode en ligne activé - Les clients vous voient connecté', 'success');
-    } else {
-        statusBtn.className = 'status-btn offline';
-        statusText.textContent = 'Hors ligne';
-        showNotification('📴 Mode hors ligne activé - Les clients vous voient déconnecté', 'info');
-    }
-    
-    // Mettre à jour le statut côté client
-    updateClientStatus(adminOnline);
+    updateClientStatus(!adminOnline);
 }
-
-// Fonction pour vérifier le statut au chargement
-function checkInitialStatus() {
-    const statusBtn = document.getElementById('toggleAdminStatusBtn');
-    const statusText = document.getElementById('adminStatusText');
-    
-    if (statusBtn && statusText) {
-        // Par défaut, admin en ligne quand connecté
-        adminOnline = true;
-        statusBtn.className = 'status-btn online';
-        statusText.textContent = 'En ligne';
-    }
-}
-
-// Modifier la fonction logout pour mettre hors ligne automatiquement
-function logout() {
-    // Mettre hors ligne avant de déconnecter
-    updateClientStatus(false).finally(() => {
-        stopAutoRefresh();
-        localStorage.removeItem('adminToken');
-        token = null;
-        document.getElementById('loginSection').style.display = 'flex';
-        document.getElementById('adminSection').style.display = 'none';
-        showNotification('Déconnexion réussie', 'success');
-    });
-}
-
-// Modifier la fonction login pour mettre en ligne automatiquement
-function login() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    console.log('📤 Tentative de connexion...');
-
-    fetch(`${BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    })
-    .then(res => {
-        console.log('📥 Réponse status:', res.status);
-        return res.json();
-    })
-    .then(data => {
-        console.log('📥 Données reçues:', data);
-        
-        if (data.token) {
-            token = data.token;
-            localStorage.setItem('adminToken', token);
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminSection').style.display = 'block';
-            document.getElementById('adminEmail').textContent = data.user.email;
-            
-            // Mettre en ligne automatiquement
-            adminOnline = true;
-            updateClientStatus(true);
-            
-            loadOrders();
-            loadStats();
-            startAutoRefresh();
-            showNotification('Connexion réussie', 'success');
-        } else {
-            document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
-            showNotification(data.error || 'Erreur de connexion', 'error');
-        }
-    })
-    .catch(err => {
-        console.error('❌ Erreur fetch:', err);
-        document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
-        showNotification('Erreur de connexion au serveur', 'error');
-    });
-}
-
-// Appeler au chargement
-checkInitialStatus();
 
 
 

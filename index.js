@@ -424,7 +424,10 @@ async function checkAdminStatus() {
     try {
         const response = await fetch(`${API_URL}/admin/status`, {
             method: 'GET',
-            cache: 'no-cache'
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
         });
         
         const data = await response.json();
@@ -441,6 +444,47 @@ async function checkAdminStatus() {
         statusText.textContent = 'Serveur indisponible';
     }
 }
+
+// Version avec long polling (mise à jour instantanée)
+async function longPollingStatus() {
+    const statusDot = document.querySelector('.status-dot');
+    const statusText = document.querySelector('.status-text');
+    
+    if (!statusDot || !statusText) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/status/poll`, {
+            method: 'GET',
+            cache: 'no-cache'
+        });
+        
+        const data = await response.json();
+        
+        if (data.online) {
+            statusDot.className = 'status-dot online';
+            statusText.textContent = 'Admin en ligne';
+        } else {
+            statusDot.className = 'status-dot offline';
+            statusText.textContent = 'Admin hors ligne';
+        }
+        
+        // Relancer immédiatement pour la prochaine mise à jour
+        longPollingStatus();
+        
+    } catch (error) {
+        console.log('🔄 Reconnexion long polling...');
+        // En cas d'erreur, attendre 2 secondes et réessayer
+        setTimeout(longPollingStatus, 2000);
+    }
+}
+
+// Démarrer le long polling au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    longPollingStatus();
+    
+    // Garder aussi le polling normal comme fallback
+    setInterval(checkAdminStatus, 30000);
+});
 
 
 // ===========================================
