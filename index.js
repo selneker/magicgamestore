@@ -270,7 +270,7 @@ function validatePubgId(pubgId) {
 }
 
 // ===========================================
-// FONCTIONS DE PAIEMENT DIRECT MVOLA
+// FONCTIONS DE PAIEMENT DIRECT MVOLA AMÉLIORÉES
 // ===========================================
 
 /**
@@ -278,8 +278,93 @@ function validatePubgId(pubgId) {
  */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
-    return `#111*1*2*0383905692*${cleanPrice}*2*0#`;
+    // Version raw et encodée
+    const rawCode = `#111*1*2*0383905692*${cleanPrice}*2*0#`;
+    const encodedCode = encodeURIComponent(rawCode);
+    return { raw: rawCode, encoded: encodedCode };
 }
+
+/**
+ * Affiche une boîte de dialogue avec le code à composer
+ */
+function showManualCodeDialog(ussdCode, amount) {
+    // Créer une modale temporaire
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        z-index: 10001;
+        text-align: center;
+        max-width: 300px;
+        width: 90%;
+    `;
+    
+    modal.innerHTML = `
+        <h3 style="margin-top: 0; color: #00A651;">📞 Paiement MVola</h3>
+        <p style="margin-bottom: 15px;">Composez ce code sur votre téléphone :</p>
+        <div style="
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 15px 0;
+            word-break: break-all;
+        ">${ussdCode}</div>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
+            Montant: <strong>${amount} Ar</strong>
+        </p>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="copyToClipboardManual('${ussdCode}')" style="
+                flex: 1;
+                background: #2196F3;
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+            ">
+                📋 Copier
+            </button>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                flex: 1;
+                background: #ddd;
+                color: #333;
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+            ">
+                Fermer
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Fermer en cliquant à l'extérieur
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// Fonction de copie pour la modale manuelle
+window.copyToClipboardManual = function(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Code copié ! Ouvrez votre application téléphone et composez-le.');
+    }).catch(() => {
+        alert('❌ Erreur de copie');
+    });
+};
 
 /**
  * Initialise le bouton de paiement direct dans la modale
@@ -297,31 +382,32 @@ function initMvolaDirectButton() {
         return;
     }
     
-    const ussdCode = generateUSSDCode(priceNumber);
+    const { raw } = generateUSSDCode(priceNumber);
     
+    // Créer un bouton au lieu d'un lien
     container.innerHTML = `
-        <a href="tel:${ussdCode}" 
-           style="display: block; text-decoration: none; width: 100%;"
-           onclick="return handleMvolaDirectClick('${pack}', '${priceText}')">
-            <button style="
-                background: #00A651;
-                color: white;
-                border: none;
-                padding: 15px 20px;
-                border-radius: 5px;
-                font-weight: bold;
-                font-size: 1.1rem;
-                cursor: pointer;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                transition: all 0.3s;
-            ">
-                <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
-            </button>
-        </a>
+        <button onclick="handleMvolaDirectClick('${pack}', '${priceText}')" style="
+            background: #00A651;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,166,81,0.3);
+        ">
+            <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
+        </button>
+        <p style="font-size: 0.7rem; color: #999; margin-top: 5px; text-align: center;">
+            Code: ${raw}
+        </p>
     `;
 }
 
@@ -343,13 +429,52 @@ window.handleMvolaDirectClick = function(pack, price) {
         return false;
     }
     
-    showToast('📱 Code USSD lancé - Après paiement, entrez la référence reçue', 'success');
+    // Récupérer le montant
+    const priceText = OrderPrice?.textContent || price;
+    const priceNumber = priceText.replace(/[^0-9]/g, '');
+    const { raw, encoded } = generateUSSDCode(priceNumber);
     
+    // Détection du type d'appareil
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    console.log('📱 Appareil détecté:', isAndroid ? 'Android' : isIOS ? 'iOS' : 'Autre');
+    console.log('📞 Code USSD:', raw);
+    
+    // Afficher une notification
+    showToast('📱 Préparation du paiement MVola...', 'info');
+    
+    // Différentes méthodes selon l'appareil
+    if (isAndroid) {
+        // Pour Android: utiliser l'intent tel: avec le code encodé
+        const intentUrl = `tel:${encoded}`;
+        window.location.href = intentUrl;
+        
+        // Fallback si l'intent ne fonctionne pas
+        setTimeout(() => {
+            if (confirm('📞 Le code ne s\'est pas lancé automatiquement?\n\nVoulez-vous voir le code à composer manuellement?')) {
+                showManualCodeDialog(raw, priceNumber);
+            }
+        }, 2000);
+        
+    } else if (isIOS) {
+        // Pour iOS: afficher directement la boîte de dialogue
+        showManualCodeDialog(raw, priceNumber);
+    } else {
+        // Pour les autres: essayer le lien direct
+        window.location.href = `tel:${raw}`;
+        setTimeout(() => {
+            showManualCodeDialog(raw, priceNumber);
+        }, 2000);
+    }
+    
+    // Mettre le focus sur la référence après 10 secondes
     setTimeout(() => {
         referenceInput?.focus();
-    }, 5000);
+        showToast('💰 Entrez la référence reçue par SMS', 'success');
+    }, 10000);
     
-    return true;
+    return false; // Empêcher le comportement par défaut
 };
 
 // ===========================================
@@ -412,7 +537,6 @@ function submitOrder() {
         confirmBtn.classList.remove('loading');
     });
 }
-
 
 // ========== VÉRIFICATION STATUT ADMIN AMÉLIORÉE ==========
 async function checkAdminStatus() {
@@ -485,7 +609,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Garder aussi le polling normal comme fallback
     setInterval(checkAdminStatus, 30000);
 });
-
 
 // ===========================================
 // ÉCOUTEURS D'ÉVÉNEMENTS
