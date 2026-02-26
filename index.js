@@ -414,7 +414,7 @@ function submitOrder() {
 }
 
 
-// ========== VÉRIFICATION STATUT ADMIN ==========
+// ========== VÉRIFICATION STATUT ADMIN AMÉLIORÉE ==========
 async function checkAdminStatus() {
     const statusDot = document.querySelector('.status-dot');
     const statusText = document.querySelector('.status-text');
@@ -422,29 +422,25 @@ async function checkAdminStatus() {
     if (!statusDot || !statusText) return;
     
     try {
-        // Tentative de ping vers une route admin (juste pour vérifier si le serveur répond)
-        const response = await fetch(`${API_URL.replace('/api', '')}/admin-test`, {
-            method: 'HEAD',
+        const response = await fetch(`${API_URL}/admin/status`, {
+            method: 'GET',
             cache: 'no-cache'
         });
         
-        if (response.ok) {
+        const data = await response.json();
+        
+        if (data.online) {
             statusDot.className = 'status-dot online';
             statusText.textContent = 'Admin en ligne';
         } else {
-            throw new Error('Admin hors ligne');
+            statusDot.className = 'status-dot offline';
+            statusText.textContent = 'Admin hors ligne';
         }
     } catch (error) {
         statusDot.className = 'status-dot offline';
-        statusText.textContent = 'Admin hors ligne';
+        statusText.textContent = 'Serveur indisponible';
     }
 }
-
-// Vérifier toutes les 30 secondes
-setInterval(checkAdminStatus, 30000);
-
-// Vérifier au chargement
-document.addEventListener('DOMContentLoaded', checkAdminStatus);
 
 
 // ===========================================

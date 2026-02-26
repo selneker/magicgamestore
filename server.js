@@ -354,6 +354,64 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
+
+// ========== GESTION DU STATUT ADMIN ==========
+
+// Stockage du statut (en mémoire, pas persistant)
+let adminStatus = {
+    online: false,
+    lastUpdate: null,
+    adminEmail: null
+};
+
+// Route pour mettre à jour le statut
+app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
+    const { online } = req.body;
+    
+    adminStatus = {
+        online: online,
+        lastUpdate: new Date().toISOString(),
+        adminEmail: req.user.email
+    };
+    
+    console.log(`📡 Statut admin mis à jour: ${online ? 'en ligne' : 'hors ligne'}`);
+    
+    res.json({ 
+        success: true, 
+        online: adminStatus.online 
+    });
+});
+
+// Route pour que les clients vérifient le statut
+app.get('/api/admin/status', (req, res) => {
+    // Si pas de mise à jour depuis plus de 5 minutes, considérer hors ligne
+    if (adminStatus.lastUpdate) {
+        const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+        const lastUpdate = new Date(adminStatus.lastUpdate).getTime();
+        
+        if (lastUpdate < fiveMinutesAgo) {
+            adminStatus.online = false;
+        }
+    }
+    
+    res.json({ 
+        online: adminStatus.online,
+        lastUpdate: adminStatus.lastUpdate
+    });
+});
+
+// Route pour réinitialiser le statut (utile en cas de déconnexion forcée)
+app.post('/api/admin/status/reset', authenticateToken, isAdmin, (req, res) => {
+    adminStatus = {
+        online: false,
+        lastUpdate: null,
+        adminEmail: null
+    };
+    
+    res.json({ success: true });
+});
+
+
 // ========== ROUTES DE DEBUG ==========
 app.get('/api/debug-auth', (req, res) => {
     res.json({ 
