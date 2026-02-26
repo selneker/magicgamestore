@@ -245,6 +245,20 @@
         .search-form input.valid {
             border-color: #4CAF50;
         }
+
+        .search-form input:focus {
+            outline: none !important;
+            box-shadow: none !important;
+            border: 2px solid #ddd !important;
+        }
+
+        .search-form input.valid:focus {
+            border-color: #4CAF50 !important;
+        }
+
+        .search-form input.invalid:focus {
+            border-color: #f44336 !important;
+        }
     </style>
 </head>
 <body>
@@ -255,7 +269,7 @@
                 <h1><a href="index.html">Magic Game Store</a></h1>
             </div>
             <nav>
-                <li style="font-size: clamp(0.8rem, 1vw, 3rem);font-weight: 500;"><a href="historique.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> MON HISTORIQUE</a></li> 
+                <li style="font-size: clamp(0.8rem, 1vw, 3rem);font-weight: 500;"><a href="historique.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIQUE</a></li> 
                 <li style="font-size: clamp(0.8rem, 1vw, 3rem);font-weight: 500;"><a href="index.html"><i class="fa-solid fa-cart-plus"></i> ACHETER</a></li>
             </nav>
         </div>
@@ -264,7 +278,7 @@
     <!-- CONTENU PRINCIPAL -->
     <div class="history-container">
         <div class="history-header">
-            <h1><i class="fa-solid fa-clock-rotate-left"></i> Mon Historique d'Achats</h1>
+            <h1><i class="fa-solid fa-clock-rotate-left"></i>Historique d'Achats</h1>
             <button onclick="refreshHistory()" class="filter-btn" style="border-radius: 5px;">
                 <i class="fa-solid fa-rotate-right"></i> Actualiser
             </button>
@@ -272,9 +286,9 @@
 
         <!-- SECTION RECHERCHE -->
         <div class="search-section">
-            <h3>🔍 Rechercher mes achats</h3>
+            <h3><i class="fa-solid fa-magnifying-glass"></i> Rechercher mes achats</h3>
             <div class="search-form">
-                <input type="text" id="searchPubgId" placeholder="Entrez votre ID PUBG (5-20 chiffres)" 
+                <input type="text" id="searchPubgId" placeholder="Entrez votre ID PUBG" 
                        oninput="validateInput()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                 <button onclick="searchOrders()">
                     <i class="fa-solid fa-magnifying-glass"></i> Voir mes achats
@@ -282,7 +296,7 @@
             </div>
             <div id="validationMessage" class="validation-error"></div>
             <p style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
-                <i class="fa-solid fa-info-circle"></i> Entrez votre ID PUBG (5 à 20 chiffres) pour voir toutes vos commandes
+                <i class="fa-solid fa-info-circle"></i> Entrez votre ID PUBG pour voir toutes vos commandes
             </p>
         </div>
 
@@ -290,9 +304,9 @@
         <div id="filtersSection" style="display: none;">
             <div class="filter-buttons">
                 <button class="filter-btn active" onclick="filterOrders('all')">Tous</button>
-                <button class="filter-btn" onclick="filterOrders('en attente')">⏳ En attente</button>
-                <button class="filter-btn" onclick="filterOrders('livré')">✅ Livrés</button>
-                <button class="filter-btn" onclick="filterOrders('annulé')">❌ Annulés</button>
+                <button class="filter-btn" onclick="filterOrders('en attente')">En attente</button>
+                <button class="filter-btn" onclick="filterOrders('livré')">Livrés</button>
+                <button class="filter-btn" onclick="filterOrders('annulé')">Annulés</button>
             </div>
         </div>
 
@@ -351,8 +365,8 @@
         function validatePubgId(pubgId) {
             if (!pubgId) return { valid: false, message: 'Veuillez entrer votre ID PUBG' };
             if (!/^\d+$/.test(pubgId)) return { valid: false, message: 'ID PUBG ne doit contenir que des chiffres' };
-            if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (minimum 5 chiffres)' };
-            if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (maximum 20 chiffres)' };
+            if (pubgId.length < 5) return { valid: false, message: 'ID introuvable dans l\'hitorique' };
+            if (pubgId.length > 20) return { valid: false, message: 'ID introuvable dans l\'hitorique' };
             return { valid: true };
         }
 
