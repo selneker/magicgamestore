@@ -1,6 +1,8 @@
 // ===========================================
-// SÉLECTION DES ÉLÉMENTS
+// INDEX.JS - MAGIC GAME STORE
 // ===========================================
+
+// ========== SÉLECTION DES ÉLÉMENTS ==========
 const tarifs = document.getElementById("tarifs");
 const abonnements = document.getElementById("abonnements");
 const aboLink = document.getElementById("aboLink");
@@ -13,7 +15,7 @@ const modalPay = document.getElementById('modalPay');
 const OrderPack = document.getElementById('OrderPack');
 const OrderPrice = document.getElementById('OrderPrice');
 
-// Boutons modales
+// Boutons
 const acheterBtns = document.querySelectorAll('.acheter');
 const closeInfo = document.getElementById('closeInfo');
 const closeInfo2 = document.getElementById('closeInfo2');
@@ -30,7 +32,7 @@ const referenceInput = document.getElementById('referenceInput');
 // Toast
 const toast = document.getElementById('toast');
 
-// ========== URL DE L'API ==========
+// ========== URL API ==========
 const API_URL = (() => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
@@ -40,13 +42,34 @@ const API_URL = (() => {
 
 console.log('🌐 API URL:', API_URL);
 
-// ===========================================
-// SAUVEGARDE DE SESSION AMÉLIORÉE
-// ===========================================
+// ========== STATUT ADMIN - SIMPLE ==========
 
-/**
- * Sauvegarde l'état complet de la commande
- */
+function checkAdminStatus() {
+    const dot = document.querySelector('.status-dot');
+    const text = document.querySelector('.status-text');
+    
+    if (!dot || !text) return;
+    
+    // Lit le statut que l'admin a mis dans localStorage
+    const adminStatus = localStorage.getItem('adminStatus');
+    
+    if (adminStatus === 'online' || !adminStatus) {
+        dot.className = 'status-dot online';
+        text.textContent = 'Admin en ligne';
+    } else {
+        dot.className = 'status-dot offline';
+        text.textContent = 'Admin hors ligne';
+    }
+}
+
+// Vérifie toutes les 2 secondes
+setInterval(checkAdminStatus, 2000);
+
+// Vérifie au chargement
+checkAdminStatus();
+
+// ========== SAUVEGARDE DE SESSION ==========
+
 function saveOrderState() {
     const state = {
         pack: OrderPack?.textContent || '',
@@ -57,65 +80,43 @@ function saveOrderState() {
         currentModal: modalInfo.style.display === 'flex' ? 'info' : 
                       modalPay.style.display === 'flex' ? 'pay' : 'none',
         timestamp: Date.now(),
-        expiresAt: Date.now() + (30 * 60 * 1000) // 30 minutes
+        expiresAt: Date.now() + (30 * 60 * 1000)
     };
     
     localStorage.setItem('orderState', JSON.stringify(state));
-    console.log('💾 État sauvegardé:', state.currentModal);
 }
 
-/**
- * Restaure l'état sauvegardé
- */
 function restoreOrderState() {
     const saved = localStorage.getItem('orderState');
-    
     if (!saved) return null;
     
     try {
         const state = JSON.parse(saved);
-        
-        // Vérifier l'expiration
         if (state.expiresAt && state.expiresAt < Date.now()) {
-            console.log('⏰ État expiré');
             localStorage.removeItem('orderState');
             return null;
         }
-        
-        console.log('🔄 État restauré:', state.currentModal);
         return state;
-        
-    } catch (error) {
-        console.error('❌ Erreur restauration:', error);
-        localStorage.removeItem('orderState');
+    } catch {
         return null;
     }
 }
 
-/**
- * Efface l'état sauvegardé
- */
 function clearOrderState() {
     localStorage.removeItem('orderState');
-    console.log('🗑️ État effacé');
 }
 
-// ===========================================
-// INITIALISATION
-// ===========================================
+// ========== INITIALISATION ==========
 document.addEventListener("DOMContentLoaded", () => {
-    // Appliquer le mode sauvegardé (UC ou Abonnements)
     if (mode === 'abonnements') {
         showAbonnements();
     } else {
         showTarifs();
     }
     
-    // Restaurer l'état sauvegardé
     const savedState = restoreOrderState();
     
     if (savedState && savedState.pack) {
-        // Restaurer les valeurs
         OrderPack.textContent = savedState.pack;
         OrderPrice.textContent = savedState.price;
         
@@ -123,40 +124,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (pseudoInput) pseudoInput.value = savedState.pseudo || '';
         if (referenceInput) referenceInput.value = savedState.reference || '';
         
-        // Afficher une notification
         showToast('🔄 Reprise de votre commande', 'info');
         
-        // Ouvrir la bonne modale
         setTimeout(() => {
             if (savedState.currentModal === 'pay') {
-                // Aller directement à la modale de paiement
                 openModal(modalPay);
             } else if (savedState.currentModal === 'info') {
-                // Ouvrir la modale d'information
                 openModal(modalInfo);
             }
         }, 500);
     }
     
-    // Initialiser les écouteurs
     initEventListeners();
 });
 
-// ===========================================
-// FONCTIONS DE SWITCH
-// ===========================================
+// ========== SWITCH UC / ABONNEMENTS ==========
+
 function showTarifs() {
     abonnements.style.display = 'none';
-    abonnements.classList.remove('active', 'fade-in');
-    
-    heroTitle.classList.remove('fade-in');
-    void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'VENTE UC<br>PUBG MOBILE';
-    heroTitle.classList.add('fade-in');
-    
     tarifs.style.display = 'block';
-    tarifs.classList.add('active', 'fade-in');
-    
     aboLink.innerHTML = '<i class="fa-solid fa-cart-plus"></i> ABONNEMENT';
     mode = 'uc';
     localStorage.setItem('mode', mode);
@@ -164,40 +151,24 @@ function showTarifs() {
 
 function showAbonnements() {
     tarifs.style.display = 'none';
-    tarifs.classList.remove('active', 'fade-in');
-    
-    heroTitle.classList.remove('fade-in');
-    void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'ABONNEMENT<br>PUBG MOBILE';
-    heroTitle.classList.add('fade-in');
-    
     abonnements.style.display = 'block';
-    abonnements.classList.add('active', 'fade-in');
-    
     aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> ACHAT UC';
     mode = 'abonnements';
     localStorage.setItem('mode', mode);
 }
 
-// ===========================================
-// FONCTIONS MODALES
-// ===========================================
+// ========== MODALES ==========
+
 function openModal(modal) {
-    // Fermer l'autre modale d'abord
     modalInfo.style.display = 'none';
     modalPay.style.display = 'none';
     
-    // Ouvrir la modale demandée
     modal.style.display = 'flex';
-    modal.classList.remove('fade-in');
-    void modal.offsetWidth;
-    modal.classList.add('fade-in');
     document.body.style.overflow = 'hidden';
     
-    // Sauvegarder l'état après ouverture
     setTimeout(saveOrderState, 100);
     
-    // Si c'est la modale de paiement, initialiser le bouton MVola direct
     if (modal.id === 'modalPay') {
         setTimeout(initMvolaDirectButton, 100);
     }
@@ -208,7 +179,6 @@ function closeAllModals() {
     modalPay.style.display = 'none';
     document.body.style.overflow = 'auto';
     
-    // Vider les inputs
     if (pubgIdInput) pubgIdInput.value = '';
     if (pseudoInput) pseudoInput.value = '';
     if (referenceInput) {
@@ -217,11 +187,9 @@ function closeAllModals() {
         referenceInput.style.backgroundColor = '';
     }
     
-    // Supprimer le message d'aide
     const helpText = document.getElementById('refHelp');
     if (helpText) helpText.remove();
     
-    // Effacer l'état sauvegardé
     clearOrderState();
 }
 
@@ -229,24 +197,18 @@ function showToast(message, type = 'success') {
     toast.textContent = message;
     toast.className = 'toast ' + type;
     toast.style.display = 'block';
-    
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
+    setTimeout(() => toast.style.display = 'none', 3000);
 }
 
 function copyNumber() {
     const number = '0383905692';
-    navigator.clipboard.writeText(number).then(() => {
-        showToast('Numéro copié !', 'success');
-    }).catch(() => {
-        showToast('Erreur de copie', 'error');
-    });
+    navigator.clipboard.writeText(number)
+        .then(() => showToast('Numéro copié !', 'success'))
+        .catch(() => showToast('Erreur de copie', 'error'));
 }
 
-// ===========================================
-// VALIDATION
-// ===========================================
+// ========== VALIDATION ==========
+
 function validateOrder() {
     const pubgId = pubgIdInput?.value.trim();
     const pseudo = pseudoInput?.value.trim();
@@ -256,42 +218,25 @@ function validateOrder() {
         return false;
     }
     
-    // Sauvegarder après validation
     saveOrderState();
-    
     return true;
 }
 
-// ===========================================
-// FONCTIONS DE VALIDATION ID PUBG
-// ===========================================
-
-/**
- * Valide un ID PUBG (5-20 chiffres)
- */
 function validatePubgId(pubgId) {
     if (!pubgId) return { valid: false, message: 'ID PUBG requis' };
     if (!/^\d+$/.test(pubgId)) return { valid: false, message: 'ID PUBG ne doit contenir que des chiffres' };
-    if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (minimum 5 chiffres)' };
-    if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (maximum 20 chiffres)' };
+    if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (min 5)' };
+    if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (max 20)' };
     return { valid: true };
 }
 
-// ===========================================
-// FONCTIONS DE PAIEMENT DIRECT MVOLA - VERSION SIMPLE
-// ===========================================
+// ========== PAIEMENT MVOLA ==========
 
-/**
- * Génère le code USSD MVola pour un montant donné
- */
 function generateUSSDCode(price) {
     const cleanPrice = price.toString().replace(/[^0-9]/g, '');
     return `#111*1*2*0383905692*${cleanPrice}*2*0#`;
 }
 
-/**
- * Initialise le bouton de paiement direct dans la modale
- */
 function initMvolaDirectButton() {
     const container = document.getElementById('payBtnContainer');
     if (!container) return;
@@ -306,7 +251,6 @@ function initMvolaDirectButton() {
     
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Lien direct vers l'application téléphone
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;">
@@ -333,9 +277,8 @@ function initMvolaDirectButton() {
     `;
 }
 
-// ===========================================
-// ENVOI DE COMMANDE - UX AMÉLIORÉE
-// ===========================================
+// ========== ENVOI DE COMMANDE ==========
+
 function submitOrder() {
     const pubgId = pubgIdInput?.value.trim();
     const pseudo = pseudoInput?.value.trim();
@@ -350,67 +293,24 @@ function submitOrder() {
     }
     
     if (!reference) {
-        showToast('Veuillez entrer la référence MVola reçue par SMS', 'error');
-        
-        // UX : Mettre en évidence le champ manquant
-        referenceInput.style.border = '3px solid #f44336';
-        referenceInput.style.backgroundColor = '#ffebee';
+        showToast('Veuillez entrer la référence MVola', 'error');
+        referenceInput.style.border = '2px solid #f44336';
         referenceInput.focus();
-        
-        // Ajouter un message d'erreur temporaire
-        const errorMsg = document.createElement('div');
-        errorMsg.id = 'refError';
-        errorMsg.style.cssText = `
-            color: #f44336;
-            font-size: 0.8rem;
-            margin-top: 5px;
-            text-align: center;
-        `;
-        errorMsg.innerHTML = '❌ La référence est obligatoire pour valider la commande';
-        
-        const oldError = document.getElementById('refError');
-        if (oldError) oldError.remove();
-        
-        referenceInput.parentNode.appendChild(errorMsg);
         
         setTimeout(() => {
             referenceInput.style.border = '';
-            referenceInput.style.backgroundColor = '';
-            const err = document.getElementById('refError');
-            if (err) err.remove();
         }, 3000);
-        
         return;
     }
     
-    // Nettoyer les éléments d'aide
-    const helpText = document.getElementById('refHelp');
-    if (helpText) helpText.remove();
-    
-    const errorMsg = document.getElementById('refError');
-    if (errorMsg) errorMsg.remove();
-    
-    referenceInput.style.border = '';
-    referenceInput.style.backgroundColor = '';
-    confirmBtn.style.animation = '';
-    
     confirmBtn.disabled = true;
-    confirmBtn.textContent = 'Envoi en cours...';
+    confirmBtn.textContent = 'Envoi...';
     confirmBtn.classList.add('loading');
-    
-    console.log('📤 Envoi commande:', { pubgId, pseudo, pack, price, reference });
     
     fetch(`${API_URL}/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            pubgId,
-            pseudo,
-            pack,
-            price,
-            paymentMethod,
-            reference
-        })
+        body: JSON.stringify({ pubgId, pseudo, pack, price, paymentMethod, reference })
     })
     .then(res => res.json())
     .then(data => {
@@ -422,10 +322,7 @@ function submitOrder() {
             closeAllModals();
         }
     })
-    .catch(err => {
-        console.error('❌ Erreur:', err);
-        showToast('❌ Impossible de contacter le serveur', 'error');
-    })
+    .catch(() => showToast('❌ Impossible de contacter le serveur', 'error'))
     .finally(() => {
         confirmBtn.disabled = false;
         confirmBtn.textContent = 'Confirmer';
@@ -433,101 +330,20 @@ function submitOrder() {
     });
 }
 
-// ========== VÉRIFICATION STATUT ADMIN AMÉLIORÉE ==========
-async function checkAdminStatus() {
-    const statusDot = document.querySelector('.status-dot');
-    const statusText = document.querySelector('.status-text');
-    
-    if (!statusDot || !statusText) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/status`, {
-            method: 'GET',
-            cache: 'no-cache',
-            headers: {
-                'Cache-Control': 'no-cache'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.online) {
-            statusDot.className = 'status-dot online';
-            statusText.textContent = 'Admin en ligne';
-        } else {
-            statusDot.className = 'status-dot offline';
-            statusText.textContent = 'Admin hors ligne';
-        }
-    } catch (error) {
-        statusDot.className = 'status-dot offline';
-        statusText.textContent = 'Serveur indisponible';
-    }
-}
+// ========== ÉCOUTEURS ==========
 
-// Version avec long polling (mise à jour instantanée)
-async function longPollingStatus() {
-    const statusDot = document.querySelector('.status-dot');
-    const statusText = document.querySelector('.status-text');
-    
-    if (!statusDot || !statusText) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/status/poll`, {
-            method: 'GET',
-            cache: 'no-cache'
-        });
-        
-        const data = await response.json();
-        
-        if (data.online) {
-            statusDot.className = 'status-dot online';
-            statusText.textContent = 'Admin en ligne';
-        } else {
-            statusDot.className = 'status-dot offline';
-            statusText.textContent = 'Admin hors ligne';
-        }
-        
-        // Relancer immédiatement pour la prochaine mise à jour
-        longPollingStatus();
-        
-    } catch (error) {
-        console.log('🔄 Reconnexion long polling...');
-        // En cas d'erreur, attendre 2 secondes et réessayer
-        setTimeout(longPollingStatus, 2000);
-    }
-}
-
-// Démarrer le long polling au chargement
-document.addEventListener('DOMContentLoaded', () => {
-    longPollingStatus();
-    
-    // Garder aussi le polling normal comme fallback
-    setInterval(checkAdminStatus, 30000);
-});
-
-// ===========================================
-// ÉCOUTEURS D'ÉVÉNEMENTS
-// ===========================================
 function initEventListeners() {
     if (aboLink) {
         aboLink.addEventListener("click", (e) => {
             e.preventDefault();
-            if (mode === 'uc') {
-                showAbonnements();
-            } else {
-                showTarifs();
-            }
+            mode === 'uc' ? showAbonnements() : showTarifs();
         });
     }
     
     acheterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const pack = btn.dataset.pack;
-            const price = btn.dataset.price;
-            
-            OrderPack.textContent = pack;
-            OrderPrice.textContent = price;
-            
+            OrderPack.textContent = btn.dataset.pack;
+            OrderPrice.textContent = btn.dataset.price;
             openModal(modalInfo);
         });
     });
@@ -555,7 +371,6 @@ function initEventListeners() {
         confirmBtn.addEventListener('click', submitOrder);
     }
     
-    // Sauvegarder l'état à chaque changement dans les inputs
     if (pubgIdInput) pubgIdInput.addEventListener('input', saveOrderState);
     if (pseudoInput) pseudoInput.addEventListener('input', saveOrderState);
     if (referenceInput) referenceInput.addEventListener('input', saveOrderState);
@@ -569,7 +384,5 @@ function initEventListeners() {
     });
 }
 
-// ===========================================
-// FONCTIONS GLOBALES
-// ===========================================
+// ========== FONCTIONS GLOBALES ==========
 window.copyNumber = copyNumber;
