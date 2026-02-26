@@ -278,7 +278,7 @@ function validatePubgId(pubgId) {
 }
 
 // ===========================================
-// FONCTIONS DE PAIEMENT DIRECT MVOLA - UX AMÉLIORÉE
+// FONCTIONS DE PAIEMENT DIRECT MVOLA - LANCEMENT DIRECT
 // ===========================================
 
 /**
@@ -307,7 +307,7 @@ function initMvolaDirectButton() {
     
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Créer un bouton avec lien direct
+    // Lien direct vers téléphone (code caché)
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;"
@@ -337,7 +337,6 @@ function initMvolaDirectButton() {
 
 /**
  * Fonction appelée quand on clique sur le bouton de paiement direct
- * UX AMÉLIORÉE : guide l'utilisateur vers le champ référence
  */
 window.handleMvolaDirectClick = function(pack, price) {
     const pubgId = pubgIdInput?.value.trim();
@@ -354,76 +353,38 @@ window.handleMvolaDirectClick = function(pack, price) {
         return false;
     }
     
-    // Notification de confirmation
-    showToast('📞 Paiement lancé - Entrez la référence ci-dessous', 'success');
+    // Notification simple
+    showToast('📞 Appel lancé - Entrez la référence après paiement', 'success');
     
-    // === AMÉLIORATION UX : Mise en évidence du champ référence ===
-    
-    // 1. Changer le style du champ référence pour le mettre en évidence
+    // Mise en évidence du champ référence
     referenceInput.style.border = '3px solid #00A651';
     referenceInput.style.backgroundColor = '#f0fff0';
-    referenceInput.style.transition = 'all 0.3s';
     
-    // 2. Ajouter un message d'aide au-dessus du champ
-    const helpText = document.createElement('div');
-    helpText.id = 'refHelp';
-    helpText.style.cssText = `
-        color: #00A651;
-        font-size: 0.9rem;
-        margin: 10px 0 5px;
-        padding: 8px;
-        background: #e8f5e9;
-        border-radius: 5px;
-        text-align: center;
-        font-weight: 500;
-        animation: pulse 2s infinite;
-    `;
-    helpText.innerHTML = `
-        <i class="fa-solid fa-hand-pointer"></i> 
-        Après paiement, collez ici la référence reçue par SMS
-        <i class="fa-solid fa-arrow-down"></i>
-    `;
+    // Message d'aide pour la référence
+    const helpText = document.getElementById('refHelp');
+    if (!helpText) {
+        const newHelp = document.createElement('div');
+        newHelp.id = 'refHelp';
+        newHelp.style.cssText = `
+            color: #00A651;
+            font-size: 0.9rem;
+            margin: 10px 0 5px;
+            padding: 8px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+        `;
+        newHelp.innerHTML = `
+            <i class="fa-solid fa-hand-pointer"></i> 
+            Après paiement, entrez la référence reçue par SMS
+        `;
+        referenceInput.parentNode.insertBefore(newHelp, referenceInput);
+    }
     
-    // Supprimer l'ancien message s'il existe
-    const oldHelp = document.getElementById('refHelp');
-    if (oldHelp) oldHelp.remove();
-    
-    // Insérer le message avant le champ référence
-    referenceInput.parentNode.insertBefore(helpText, referenceInput);
-    
-    // 3. Animation pulse sur le bouton Confirmer pour attirer l'attention
-    confirmBtn.style.animation = 'pulse 2s infinite';
-    confirmBtn.style.boxShadow = '0 0 0 0 rgba(0,0,0,0.5)';
-    
-    // 4. Mettre le focus sur le champ référence après 3 secondes
     setTimeout(() => {
         referenceInput.focus();
-        referenceInput.placeholder = 'Collez votre référence ici...';
-    }, 3000);
-    
-    // 5. Auto-détection de la référence collée (optionnel)
-    referenceInput.addEventListener('paste', function() {
-        // Quand l'utilisateur colle quelque chose, enlever l'aide
-        setTimeout(() => {
-            if (referenceInput.value.trim()) {
-                const helpText = document.getElementById('refHelp');
-                if (helpText) {
-                    helpText.style.background = '#c8e6c9';
-                    helpText.innerHTML = `
-                        <i class="fa-solid fa-check-circle"></i> 
-                        Référence détectée ! Vous pouvez confirmer.
-                    `;
-                    
-                    // Faire briller le bouton Confirmer
-                    confirmBtn.style.background = '#4CAF50';
-                    confirmBtn.style.transform = 'scale(1.05)';
-                    setTimeout(() => {
-                        confirmBtn.style.transform = '';
-                    }, 200);
-                }
-            }
-        }, 100);
-    }, { once: true });
+    }, 2000);
     
     return true; // Permet l'ouverture du lien tel:
 };
