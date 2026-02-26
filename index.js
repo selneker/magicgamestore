@@ -413,6 +413,41 @@ function submitOrder() {
     });
 }
 
+
+// ========== VÉRIFICATION STATUT ADMIN ==========
+async function checkAdminStatus() {
+    const statusDot = document.querySelector('.status-dot');
+    const statusText = document.querySelector('.status-text');
+    
+    try {
+        // Tentative de ping vers une route admin protégée
+        const response = await fetch(`${API_URL.replace('/api', '')}/admin-test`, {
+            method: 'HEAD',
+            cache: 'no-cache',
+            timeout: 5000
+        });
+        
+        if (response.ok) {
+            statusDot.className = 'status-dot online';
+            statusText.textContent = 'Admin en ligne';
+            console.log('✅ Admin en ligne');
+        } else {
+            throw new Error('Admin hors ligne');
+        }
+    } catch (error) {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Admin hors ligne';
+        console.log('❌ Admin hors ligne');
+    }
+}
+
+// Vérifier toutes les 30 secondes
+setInterval(checkAdminStatus, 30000);
+
+// Vérifier au chargement
+document.addEventListener('DOMContentLoaded', checkAdminStatus);
+
+
 // ===========================================
 // ÉCOUTEURS D'ÉVÉNEMENTS
 // ===========================================
