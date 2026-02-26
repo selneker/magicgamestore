@@ -277,8 +277,8 @@ function validatePubgId(pubgId) {
     return { valid: true };
 }
 
-// ===========================================
-// FONCTIONS DE PAIEMENT DIRECT MVOLA - LANCEMENT DIRECT
+/// ===========================================
+// FONCTIONS DE PAIEMENT DIRECT MVOLA - DIRECT SANS FALLBACK
 // ===========================================
 
 /**
@@ -307,7 +307,7 @@ function initMvolaDirectButton() {
     
     const ussdCode = generateUSSDCode(priceNumber);
     
-    // Lien direct vers téléphone (code caché)
+    // Lien direct vers téléphone
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;"
@@ -353,14 +353,11 @@ window.handleMvolaDirectClick = function(pack, price) {
         return false;
     }
     
-    // Notification simple
-    showToast('📞 Appel lancé - Entrez la référence après paiement', 'success');
-    
-    // Mise en évidence du champ référence
+    // Pas d'alert, pas de fallback - juste le champ référence qui devient vert
     referenceInput.style.border = '3px solid #00A651';
     referenceInput.style.backgroundColor = '#f0fff0';
     
-    // Message d'aide pour la référence
+    // Message d'aise discret
     const helpText = document.getElementById('refHelp');
     if (!helpText) {
         const newHelp = document.createElement('div');
@@ -377,16 +374,12 @@ window.handleMvolaDirectClick = function(pack, price) {
         `;
         newHelp.innerHTML = `
             <i class="fa-solid fa-hand-pointer"></i> 
-            Après paiement, entrez la référence reçue par SMS
+            Entrez la référence reçue par SMS
         `;
         referenceInput.parentNode.insertBefore(newHelp, referenceInput);
     }
     
-    setTimeout(() => {
-        referenceInput.focus();
-    }, 2000);
-    
-    return true; // Permet l'ouverture du lien tel:
+    return true; // Lien s'ouvre directement
 };
 
 // ===========================================
