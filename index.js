@@ -146,8 +146,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function showTarifs() {
     abonnements.style.display = 'none';
+    abonnements.classList.remove('active', 'fade-in');
+    
+    // Animation du titre
+    heroTitle.classList.remove('fade-in');
+    void heroTitle.offsetWidth; // Force le reflow
     heroTitle.innerHTML = 'VENTE UC<br>PUBG MOBILE';
+    heroTitle.classList.add('fade-in');
+    
+    // Animation des tarifs
     tarifs.style.display = 'block';
+    tarifs.classList.remove('fade-in');
+    void tarifs.offsetWidth; // Force le reflow
+    tarifs.classList.add('active', 'fade-in');
+    
     aboLink.innerHTML = '<i class="fa-solid fa-cart-plus"></i> ABONNEMENT';
     mode = 'uc';
     localStorage.setItem('mode', mode);
@@ -155,8 +167,20 @@ function showTarifs() {
 
 function showAbonnements() {
     tarifs.style.display = 'none';
+    tarifs.classList.remove('active', 'fade-in');
+    
+    // Animation du titre
+    heroTitle.classList.remove('fade-in');
+    void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'ABONNEMENT<br>PUBG MOBILE';
+    heroTitle.classList.add('fade-in');
+    
+    // Animation des abonnements
     abonnements.style.display = 'block';
+    abonnements.classList.remove('fade-in');
+    void abonnements.offsetWidth;
+    abonnements.classList.add('active', 'fade-in');
+    
     aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> ACHAT UC';
     mode = 'abonnements';
     localStorage.setItem('mode', mode);
