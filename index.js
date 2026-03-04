@@ -1,13 +1,13 @@
-// ===========================================
-// INDEX.JS - MAGIC GAME STORE
-// ===========================================
-
 // ========== SÉLECTION DES ÉLÉMENTS ==========
 const tarifs = document.getElementById("tarifs");
 const abonnements = document.getElementById("abonnements");
 const aboLink = document.getElementById("aboLink");
 const heroTitle = document.getElementById("heroTitle");
 let mode = localStorage.getItem('mode') || 'uc';
+
+// Nouveaux éléments pour le bottom nav
+const bottomAchatLink = document.getElementById('bottomAchatLink');
+const bottomAbonnementLink = document.getElementById('bottomAbonnementLink');
 
 // Modales
 const modalInfo = document.getElementById('modalInfo');
@@ -42,15 +42,13 @@ const API_URL = (() => {
 
 console.log('🌐 API URL:', API_URL);
 
-// ========== STATUT ADMIN - VERSION SIMPLE ==========
-
+// ========== STATUT ADMIN ==========
 function checkAdminStatus() {
     const dot = document.querySelector('.status-dot');
     const text = document.querySelector('.status-text');
     
     if (!dot || !text) return;
     
-    // Requête simple pour savoir si admin est en ligne
     fetch(`${API_URL}/admin/status`)
         .then(res => res.json())
         .then(data => {
@@ -68,12 +66,10 @@ function checkAdminStatus() {
         });
 }
 
-// Vérifie toutes les 10 secondes (pas 2)
 setInterval(checkAdminStatus, 10000);
-checkAdminStatus(); // Vérifie au chargement
+checkAdminStatus();
 
 // ========== SAUVEGARDE DE SESSION ==========
-
 function saveOrderState() {
     const state = {
         pack: OrderPack?.textContent || '',
@@ -128,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (pseudoInput) pseudoInput.value = savedState.pseudo || '';
         if (referenceInput) referenceInput.value = savedState.reference || '';
         
-        showToast('🔄 Reprise de votre commande', 'info');
+        showToast('Reprise de votre commande', 'info');
         
         setTimeout(() => {
             if (savedState.currentModal === 'pay') {
@@ -140,27 +136,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initEventListeners();
+    setupKeyboardHandler(); // Gestion clavier
 });
 
 // ========== SWITCH UC / ABONNEMENTS ==========
-
 function showTarifs() {
     abonnements.style.display = 'none';
     abonnements.classList.remove('active', 'fade-in');
     
-    // Animation du titre
     heroTitle.classList.remove('fade-in');
-    void heroTitle.offsetWidth; // Force le reflow
+    void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'VENTE UC<br>PUBG MOBILE';
     heroTitle.classList.add('fade-in');
     
-    // Animation des tarifs
     tarifs.style.display = 'block';
     tarifs.classList.remove('fade-in');
-    void tarifs.offsetWidth; // Force le reflow
+    void tarifs.offsetWidth;
     tarifs.classList.add('active', 'fade-in');
     
-    aboLink.innerHTML = '<i class="fa-solid fa-cart-plus"></i> ABONNEMENT';
+    aboLink.innerHTML = '<i class="material-icons">subscriptions</i> Abonnement';
+    
+    if (bottomAchatLink) bottomAchatLink.classList.add('active');
+    if (bottomAbonnementLink) bottomAbonnementLink.classList.remove('active');
+    
     mode = 'uc';
     localStorage.setItem('mode', mode);
 }
@@ -169,31 +167,33 @@ function showAbonnements() {
     tarifs.style.display = 'none';
     tarifs.classList.remove('active', 'fade-in');
     
-    // Animation du titre
     heroTitle.classList.remove('fade-in');
     void heroTitle.offsetWidth;
     heroTitle.innerHTML = 'ABONNEMENT<br>PUBG MOBILE';
     heroTitle.classList.add('fade-in');
     
-    // Animation des abonnements
     abonnements.style.display = 'block';
     abonnements.classList.remove('fade-in');
     void abonnements.offsetWidth;
     abonnements.classList.add('active', 'fade-in');
     
-    aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> ACHAT UC';
+    aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> Achat UC';
+    
+    if (bottomAchatLink) bottomAchatLink.classList.remove('active');
+    if (bottomAbonnementLink) bottomAbonnementLink.classList.add('active');
+    
     mode = 'abonnements';
     localStorage.setItem('mode', mode);
 }
 
 // ========== MODALES ==========
-
 function openModal(modal) {
     modalInfo.style.display = 'none';
     modalPay.style.display = 'none';
     
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
     
     setTimeout(saveOrderState, 100);
     
@@ -206,6 +206,11 @@ function closeAllModals() {
     modalInfo.style.display = 'none';
     modalPay.style.display = 'none';
     document.body.style.overflow = 'auto';
+    document.body.classList.remove('modal-open');
+    
+    // Enlever la classe keyboard-up si présente
+    modalInfo.classList.remove('keyboard-up');
+    modalPay.classList.remove('keyboard-up');
     
     if (pubgIdInput) pubgIdInput.value = '';
     if (pseudoInput) pseudoInput.value = '';
@@ -235,8 +240,57 @@ function copyNumber() {
         .catch(() => showToast('Erreur de copie', 'error'));
 }
 
-// ========== VALIDATION ==========
+// ========== GESTION CLAVIER SIMPLE ==========
 
+let activeModalForKeyboard = null;
+
+function setupKeyboardHandler() {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (!isMobile) return;
+    
+    const inputs = [pubgIdInput, pseudoInput, referenceInput];
+    
+    inputs.forEach(input => {
+        if (!input) return;
+        
+        input.addEventListener('focus', () => {
+            // Détermine quelle modale est ouverte
+            if (modalInfo.style.display === 'flex') {
+                activeModalForKeyboard = modalInfo;
+            } else if (modalPay.style.display === 'flex') {
+                activeModalForKeyboard = modalPay;
+            }
+            
+            if (activeModalForKeyboard) {
+                // Ajoute la classe pour remonter la modale
+                activeModalForKeyboard.classList.add('keyboard-up');
+                
+                // Petit délai pour que le clavier s'ouvre
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+        
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                const activeElement = document.activeElement;
+                if (!inputs.includes(activeElement)) {
+                    // Enlève la classe pour remettre en bas
+                    if (modalInfo.style.display === 'flex') {
+                        modalInfo.classList.remove('keyboard-up');
+                    }
+                    if (modalPay.style.display === 'flex') {
+                        modalPay.classList.remove('keyboard-up');
+                    }
+                    activeModalForKeyboard = null;
+                }
+            }, 200);
+        });
+    });
+}
+
+// ========== VALIDATION ==========
 function validateOrder() {
     const pubgId = pubgIdInput?.value.trim();
     const pseudo = pseudoInput?.value.trim();
@@ -253,8 +307,8 @@ function validateOrder() {
 function validatePubgId(pubgId) {
     if (!pubgId) return { valid: false, message: 'ID PUBG requis' };
     if (!/^\d+$/.test(pubgId)) return { valid: false, message: 'ID PUBG ne doit contenir que des chiffres' };
-    if (pubgId.length < 5) return { valid: false, message: 'ID PUBG trop court (min 5)' };
-    if (pubgId.length > 20) return { valid: false, message: 'ID PUBG trop long (max 20)' };
+    if (pubgId.length < 9) return { valid: false, message: 'ID PUBG trop court' };
+    if (pubgId.length > 13) return { valid: false, message: 'ID PUBG trop long' };
     return { valid: true };
 }
 
@@ -283,11 +337,11 @@ function initMvolaDirectButton() {
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;">
             <button style="
-                background: #00A651;
+                background: #00a65091;
                 color: white;
                 border: none;
                 padding: 15px 20px;
-                border-radius: 5px;
+                border-radius: 15px;
                 font-weight: bold;
                 font-size: 1.1rem;
                 cursor: pointer;
@@ -299,14 +353,14 @@ function initMvolaDirectButton() {
                 transition: all 0.3s;
                 box-shadow: 0 4px 10px rgba(0,166,81,0.3);
             ">
-                <i class="fa-solid fa-phone"></i> Payer ${priceText} avec MVola
+                Payer ${priceText} avec MVola
             </button>
         </a>
     `;
 }
 
-// ========== ENVOI DE COMMANDE ==========
 
+// ========== ENVOI DE COMMANDE ==========
 function submitOrder() {
     const pubgId = pubgIdInput?.value.trim();
     const pseudo = pseudoInput?.value.trim();
@@ -359,12 +413,25 @@ function submitOrder() {
 }
 
 // ========== ÉCOUTEURS ==========
-
 function initEventListeners() {
     if (aboLink) {
         aboLink.addEventListener("click", (e) => {
             e.preventDefault();
             mode === 'uc' ? showAbonnements() : showTarifs();
+        });
+    }
+    
+    if (bottomAchatLink) {
+        bottomAchatLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showTarifs();
+        });
+    }
+    
+    if (bottomAbonnementLink) {
+        bottomAbonnementLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAbonnements();
         });
     }
     
