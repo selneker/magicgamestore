@@ -78,6 +78,11 @@ main {
         padding: 0;
         margin: 0;
     }
+
+    footer .pieds {
+        padding-bottom: 5rem;
+
+    }
     
 }
 
@@ -102,7 +107,6 @@ main {
 
 /* ========== INDICATEUR STATUT ADMIN ========== */
 .admin-status {
-    -webkit-backdrop-filter: blur(10px);
     padding: 6px 14px;
     display: flex;
     align-items: center;

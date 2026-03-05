@@ -32,6 +32,7 @@
 
         .history-header button {
             background-color: var(--accent-opac);
+            border: none;
         }
         .search-section {
             background: var(--teirtly-color);
@@ -116,7 +117,7 @@
         
         .order-card {
             background: var(--teirtly-color);
-            border-left: 4px solid transparent;
+            border-left: 2px solid transparent;
             border-radius: 16px;
             padding: 1.5rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -212,6 +213,7 @@
             background: var(--teirtly-color);
             border-radius: 24px;
             color: #ffffffa3;
+            margin-bottom: 7rem;
         }
         
         .no-orders i {
@@ -300,7 +302,7 @@
 
         <!-- SECTION RECHERCHE -->
         <div class="search-section">
-            <h3 style="color: var(--secondly-color);">🔍 Rechercher mes achats</h3>
+            <h3 style="color: var(--secondly-color);"><i class="fa-solid fa-magnifying-glass"></i>  Rechercher mes achats</h3>
             <div class="search-form">
                 <input type="text" id="searchPubgId" placeholder="Entrez votre ID PUBG (9-13 chiffres)" 
                        oninput="validateInput()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
@@ -318,9 +320,14 @@
         <div id="filtersSection" style="display: none;">
             <div class="filter-buttons">
                 <button class="filter-btn active" onclick="filterOrders('all')">Tous</button>
-                <button class="filter-btn" onclick="filterOrders('en attente')">⏳ En attente</button>
-                <button class="filter-btn" onclick="filterOrders('livré')">✅ Livrés</button>
-                <button class="filter-btn" onclick="filterOrders('annulé')">❌ Annulés</button>
+                <button class="filter-btn" onclick="filterOrders('en attente')">
+                    <i data-lucide="loader"></i> En attente</button>
+                <button class="filter-btn" onclick="filterOrders('livré')">
+                    <i data-lucide="badge-check"></i> Livrés
+                </button>
+                <button class="filter-btn" onclick="filterOrders('annulé')">
+                    <i data-lucide="x"></i> Annulés
+                </button>
             </div>
         </div>
 
@@ -503,8 +510,8 @@
                         const statusClass = order.status === 'en attente' ? 'status-en-attente' : 
                                            order.status === 'livré' ? 'status-livré' : 'status-annulé';
                         
-                        const statusText = order.status === 'en attente' ? '⏳ En attente' : 
-                                          order.status === 'livré' ? '✅ Livré' : '❌ Annulé';
+                        const statusText = order.status === 'en attente' ? 'En attente' : 
+                                          order.status === 'livré' ? 'Livré' : 'Annulé';
                         
                         return `
                         <div class="order-card ${statusClass}">
