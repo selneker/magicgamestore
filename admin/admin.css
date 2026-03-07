@@ -128,12 +128,12 @@ body {
 }
 
 .status-btn.online {
-    background: #1ED760;
+    background: #1ed75f9b;
     color: white;
 }
 
 .status-btn.offline {
-    background: #f44336;
+    background: #f4433693;
     color: white;
 }
 
@@ -292,6 +292,7 @@ body {
     transform: translateY(-2px);
 }
 
+
 /* ========== TABLE ========== */
 .table-container {
     max-width: 1400px;
@@ -306,10 +307,11 @@ table {
     border-radius: 20px;
     overflow: hidden;
     border-collapse: collapse;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 thead {
-    background: var(--primary-color);
+    background: #1E1E1E;
 }
 
 th {
@@ -317,17 +319,54 @@ th {
     text-align: left;
     font-weight: 600;
     color: var(--secondly-color);
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #444;
 }
 
 td {
     padding: 1rem;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #444;
     color: #ffffffa3;
+    background: #2A2A2A; /* ← OVAO IZY IZAO */
+    transition: background 0.2s ease;
 }
 
-tr:hover {
-    background: var(--primary-color);
+/* Ligne en attente */
+tr.status-en-attente td {
+    background: #2A2A2A;
+    border-left: 4px solid #ffd966;
+}
+
+tr.status-en-attente:hover td {
+    background: #333333;
+}
+
+/* Ligne livré */
+tr.status-livré td {
+    background: #2A2A2A;
+    border-left: 4px solid #4CAF50;
+}
+
+tr.status-livré:hover td {
+    background: #333333;
+}
+
+/* Ligne annulé */
+tr.status-annulé td {
+    background: #2A2A2A;
+    border-left: 4px solid #f44336;
+}
+
+tr.status-annulé:hover td {
+    background: #333333;
+}
+
+tr:hover td {
+    background: #333333;
+}
+
+/* Dernière ligne sans bordure */
+tr:last-child td {
+    border-bottom: none;
 }
 
 /* ========== STATUS BADGES ========== */
