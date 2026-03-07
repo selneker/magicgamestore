@@ -9,348 +9,159 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
     <style>
-        .events-container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .events-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .events-header h1 {
-            color: var(--secondly-color);
-            font-size: 2rem;
-        }
-        
-        .mode-warning {
-            background: linear-gradient(135deg, #ff9800, #f44336);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(244, 67, 54, 0.3);
-            animation: pulseWarning 2s infinite;
-            margin-bottom: 35rem;
-        }
-        
-        @keyframes pulseWarning {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        
-        .mode-warning i {
-            font-size: 4rem;
-            color: white;
-            margin-bottom: 20px;
-        }
-        
-        .mode-warning h2 {
-            color: white;
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-        
-        .mode-warning p {
-            color: rgba(255,255,255,0.9);
-            font-size: 1.2rem;
-            max-width: 500px;
-            margin: 0 auto 20px;
-        }
-        
-        .mode-warning .warning-details {
-            background: rgba(0,0,0,0.2);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        
-        .mode-warning .warning-details p {
-            font-size: 1rem;
-            margin: 5px 0;
+        /* ========== STYLE POUR LA PAGE ÉVÉNEMENTS ========== */
+        .events-page {
+            min-height: 80vh;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .retry-btn {
-            background: white;
-            color: #f44336;
-            padding:10px 16px;
-            border: none;
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-        }
-        
-        .retry-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        
-        .event-card {
-            background: var(--teirtly-color);
-            border-radius: 16px;
+            justify-content: center;
             padding: 20px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--accent-color);
-            transition: all 0.3s;
-            display: none; /* Caché par défaut */
         }
-        
-        .event-card.visible {
-            display: block;
-        }
-        
-        .event-card:hover {
-            transform: translateX(5px);
-        }
-        
-        .event-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .event-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--secondly-color);
-        }
-        
-        .event-date {
-            color: #ffffffa3;
-            font-size: 0.9rem;
-        }
-        
-        .event-description {
-            color: #ffffffa3;
-            margin: 10px 0;
-        }
-        
-        .event-badge {
-            background: var(--accent-color);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-        }
-        
-        .loading-spinner {
+
+        .texte-container {
             text-align: center;
-            padding: 50px;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
-        .loading-spinner i {
-            font-size: 3rem;
-            color: var(--accent-color);
-            animation: spin 1s linear infinite;
+        .texte-container span {
+            color: rgba(255, 255, 255, 0.175);
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
         }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+
+        .texte-container h1 {
+            color: rgba(255, 255, 255, 0.175);
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin: 0;
+            line-height: 1.2;
         }
-        
-        .mode-selector {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
+
+        /* Animation subtile */
+        .texte-container {
+            animation: fadeIn 1s ease;
         }
-        
-        .mode-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid var(--accent-color);
-            background: transparent;
-            color: var(--secondly-color);
-            border-radius: 12px;
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== STYLE BOTTOM NAVIGATION ========== */
+        .bottom-nav-link {
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
         }
-        
-        .mode-btn.active {
-            background: var(--accent-color);
-            color: white;
+
+        .bottom-nav-link.active {
+            color: var(--accent-color) !important;
         }
-        
-        .mode-btn:hover {
-            background: var(--accent-color);
-            color: white;
+
+        .bottom-nav-link.active span {
+            color: var(--accent-color);
+        }
+
+        .bottom-nav-link.active i {
+            color: var(--accent-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .texte-container h1 {
+                font-size: 1.8rem;
+            }
+            
+            .texte-container span {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <div class="header-logo">
-                <h1><a href="index.html">Magic Game Store</a></h1>
-            </div>
-            <nav>
-                <li><a href="index.html">ACCUEIL</a></li>
-                <li><a href="historique.html">HISTORIQUE</a></li>
-                <li><a href="evenements.html" class="active">ÉVÉNEMENTS</a></li>
-            </nav>
+    <!-- CONTENU PRINCIPAL -->
+    <div class="events-page">
+        <div class="texte-container">
+            <span>Merci de visiter notre site web</span>
+            <h1>Aucun événement disponible pour le moment</h1>
         </div>
-    </header>
-
-    <main class="main-content">
-        <div class="events-container">
-            <div class="events-header">
-                <h1><i class="fa-solid fa-calendar" style="color: var(--accent-color);"></i> Événements</h1>
-            </div>
-            
-            <!-- MODE WARNING - Message de chargement impossible -->
-            <div id="modeWarning" class="mode-warning">
-                <i class="fa-solid fa-exclamation-triangle"></i>
-                <h2>⚠️ Mode démo</h2>
-                <p>Impossible de charger les événements en direct</p>
-                <div class="warning-details">
-                    <p><i class="fa-solid fa-wifi"></i> Connexion API: Échec</p>
-                    <p><i class="fa-solid fa-database"></i> Mode démo activé</p>
-                    <p><i class="fa-solid fa-clock"></i> Données simulées affichées</p>
-                </div>
-                <button onclick="retryLoad()" class="retry-btn">
-                     Réessayer
-                </button>
-            </div>
-            
-            <!-- MODE SELECTEUR -->
-            <div class="mode-selector">
-                <button class="mode-btn active" onclick="switchMode('demo')">Mode Démo</button>
-                <button class="mode-btn" onclick="switchMode('real')">Mode Réel</button>
-            </div>
-            
-            <!-- LOADING SPINNER -->
-            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                <p style="color: var(--secondly-color); margin-top: 10px;">Chargement des événements...</p>
-            </div>
-            
-            <!-- ÉVÉNEMENTS RÉELS (cachés par défaut) -->
-            <div id="realEvents">
-                <div class="event-card visible">
-                    <div class="event-header">
-                        <span class="event-title">Double UC Week-end</span>
-                        <span class="event-date">28-30 Mars</span>
-                    </div>
-                    <div class="event-description">Gagnez le double de UC sur tous vos achats</div>
-                    <span class="event-badge">🔥 Promo</span>
-                </div>
-                
-                <div class="event-card visible">
-                    <div class="event-header">
-                        <span class="event-title">Tournoi PUBG Mobile</span>
-                        <span class="event-date">15 Avril</span>
-                    </div>
-                    <div class="event-description">Participez et gagnez jusqu'à 10,000 UC</div>
-                    <span class="event-badge">🏆 Compétition</span>
-                </div>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <!-- BOTTOM NAVIGATION -->
     <main class="bottom-nav">
         <nav>
-            <ul>
-                <li><a href="index.html"><i data-lucide="shopping-cart"></i><span>Achat UC</span></a></li>
-                <li><a href="index.html"><i data-lucide="crown"></i><span>Abonnement</span></a></li>
-                <li><a href="evenements.html" class="active"><i data-lucide="rss"></i><span>Event</span></a></li>
-                <li><a href="historique.html"><i data-lucide="history"></i><span>Historique</span></a></li>
+            <ul>     
+                <li>
+                    <a href="index.html" id="bottomAchatLink" class="bottom-nav-link">
+                        <i data-lucide="shopping-cart"></i> 
+                        <span>Achat UC</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="index.html" id="bottomAbonnementLink" class="bottom-nav-link">
+                        <i data-lucide="crown"></i> 
+                        <span>Abonnement</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="evenements.html" class="bottom-nav-link active">
+                        <i data-lucide="rss"></i> 
+                        <span>Event</span>
+                    </a>
+                </li> 
+                <li>
+                    <a href="historique.html" class="bottom-nav-link">
+                        <i data-lucide="history"></i> 
+                        <span>Historique</span>
+                    </a>
+                </li> 
+                
             </ul>
         </nav>
     </main>
 
+    <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
+    </script>
+    
+    <!-- SCRIPT POUR LA NAVIGATION (optionnel, si besoin de switch) -->
+    <script>
+        // ========== ÉLÉMENTS NÉCESSAIRES ==========
+        const bottomAchatLink = document.getElementById('bottomAchatLink');
+        const bottomAbonnementLink = document.getElementById('bottomAbonnementLink');
         
-        // ========== GESTION DU MODE ==========
-        let currentMode = 'demo'; // demo ou real
+        // ========== GESTION DU SWITCH (si tu veux changer l'active) ==========
+        // Par défaut, c'est "Event" qui est actif sur cette page
         
-        function switchMode(mode) {
-            currentMode = mode;
-            
-            // Met à jour les boutons
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('active');
+        // Si tu veux que les liens Achat et Abonnement pointent vers index.html avec le bon mode
+        if (bottomAchatLink) {
+            bottomAchatLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Sauvegarde le mode dans localStorage
+                localStorage.setItem('mode', 'uc');
+                // Redirige vers index.html
+                window.location.href = 'index.html';
             });
-            event.target.classList.add('active');
-            
-            const warning = document.getElementById('modeWarning');
-            const realEvents = document.getElementById('realEvents');
-            const spinner = document.getElementById('loadingSpinner');
-            
-            if (mode === 'demo') {
-                // Mode démo : montre le warning
-                warning.style.display = 'block';
-                realEvents.style.display = 'none';
-                spinner.style.display = 'none';
-            } else {
-                // Mode réel : cache le warning, montre le spinner puis les events
-                warning.style.display = 'none';
-                spinner.style.display = 'block';
-                realEvents.style.display = 'none';
-                
-                // Simule un chargement
-                setTimeout(() => {
-                    spinner.style.display = 'none';
-                    realEvents.style.display = 'block';
-                    
-                    // Montre une notification
-                    showToast('✅ Événements chargés', 'success');
-                }, 2000);
-            }
         }
         
-        // ========== RÉESSAYER ==========
-        function retryLoad() {
-            switchMode('real');
+        if (bottomAbonnementLink) {
+            bottomAbonnementLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Sauvegarde le mode dans localStorage
+                localStorage.setItem('mode', 'abonnements');
+                // Redirige vers index.html
+                window.location.href = 'index.html';
+            });
         }
-        
-        // ========== TOAST ==========
-        function showToast(message, type) {
-            // Crée un toast temporaire
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                padding: 12px 24px;
-                background: ${type === 'success' ? '#4CAF50' : '#f44336'};
-                color: white;
-                border-radius: 8px;
-                z-index: 10000;
-                animation: slideDown 0.3s ease;
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => toast.remove(), 3000);
-        }
-        
-        // Style pour l'animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideDown {
-                from { transform: translateY(-100%); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
