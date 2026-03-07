@@ -343,7 +343,6 @@ tr.status-en-attente:hover td {
 /* Ligne livré */
 tr.status-livré td {
     background: #2A2A2A;
-    border-left: 4px solid #4CAF50;
 }
 
 tr.status-livré:hover td {
@@ -353,7 +352,6 @@ tr.status-livré:hover td {
 /* Ligne annulé */
 tr.status-annulé td {
     background: #2A2A2A;
-    border-left: 4px solid #f44336;
 }
 
 tr.status-annulé:hover td {
