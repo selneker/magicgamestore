@@ -3,56 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/image.png">
     <title>Admin - Magic Game Store</title>
+    <link rel="icon" type="image/png" href="/images/image.png">
     <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
 </head>
 <body>
+    <!-- LOGIN SECTION -->
     <div id="loginSection" class="login-container">
         <div class="login-box">
-            <h2>🔐 Administration</h2>
+            <h2>Administration</h2>
             <input type="email" id="loginEmail" placeholder="Email" value="admin@magicgamestore.com">
-            <input type="password" id="loginPassword" placeholder="Mot de passe" value="brad777">
+            <input type="password" id="loginPassword" placeholder="Mot de passe" value="admin123">
             <button onclick="login()">Se connecter</button>
             <p id="loginError" class="error"></p>
         </div>
     </div>
 
+    <!-- ADMIN SECTION -->
     <div id="adminSection" style="display: none;">
+        <!-- HEADER ADMIN -->
         <header class="admin-header">
-    <h1><i class="fas fa-crown"></i> Magic Game Store - Admin</h1>
-    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        
-        <!-- BOUTON DE STATUT ADMIN -->
-        <div class="admin-status-control">
-            <button id="toggleAdminStatusBtn" class="status-btn online" onclick="toggleAdminStatus()">
-                <span class="status-dot"></span>
-                <span id="adminStatusText">En ligne</span>
-            </button>
-        </div>
-        
-        <!-- Boutons existants -->
-        <button onclick="backupData()" class="action-btn" style="background: #2196F3;">
-            <i class="fas fa-download"></i> Backup
-        </button>
-        <button onclick="exportData()" class="action-btn" style="background: #4CAF50;">
-            <i class="fas fa-file-export"></i> Export
-        </button>
-        <button onclick="restoreData()" class="action-btn" style="background: #FF9800;">
-            <i class="fas fa-upload"></i> Restore
-        </button>
-        <button onclick="showLogsPanel()" class="action-btn" style="background: #9C27B0;">
-            <i class="fa-solid fa-history"></i> Logs
-        </button>
-        
-        <span id="adminEmail"></span>
-        <button onclick="logout()" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Déconnexion
-        </button>
-    </div>
-</header>
+            <div class="header-container">
+                <div class="header-logo">
+                    <h1><a href="admin.html">MGS Admin</a></h1>
+                </div>
+                
+                <!-- STATUT ADMIN BUTTON -->
+                <div class="admin-status-control">
+                    <button id="toggleAdminStatusBtn" class="status-btn online" onclick="toggleAdminStatus()">
+                        <span class="status-dot"></span>
+                        <span id="adminStatusText">En ligne</span>
+                    </button>
+                </div>
 
+                <!-- BOUTONS ADMIN -->
+                <div class="admin-actions">
+                    <button onclick="backupData()" class="action-btn">
+                        <i class="fas fa-download"></i> Backup
+                    </button>
+                    <button onclick="exportData()" class="action-btn">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                    <button onclick="restoreData()" class="action-btn">
+                        <i class="fas fa-upload"></i> Restore
+                    </button>
+                    <button onclick="showLogsPanel()" class="action-btn">
+                        <i class="fa-solid fa-history"></i> Logs
+                    </button>
+                    <span id="adminEmail"></span>
+                    <button onclick="logout()" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- STATS CARDS -->
         <div class="stats-container">
             <div class="stat-card">
                 <i class="fas fa-shopping-bag"></i>
@@ -84,6 +92,7 @@
             </div>
         </div>
 
+        <!-- FILTRES -->
         <div class="filters">
             <input type="text" id="searchInput" placeholder="🔍 Rechercher par ID PUBG ou pseudo...">
             <select id="statusFilter">
@@ -97,6 +106,7 @@
             </button>
         </div>
 
+        <!-- TABLEAU DES COMMANDES -->
         <div class="table-container">
             <table id="ordersTable">
                 <thead>

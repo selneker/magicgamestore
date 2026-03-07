@@ -1,13 +1,24 @@
-/* ========== STYLES DE BASE ========== */
+
+:root {
+    --primary-color: #151515;
+    --secondly-color: #ECECEC;
+    --teirtly-color: #2C2C2C;
+    --accent-color: #007aff;
+    --accent-opac: #007aff14;
+    --success-color: #1ED760;
+    --error-color: #f44336;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'SF Pro Display', -apple-system, sans-serif;
 }
 
 body {
-    background: #f5f5f5;
+    background-color: var(--primary-color);
+    color: var(--secondly-color);
 }
 
 /* ========== LOGIN ========== */
@@ -16,299 +27,401 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background:var(--primary-color);
 }
 
 .login-box {
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    width: 300px;
+    background: var(--teirtly-color);
+    padding: 2.5rem;
+    border-radius: 24px;
+    width: 350px;
     text-align: center;
 }
 
 .login-box h2 {
+    color: var(--secondly-color);
     margin-bottom: 1.5rem;
-    color: #333;
 }
 
 .login-box input {
     width: 100%;
-    padding: 0.8rem;
-    margin: 0.5rem 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 12px;
+    background: var(--primary-color);
+    color: var(--secondly-color);
+    font-size: 1rem;
+}
+
+.login-box input:focus {
+    outline: 2px solid var(--accent-color);
 }
 
 .login-box button {
     width: 100%;
-    padding: 0.8rem;
-    background: #667eea;
+    padding: 14px;
+    background: var(--accent-color);
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 12px;
+    font-weight: bold;
     cursor: pointer;
     margin-top: 1rem;
-    font-weight: bold;
+    transition: all 0.3s;
 }
 
 .login-box button:hover {
-    background: #5a67d8;
+    background: #0055aa;
+    transform: translateY(-2px);
 }
 
 .error {
-    color: red;
+    color: #f44336;
     margin-top: 0.5rem;
 }
 
-/* ========== ADMIN HEADER ========== */
+/* ========== HEADER ADMIN ========== */
 .admin-header {
-    background: white;
+    background: var(--teirtly-color);
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 1rem 2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.admin-header h1 {
-    color: #333;
+.header-logo h1 {
     font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--secondly-color);
 }
 
-.admin-header span {
-    margin-right: 1rem;
-    color: #666;
+.header-logo a {
+    text-decoration: none;
+    color: var(--secondly-color);
+}
+
+/* ========== STATUT BUTTON ========== */
+.status-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: var(--primary-color);
+    color: var(--secondly-color);
+}
+
+.status-btn.online {
+    background: #1ED760;
+    color: white;
+}
+
+.status-btn.offline {
+    background: #f44336;
+    color: white;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ========== ADMIN ACTIONS ========== */
+.admin-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    background: var(--accent-opac);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
 }
 
 .logout-btn {
-    padding: 0.5rem 1rem;
+    padding: 8px 16px;
     background: #f44336;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 20px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-/* ========== STATS ========== */
+.logout-btn:hover {
+    background: #d32f2f;
+    transform: translateY(-2px);
+}
+
+#adminEmail {
+    color: var(--secondly-color);
+    margin-right: 10px;
+}
+
+/* ========== STATS CARDS ========== */
 .stats-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 2rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    padding: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
 }
 
 .stat-card {
-    background: white;
+    background: var(--teirtly-color);
     padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 20px;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
 
 .stat-card i {
-    font-size: 2rem;
-    color: #667eea;
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    background: var(--accent-opac);
+    padding: 1rem;
+    border-radius: 16px;
 }
 
 .stat-card h3 {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     margin-bottom: 0.2rem;
+    color: var(--secondly-color);
 }
 
 .stat-card p {
-    color: #666;
+    color: #ffffffa3;
 }
 
 /* ========== FILTRES ========== */
 .filters {
-    padding: 0 2rem 1rem;
+    max-width: 1400px;
+    margin: 0 auto 2rem;
+    padding: 0 2rem;
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
 }
 
-.filters input, .filters select {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+.filters input,
+.filters select {
     flex: 1;
-    min-width: 200px;
+    min-width: 250px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    background: var(--teirtly-color);
+    color: var(--secondly-color);
+    font-size: 0.95rem;
+}
+
+.filters input:focus,
+.filters select:focus {
+    outline: 2px solid var(--accent-color);
 }
 
 .refresh-btn {
-    padding: 0.5rem 1rem;
-    background: #4CAF50;
+    padding: 12px 24px;
+    background: var(--accent-color);
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 12px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* ========== TABLEAU ========== */
+.refresh-btn:hover {
+    background: #0055aa;
+    transform: translateY(-2px);
+}
+
+/* ========== TABLE ========== */
 .table-container {
-    padding: 0 2rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto 2rem;
+    padding: 0 2rem;
     overflow-x: auto;
 }
 
 table {
     width: 100%;
-    background: white;
-    border-radius: 10px;
+    background: var(--teirtly-color);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-collapse: collapse;
 }
 
 thead {
-    background: #667eea;
-    color: white;
+    background: var(--primary-color);
 }
 
-th, td {
+th {
     padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    font-weight: 600;
+    color: var(--secondly-color);
+    border-bottom: 1px solid #333;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    color: #ffffffa3;
 }
 
 tr:hover {
-    background: #f9f9f9;
+    background: var(--primary-color);
 }
 
-/* ========== BADGES DE STATUT ========== */
+/* ========== STATUS BADGES ========== */
 .status-badge {
-    padding: 0.2rem 0.5rem;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
 }
 
 .status-en-attente {
-    background: #ffd700;
-    color: #333;
+    background: #fff3cd20;
+    color: #ffd966;
+    border: 1px solid #ffd966;
 }
 
 .status-livré {
-    background: #4CAF50;
-    color: white;
+    background: #d4edda20;
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
 }
 
 .status-annulé {
-    background: #f44336;
-    color: white;
+    background: #f8d7da20;
+    color: #f44336;
+    border: 1px solid #f44336;
 }
 
-/* ========== BOUTONS D'ACTION ========== */
-.action-btn {
-    padding: 0.3rem 0.8rem;
-    margin: 0 0.2rem;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-.deliver-btn {
-    background: #4CAF50;
-    color: white;
-}
-
-.delete-btn {
-    background: #f44336;
-    color: white;
-}
-
-.loading {
-    text-align: center;
-    padding: 2rem;
-    color: #666;
-}
-
-/* ========== NOUVEAUX STYLES ADMIN ========== */
-
-/* Boutons d'action en ligne - SANS COULEURS */
-.action-buttons {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-}
-
-/* Style des boutons d'action (icônes seulement) - NEUTRES */
+/* ========== ICON BUTTONS ========== */
 .icon-btn {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #ddd;
-    background: white;
-    color: #333;
-    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    font-size: 1rem;
+    transition: all 0.3s;
+    background: var(--primary-color);
+    color: var(--secondly-color);
+    margin: 0 2px;
 }
 
 .icon-btn:hover {
-    background: #f0f0f0;
-    border-color: #999;
+    transform: translateY(-2px);
+    background: var(--accent-color);
+    color: white;
 }
 
-/* Badges de statut modernes */
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    border: none;
+/* Boutons spécifiques */
+.deliver-btn {
+    color: #4CAF50;
+}
+.cancel-btn {
+    color: #ffd966;
+}
+.delete-btn {
+    color: #f44336;
+}
+.copy-id-btn, .copy-ref-btn {
+    color: var(--accent-color);
 }
 
-.status-en-attente {
-    background: #FFF3E0;
-    color: #E65100;
-}
-
-.status-livré {
-    background: #E8F5E9;
-    color: #2E7D32;
-}
-
-.status-annulé {
-    background: #FFEBEE;
-    color: #C62828;
-}
-
-/* Style pour les boutons de copie dans le tableau - NEUTRES */
+/* ========== COPY CELL ========== */
 .copy-cell {
     display: flex;
-    gap: 5px;
     align-items: center;
+    gap: 8px;
 }
 
 .copy-cell span {
     font-family: monospace;
-    background: #f5f5f5;
+    background: var(--primary-color);
     padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    color: #333;
+    border-radius: 8px;
+    color: var(--secondly-color);
 }
 
-.copy-id-btn, .copy-ref-btn {
-    background: white;
-    color: #333;
-    border: 1px solid #ddd;
+/* ========== ACTION BUTTONS GROUP ========== */
+.action-buttons {
+    display: flex;
+    gap: 4px;
 }
 
-.copy-id-btn:hover, .copy-ref-btn:hover {
-    background: #f0f0f0;
+/* ========== LOADING ========== */
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #ffffffa3;
 }
 
-/* Tooltip pour les boutons */
+/* ========== TOOLTIP ========== */
 .icon-btn {
     position: relative;
 }
@@ -319,502 +432,86 @@ tr:hover {
     bottom: -30px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
-    color: white;
+    background: var(--teirtly-color);
+    color: var(--secondly-color);
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 0.75rem;
     white-space: nowrap;
     z-index: 1000;
+    border: 1px solid #333;
 }
 
-/* Style pour le tableau */
-.table-container table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-}
-
-.table-container th {
-    background: #2c3e50;
-    color: white;
-    padding: 12px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.table-container td {
-    padding: 12px;
-    border-bottom: 1px solid #e0e0e0;
-    vertical-align: middle;
-}
-
-.table-container tr:hover {
-    background: #f8f9fa;
-}
-
-/* ========== MODE 2 COLONNES POUR MOBILE ========== */
-
-@media (max-width: 768px) {
-    /* Header plus compact */
-    .admin-header {
-        padding: 10px 15px;
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .admin-header h1 {
-        font-size: 1.2rem;
-        margin: 0;
-    }
-    
-    .admin-header div {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    /* Stats plus petites et en ligne */
-    .stats-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        padding: 10px;
-    }
-    
-    .stat-card {
-        padding: 12px 8px;
-        gap: 8px;
-    }
-    
-    .stat-card i {
-        font-size: 1.2rem;
-    }
-    
-    .stat-card h3 {
-        font-size: 1.1rem;
-        margin: 0;
-    }
-    
-    .stat-card p {
-        font-size: 0.7rem;
-        margin: 0;
-        white-space: nowrap;
-    }
-    
-    /* Filtres plus compacts */
-    .filters {
-        flex-direction: column;
-        padding: 10px;
-        gap: 8px;
-    }
-    
-    .filters input,
-    .filters select {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-    }
-    
-    .refresh-btn {
-        width: 100%;
-        padding: 10px;
-    }
-    
-    /* MODE 2 COLONNES POUR LES COMMANDES */
-    .table-container {
-        padding: 0 10px 10px;
-    }
-    
-    .table-container table,
-    .table-container thead,
-    .table-container tbody,
-    .table-container tr {
-        display: block;
-        width: 100%;
-    }
-    
-    /* Cacher l'en-tête du tableau */
-    .table-container thead {
-        display: none;
-    }
-    
-    /* Grille 2 colonnes pour les commandes */
-    .table-container tbody {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    /* Chaque commande devient une carte */
-    .table-container tbody tr {
-        display: block;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 10px;
-        border-left: 3px solid #ddd;
-        margin-bottom: 0;
-    }
-    
-    /* Style pour chaque ligne de données */
-    .table-container tbody tr td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 5px 0;
-        border-bottom: 1px solid #eee;
-        font-size: 12px;
-    }
-    
-    .table-container tbody tr td:last-child {
-        border-bottom: none;
-    }
-    
-    /* Ajouter des labels avant chaque valeur */
-    .table-container tbody tr td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #666;
-        width: 40%;
-        font-size: 11px;
-    }
-    
-    /* Style spécial pour le statut */
-    .table-container tbody tr td:nth-child(9) {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .table-container tbody tr td:nth-child(9)::before {
-        content: "Statut:";
-    }
-    
-    /* Style pour les actions */
-    .table-container tbody tr td:last-child {
-        display: flex;
-        justify-content: flex-end;
-        gap: 5px;
-        border-bottom: none;
-        padding-top: 8px;
-    }
-    
-    .table-container tbody tr td:last-child::before {
-        display: none;
-    }
-    
-    /* Style pour les cellules de copie */
-    .copy-cell {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        width: 100%;
-        justify-content: flex-end;
-    }
-    
-    .copy-cell span {
-        max-width: 60%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        background: #f5f5f5;
-        padding: 3px 5px;
-        border-radius: 3px;
-        font-family: monospace;
-        font-size: 11px;
-    }
-    
-    /* Badge de statut plus petit */
-    .status-badge {
-        padding: 4px 8px;
-        font-size: 11px;
-    }
-    
-    /* Boutons d'action plus petits */
-    .action-buttons {
-        display: flex;
-        gap: 4px;
-        justify-content: flex-end;
-    }
-    
-    .icon-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-        border-radius: 3px;
-    }
-    
-    /* Style spécial pour l'ID de commande */
-    .table-container tbody tr td:first-child {
-        font-size: 13px;
-        font-weight: 700;
-        color: #333;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 8px;
-        margin-bottom: 3px;
-    }
-    
-    .table-container tbody tr td:first-child::before {
-        content: "Commande #";
-        color: #666;
-        font-weight: 600;
-        font-size: 11px;
-    }
-    
-    /* Amélioration du touch sur mobile */
-    button, 
-    .icon-btn,
-    .action-btn,
-    .filter-btn,
-    .refresh-btn {
-        min-height: 40px;
-    }
-    
-    .icon-btn {
-        min-height: 28px;
-    }
-    
-    input,
-    select {
-        font-size: 16px !important;
-    }
-    
-    /* Animation pour les boutons sur mobile */
-    .icon-btn:active {
-        transform: scale(0.95);
-    }
-    
-    .refresh-btn:active {
-        transform: scale(0.98);
-    }
-    
-    /* Loader plus petit sur mobile */
-    .loading::after {
-        width: 15px;
-        height: 15px;
-        margin: -7.5px 0 0 -7.5px;
-    }
-}
-
-/* ========== VERSION ENCORE PLUS PETITE ========== */
-@media (max-width: 480px) {
-    .stats-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 5px;
-    }
-    
-    .stat-card {
-        padding: 8px 5px;
-    }
-    
-    .stat-card h3 {
-        font-size: 1rem;
-    }
-    
-    .stat-card p {
-        font-size: 0.65rem;
-    }
-    
-    .admin-header div {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .admin-header button {
-        width: 100%;
-        margin: 2px 0;
-    }
-    
-    /* Garder 2 colonnes même sur très petit écran */
-    .table-container tbody {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-    
-    .table-container tbody tr td {
-        font-size: 11px;
-        padding: 4px 0;
-    }
-    
-    .table-container tbody tr td::before {
-        width: 35%;
-        font-size: 10px;
-    }
-    
-    .copy-cell span {
-        max-width: 55%;
-        font-size: 10px;
-    }
-    
-    .icon-btn {
-        width: 24px;
-        height: 24px;
-        font-size: 10px;
-    }
-}
-
-/* ========== COULEURS DE BORDURE SELON STATUT ========== */
-.table-container tbody tr.status-en-attente {
-    border-left-color: #ff9800;
-}
-
-.table-container tbody tr.status-livré {
-    border-left-color: #4CAF50;
-}
-
-.table-container tbody tr.status-annulé {
-    border-left-color: #f44336;
-}
-
-/* ========== MODAL DES LOGS ========== */
+/* ========== MODAL LOGS ========== */
 .log-modal {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 80%;
-    max-width: 800px;
+    max-width: 900px;
     max-height: 80vh;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    z-index: 10001;
+    background: var(--teirtly-color);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    z-index: 1000;
     overflow: hidden;
 }
 
-.log-modal-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
 .log-modal-header {
-    padding: 15px 20px;
-    background: #f5f5f5;
-    border-bottom: 1px solid #ddd;
+    padding: 1.5rem;
+    background: var(--primary-color);
+    border-bottom: 1px solid #333;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .log-modal-header h3 {
-    margin: 0;
-    color: #333;
+    color: var(--secondly-color);
+}
+
+.log-modal-close {
+    background: none;
+    border: none;
+    color: var(--secondly-color);
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
 .log-modal-body {
-    padding: 20px;
+    padding: 1.5rem;
     overflow: auto;
-    max-height: calc(80vh - 70px);
+    max-height: calc(80vh - 80px);
 }
 
-.log-modal table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.log-modal th {
-    background: #f5f5f5;
-    padding: 10px;
-    text-align: left;
-}
-
-.log-modal td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-}
-
-
-/* ========== BOUTON DE STATUT ADMIN ========== */
-
-   .admin-status-control {
-        margin-right: 5px;
-    }
-    
-    .status-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .status-btn.online {
-        background: #4CAF50;
-        color: white;
-    }
-    
-    .status-btn.offline {
-        background: #f44336;
-        color: white;
-    }
-    
-    .status-btn .status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: currentColor;
-        box-shadow: 0 0 10px currentColor;
-        animation: pulse 2s infinite;
-    }
-    
-    .status-btn.online .status-dot {
-        background: #fff;
-    }
-    
-    .status-btn.offline .status-dot {
-        background: #fff;
-    }
-    
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-    
-    @media (max-width: 768px) {
-        .status-btn {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
-    }
-
-
-
-/* Responsive pour le modal des logs */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-    .log-modal {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        bottom: 10px;
-        width: auto;
-        max-width: none;
-        transform: none;
+    .header-container {
+        flex-direction: column;
+        padding: 1rem;
     }
     
-    .log-modal table {
-        font-size: 0.7rem;
+    .admin-actions {
+        justify-content: center;
     }
     
-    .log-modal th,
-    .log-modal td {
-        padding: 4px 2px;
-    }
-}
-
-/* ========== MODE PAYSAGE SUR MOBILE ========== */
-@media (max-width: 900px) and (orientation: landscape) {
     .stats-container {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+    
+    .filters {
+        flex-direction: column;
+        padding: 0 1rem;
+    }
+    
+    .table-container {
+        padding: 0 1rem;
+    }
+    
+    th, td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
     }
 }
