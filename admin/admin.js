@@ -491,27 +491,23 @@ function displayOrders(ordersToShow) {
             switch(order.status) {
                 case 'en attente':
                     statusClass = 'status-en-attente';
-                    statusIcon = '⏳';
                     break;
                 case 'livré':
                     statusClass = 'status-livré';
-                    statusIcon = '✅';
                     break;
                 case 'annulé':
                     statusClass = 'status-annulé';
-                    statusIcon = '❌';
                     break;
                 default:
                     statusClass = 'status-en-attente';
-                    statusIcon = '⏳';
             }
             
             // Badge de méthode de paiement (MVola / Orange Money)
             let paymentBadge = '';
             if (order.paymentMethod === 'MVola') {
-                paymentBadge = '<span class="payment-badge mvola"><i class="fas fa-phone"></i> MVola</span>';
+                paymentBadge = '<span class="payment-badge mvola">MVola</span>';
             } else if (order.paymentMethod === 'Orange Money') {
-                paymentBadge = '<span class="payment-badge orange"><i class="fas fa-mobile-alt"></i> Orange Money</span>';
+                paymentBadge = '<span class="payment-badge orange">Orange</span>';
             }
 
             return `
@@ -655,8 +651,8 @@ function deleteOrder(orderId) {
         return res.json();
     })
     .then(data => {
-        console.log('✅ Suppression réussie:', data);
-        showNotification(`✅ Commande #${orderId} supprimée`, 'success');
+        console.log('Suppression réussie:', data);
+        showNotification(`Commande #${orderId} supprimée`, 'success');
         loadOrders();
         loadStats();
     })
@@ -669,7 +665,7 @@ function deleteOrder(orderId) {
 function refreshOrders() {
     loadOrders();
     loadStats();
-    showNotification('🔄 Données actualisées', 'success');
+    showNotification(' Données actualisées', 'success');
 }
 
 // ========== STATUT ADMIN - SIMPLE ==========
