@@ -69,6 +69,14 @@ function startAutoRefresh() {
     }, 30000);
 }
 
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('⏹️ Rafraîchissement auto arrêté');
+    }
+}
+
 // ========== FONCTIONS DE SAUVEGARDE ==========
 
 // Créer un backup
@@ -125,7 +133,7 @@ function exportData() {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         
-        showNotification('✅ Export terminé', 'success');
+        showNotification('Export terminé', 'success');
     })
     .catch(err => {
         console.error(' Erreur export:', err);
@@ -325,7 +333,7 @@ function login() {
 }
 
 function logout() {
-    // Mettre hors ligne avant de déconnecter
+    stopAutoRefresh();
     adminOnline = false;
     localStorage.setItem('adminStatus', 'offline');
     
