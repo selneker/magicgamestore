@@ -32,6 +32,7 @@ const referenceInput = document.getElementById('referenceInput');
 // Toast
 const toast = document.getElementById('toast');
 
+
 // ========== URL API ==========
 const API_URL = (() => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -335,7 +336,7 @@ const paymentMethods = {
 
 // ========== SÉLECTIONNER MÉTHODE ==========
 function selectMethod(method) {
-    currentMethod = method;
+    currentMethod = method; // Izao no ovaina
     
     // Met à jour les boutons actifs
     document.getElementById('methodMvola').classList.toggle('active', method === 'mvola');
@@ -349,6 +350,7 @@ function selectMethod(method) {
     // Met à jour le bouton de paiement direct
     initPaymentButton();
 }
+
 
 // ========== INITIALISER BOUTON PAIEMENT ==========
 function initPaymentButton() {
@@ -431,7 +433,10 @@ function submitOrder() {
     const pack = OrderPack?.textContent;
     const price = OrderPrice?.textContent;
     const reference = referenceInput?.value.trim();
-    const paymentMethod = 'MVola';
+    let currentMethod = 'mvola';
+    
+    // ZAVATRA DEHILINY IZAO: maka ny méthode de paiement
+    const paymentMethod = currentMethod === 'mvola' ? 'MVola' : 'Orange Money';
     
     if (!pubgId || !pseudo) {
         showToast('Veuillez remplir tous les champs', 'error');
@@ -439,7 +444,7 @@ function submitOrder() {
     }
     
     if (!reference) {
-        showToast('Veuillez entrer la référence MVola', 'error');
+        showToast('Veuillez entrer la référence', 'error');
         referenceInput.style.border = '2px solid #f44336';
         referenceInput.focus();
         
@@ -453,22 +458,38 @@ function submitOrder() {
     confirmBtn.textContent = 'Envoi...';
     confirmBtn.classList.add('loading');
     
+    console.log('📤 Envoi commande:', { 
+        pubgId, 
+        pseudo, 
+        pack, 
+        price, 
+        paymentMethod, // Izao no hafaina
+        reference 
+    });
+    
     fetch(`${API_URL}/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pubgId, pseudo, pack, price, paymentMethod, reference })
+        body: JSON.stringify({ 
+            pubgId, 
+            pseudo, 
+            pack, 
+            price, 
+            paymentMethod, // ZAVATRA DEHILINY
+            reference 
+        })
     })
     .then(res => res.json())
     .then(data => {
         if (data.error) {
             showToast('Erreur : ' + data.error, 'error');
         } else {
-            showToast(`Commande #${data.orderId} enregistrée !`, 'success');
+            showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
             clearOrderState();
             closeAllModals();
         }
     })
-    .catch(() => showToast('Impossible de contacter le serveur', 'error'))
+    .catch(() => showToast('❌ Impossible de contacter le serveur', 'error'))
     .finally(() => {
         confirmBtn.disabled = false;
         confirmBtn.textContent = 'Confirmer';

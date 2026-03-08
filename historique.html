@@ -350,12 +350,12 @@
             <div class="filter-buttons">
                 <button class="filter-btn active" onclick="filterOrders('all')">Tous</button>
                 <button class="filter-btn" onclick="filterOrders('en attente')">
-                    <i data-lucide="loader"></i> En attente</button>
+                     En attente</button>
                 <button class="filter-btn" onclick="filterOrders('livré')">
-                    <i data-lucide="badge-check"></i> Livrés
+                     Livrés
                 </button>
                 <button class="filter-btn" onclick="filterOrders('annulé')">
-                    <i data-lucide="x"></i> Annulés
+                     Annulés
                 </button>
             </div>
         </div>
@@ -453,17 +453,6 @@
             }
         }
 
-        // ========== MASQUER RÉFÉRENCE ==========
-        function maskReference(ref) {
-            if (!ref) return '********';
-            if (ref.length < 8) return '*'.repeat(ref.length);
-            
-            const debut = ref.substring(0, 4);
-            const fin = ref.substring(ref.length - 4);
-            const etoiles = '*'.repeat(Math.min(ref.length - 8, 4));
-            
-            return debut + etoiles + fin;
-        }
 
         // ========== RECHERCHER LES COMMANDES ==========
         async function searchOrders() {
@@ -535,9 +524,9 @@
                         // Badge de méthode de paiement
                         let paymentBadge = '';
                         if (order.paymentMethod === 'MVola') {
-                            paymentBadge = '<span class="payment-badge mvola"><i class="fas fa-phone"></i> MVola</span>';
+                            paymentBadge = '<span class="payment-badge mvola">MVola</span>';
                         } else if (order.paymentMethod === 'Orange Money') {
-                            paymentBadge = '<span class="payment-badge orange"><i class="fas fa-mobile-alt"></i> Orange Money</span>';
+                            paymentBadge = '<span class="payment-badge orange">Orange Money</span>';
                         }
                         
                         // Badge de statut
@@ -554,7 +543,6 @@
                                     <p><i class="fa-regular fa-calendar"></i> ${new Date(order.date).toLocaleDateString()}</p>
                                     <p><i class="fa-regular fa-clock"></i> ${new Date(order.date).toLocaleTimeString()}</p>
                                     <p><i class="fa-solid fa-tag"></i> ${order.price}</p>
-                                    <p><i class="fa-regular fa-credit-card"></i> ${paymentBadge}</p>
                                     <p><i class="fa-regular fa-user"></i> ${order.pseudo}</p>
                                     <p><i class="fa-regular fa-id-card"></i> ${order.pubgId}</p>
                                 </div>
