@@ -333,7 +333,6 @@ td {
 /* Ligne en attente */
 tr.status-en-attente td {
     background: #2A2A2A;
-    border-left: 4px solid #ffd966;
 }
 
 tr.status-en-attente:hover td {
@@ -371,7 +370,7 @@ tr:last-child td {
 .status-badge {
     padding: 6px 12px;
     border-radius: 30px;
-    font-size: 0.85rem;
+    font-size: 0.80rem;
     font-weight: 600;
     display: inline-block;
 }

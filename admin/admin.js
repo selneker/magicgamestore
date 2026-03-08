@@ -25,9 +25,9 @@ function showNotification(message, type = 'success') {
         top: 20px;
         right: 20px;
         padding: 15px 25px;
-        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        background: ${type === 'success' ? '#4caf4f7e' : type === 'error' ? '#f4433683' : '#2195f36e'};
         color: white;
-        border-radius: 5px;
+        border-radius: 25px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         z-index: 10000;
         animation: slideInRight 0.3s ease;
@@ -128,7 +128,7 @@ function exportData() {
         showNotification('✅ Export terminé', 'success');
     })
     .catch(err => {
-        console.error('❌ Erreur export:', err);
+        console.error(' Erreur export:', err);
         showNotification(`❌ ${err.message}`, 'error');
     });
 }
@@ -265,7 +265,7 @@ function showLogsPanel() {
         document.body.appendChild(logModal);
     })
     .catch(err => {
-        console.error('❌ Erreur chargement logs:', err);
+        console.error(' Erreur chargement logs:', err);
         showNotification('Erreur chargement logs', 'error');
     });
 }
@@ -375,13 +375,13 @@ function loadOrders() {
             orders = data;
             displayOrders(data);
         } else {
-            console.error('❌ Données non tableau:', data);
+            console.error('Données non tableau:', data);
             orders = [];
             displayOrders([]);
         }
     })
     .catch(err => {
-        console.error('❌ Erreur chargement commandes:', err);
+        console.error('Erreur chargement commandes:', err);
         showNotification('Erreur chargement commandes', 'error');
         displayOrders([]);
     });
@@ -459,7 +459,7 @@ function fallbackCopy(text, type = '') {
         document.execCommand('copy');
         showNotification(`✅ ${type || 'Élément'} copié ! (fallback)`, 'success');
     } catch (err) {
-        showNotification(`❌ Erreur de copie`, 'error');
+        showNotification(`Erreur de copie`, 'error');
     }
     
     document.body.removeChild(textarea);
@@ -470,7 +470,7 @@ function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
     if (!ordersToShow || !Array.isArray(ordersToShow)) {
-        console.error('❌ Données invalides:', ordersToShow);
+        console.error('Données invalides:', ordersToShow);
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur: Données invalides</td></tr>';
         return;
     }
@@ -484,7 +484,9 @@ function displayOrders(ordersToShow) {
         tbody.innerHTML = ordersToShow.map(order => {
             if (!order || typeof order !== 'object') return '';
             
+            // Déterminer la classe de statut
             let statusClass = '';
+            let paymentMethodClass = '';
             
             switch(order.status) {
                 case 'en attente':
@@ -498,6 +500,13 @@ function displayOrders(ordersToShow) {
                     break;
                 default:
                     statusClass = 'status-en-attente';
+            }
+            
+            // Déterminer la classe de méthode de paiement
+            if (order.paymentMethod === 'MVola') {
+                paymentMethodClass = 'payment-method mvola';
+            } else if (order.paymentMethod === 'Orange Money') {
+                paymentMethodClass = 'payment-method orange';
             }
 
             return `
@@ -517,7 +526,11 @@ function displayOrders(ordersToShow) {
                 <td data-label="Pseudo">${order.pseudo || ''}</td>
                 <td data-label="Pack">${order.pack || ''}</td>
                 <td data-label="Prix">${order.price || ''}</td>
-                <td data-label="Paiement">${order.paymentMethod || ''}</td>
+                <td data-label="Paiement">
+                    <span class="${paymentMethodClass}">
+                        ${order.paymentMethod || ''}
+                    </span>
+                </td>
                 <td data-label="Référence">
                     <div class="copy-cell">
                         <span>${order.reference || ''}</span>
@@ -557,7 +570,7 @@ function displayOrders(ordersToShow) {
             </tr>
         `}).join('');
     } catch (error) {
-        console.error('❌ Erreur affichage:', error);
+        console.error('Erreur affichage:', error);
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur d\'affichage</td></tr>';
     }
 }
@@ -565,13 +578,16 @@ function displayOrders(ordersToShow) {
 // ========== FILTRES ==========
 document.getElementById('searchInput')?.addEventListener('input', filterOrders);
 document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
+document.getElementById('methodFilter')?.addEventListener('change', filterOrders); // Nouveau
 
 function filterOrders() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
+    const method = document.getElementById('methodFilter').value; // Nouveau
     
     let filtered = orders;
     
+    // Filtre par recherche
     if (search) {
         filtered = filtered.filter(o => 
             (o.pubgId || '').toLowerCase().includes(search) ||
@@ -579,8 +595,14 @@ function filterOrders() {
         );
     }
     
+    // Filtre par statut
     if (status !== 'all') {
         filtered = filtered.filter(o => (o.status || 'en attente') === status);
+    }
+    
+    // Filtre par méthode de paiement
+    if (method !== 'all') {
+        filtered = filtered.filter(o => o.paymentMethod === method);
     }
     
     displayOrders(filtered);
@@ -636,8 +658,8 @@ function deleteOrder(orderId) {
         loadStats();
     })
     .catch(err => {
-        console.error('❌ Erreur suppression:', err);
-        showNotification(`❌ Erreur: ${err.message}`, 'error');
+        console.error('Erreur suppression:', err);
+        showNotification(`Erreur: ${err.message}`, 'error');
     });
 }
 
@@ -659,11 +681,11 @@ window.toggleAdminStatus = function() {
     if (adminOnline) {
         btn.className = 'status-btn online';
         text.textContent = 'En ligne';
-        showNotification('✅ Admin en ligne', 'success');
+        showNotification('Admin en ligne', 'success');
     } else {
         btn.className = 'status-btn offline';
         text.textContent = 'Hors ligne';
-        showNotification('📴 Admin hors ligne', 'info');
+        showNotification('Admin hors ligne', 'info');
     }
     
     // Sauvegarde dans localStorage pour le client
@@ -707,7 +729,7 @@ if (token) {
             loadStats();
             startAutoRefresh();
         } else {
-            console.log('⛔ Token invalide');
+            console.log('Token invalide');
             localStorage.removeItem('adminToken');
         }
     })
