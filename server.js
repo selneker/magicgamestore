@@ -264,6 +264,81 @@ app.post('/api/admin/change-password', authenticateToken, isAdmin, async (req, r
 });
 
 
+// ========== ROUTE DE SECOURS POUR RÉINITIALISER ADMIN ==========
+
+app.get('/api/reset-admin-password', async (req, res) => {
+    try {
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
+        const newPassword = 'tiavinaIhaly'; 
+        
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(newPassword, salt);
+        
+        // Hita ny admin
+        const user = await User.findOne({ email: adminEmail });
+        
+        if (user) {
+            // Misy -> ovay
+            user.password = hash;
+            await user.save();
+            res.json({ 
+                success: true, 
+                message: `✅ Mot de passe réinitialisé: ${newPassword}`,
+                email: adminEmail
+            });
+        } else {
+            // Tsy misy -> foronina
+            const newAdmin = new User({
+                id: 1,
+                email: adminEmail,
+                password: hash,
+                role: 'admin'
+            });
+            await newAdmin.save();
+            res.json({ 
+                success: true, 
+                message: `✅ Admin créé avec mot de passe: ${newPassword}`,
+                email: adminEmail
+            });
+        }
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Route hafa: Mamorona admin vaovao
+app.get('/api/create-admin-now', async (req, res) => {
+    try {
+        const email = req.query.email || 'admin@magicgamestore.com';
+        const password = req.query.password || 'admin123';
+        
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(password, salt);
+        
+        // Mamafa ny admin taloha
+        await User.deleteMany({ email: email });
+        
+        // Mamorona vaovao
+        const newAdmin = new User({
+            id: Date.now(),
+            email: email,
+            password: hash,
+            role: 'admin'
+        });
+        await newAdmin.save();
+        
+        res.json({ 
+            success: true, 
+            message: `✅ Admin créé: ${email} / ${password}` 
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 // ========== ROUTES ADMIN ==========
 
 // Toutes les commandes
