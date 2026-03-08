@@ -1,3 +1,7 @@
+// ===========================================
+// INDEX.JS - MAGIC GAME STORE
+// ===========================================
+
 // ========== SÉLECTION DES ÉLÉMENTS ==========
 const tarifs = document.getElementById("tarifs");
 const abonnements = document.getElementById("abonnements");
@@ -31,7 +35,6 @@ const referenceInput = document.getElementById('referenceInput');
 
 // Toast
 const toast = document.getElementById('toast');
-
 
 // ========== URL API ==========
 const API_URL = (() => {
@@ -137,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initEventListeners();
-    setupKeyboardHandler(); // Gestion clavier
+    setupKeyboardHandler();
 });
 
 // ========== SWITCH UC / ABONNEMENTS ==========
@@ -199,7 +202,22 @@ function openModal(modal) {
     setTimeout(saveOrderState, 100);
     
     if (modal.id === 'modalPay') {
-        setTimeout(initMvolaDirectButton, 100);
+        // MVola par défaut
+        currentMethod = 'mvola';
+        setTimeout(() => {
+            // Met à jour les boutons actifs
+            const methodMvola = document.getElementById('methodMvola');
+            const methodOrange = document.getElementById('methodOrange');
+            if (methodMvola) methodMvola.classList.add('active');
+            if (methodOrange) methodOrange.classList.remove('active');
+            
+            // Met à jour le numéro
+            const methodData = paymentMethods['mvola'];
+            document.getElementById('phoneNumber').textContent = methodData.phoneDisplay;
+            document.getElementById('phoneName').textContent = `(${methodData.operator})`;
+            
+            initPaymentButton();
+        }, 100);
     }
 }
 
@@ -209,7 +227,6 @@ function closeAllModals() {
     document.body.style.overflow = 'auto';
     document.body.classList.remove('modal-open');
     
-    // Enlever la classe keyboard-up si présente
     modalInfo.classList.remove('keyboard-up');
     modalPay.classList.remove('keyboard-up');
     
@@ -235,14 +252,15 @@ function showToast(message, type = 'success') {
 }
 
 function copyNumber() {
-    const number = '0383905692';
+    const methodData = paymentMethods[currentMethod];
+    const number = methodData.phone;
+    
     navigator.clipboard.writeText(number)
-        .then(() => showToast('Numéro copié !', 'success'))
+        .then(() => showToast(`Numéro ${methodData.name} copié !`, 'success'))
         .catch(() => showToast('Erreur de copie', 'error'));
 }
 
-// ========== GESTION CLAVIER SIMPLE ==========
-
+// ========== GESTION CLAVIER ==========
 let activeModalForKeyboard = null;
 
 function setupKeyboardHandler() {
@@ -255,7 +273,6 @@ function setupKeyboardHandler() {
         if (!input) return;
         
         input.addEventListener('focus', () => {
-            // Détermine quelle modale est ouverte
             if (modalInfo.style.display === 'flex') {
                 activeModalForKeyboard = modalInfo;
             } else if (modalPay.style.display === 'flex') {
@@ -263,10 +280,8 @@ function setupKeyboardHandler() {
             }
             
             if (activeModalForKeyboard) {
-                // Ajoute la classe pour remonter la modale
                 activeModalForKeyboard.classList.add('keyboard-up');
                 
-                // Petit délai pour que le clavier s'ouvre
                 setTimeout(() => {
                     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 300);
@@ -277,7 +292,6 @@ function setupKeyboardHandler() {
             setTimeout(() => {
                 const activeElement = document.activeElement;
                 if (!inputs.includes(activeElement)) {
-                    // Enlève la classe pour remettre en bas
                     if (modalInfo.style.display === 'flex') {
                         modalInfo.classList.remove('keyboard-up');
                     }
@@ -314,7 +328,7 @@ function validatePubgId(pubgId) {
 }
 
 // ========== VARIABLES PAIEMENT ==========
-let currentMethod = 'mvola'; // 'mvola' ou 'orange'
+let currentMethod = 'mvola'; // 'mvola' ou 'orange' - GLOBAL
 
 // Informations de paiement
 const paymentMethods = {
@@ -336,7 +350,9 @@ const paymentMethods = {
 
 // ========== SÉLECTIONNER MÉTHODE ==========
 function selectMethod(method) {
-    currentMethod = method; // Izao no ovaina
+    currentMethod = method; // ZAVATRA DEHILINY - miova ny global
+    
+    console.log('✅ Méthode changée en:', currentMethod);
     
     // Met à jour les boutons actifs
     document.getElementById('methodMvola').classList.toggle('active', method === 'mvola');
@@ -350,7 +366,6 @@ function selectMethod(method) {
     // Met à jour le bouton de paiement direct
     initPaymentButton();
 }
-
 
 // ========== INITIALISER BOUTON PAIEMENT ==========
 function initPaymentButton() {
@@ -398,34 +413,6 @@ function initPaymentButton() {
     `;
 }
 
-// ========== COPIER NUMÉRO ==========
-function copyNumber() {
-    const methodData = paymentMethods[currentMethod];
-    const number = methodData.phone;
-    
-    navigator.clipboard.writeText(number)
-        .then(() => showToast(`Numéro ${methodData.name} copié !`, 'success'))
-        .catch(() => showToast('Erreur de copie', 'error'));
-}
-
-// ========== MODIFIER openModal POUR RÉINITIALISER ==========
-function openModal(modal) {
-    modalInfo.style.display = 'none';
-    modalPay.style.display = 'none';
-    
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    document.body.classList.add('modal-open');
-    
-    setTimeout(saveOrderState, 100);
-    
-    if (modal.id === 'modalPay') {
-        selectMethod('mvola'); // MVola par défaut
-        setTimeout(initPaymentButton, 100);
-    }
-}
-
-
 // ========== ENVOI DE COMMANDE ==========
 function submitOrder() {
     const pubgId = pubgIdInput?.value.trim();
@@ -433,10 +420,12 @@ function submitOrder() {
     const pack = OrderPack?.textContent;
     const price = OrderPrice?.textContent;
     const reference = referenceInput?.value.trim();
-    let currentMethod = 'mvola';
     
-    // ZAVATRA DEHILINY IZAO: maka ny méthode de paiement
+    // ✅ ZAVATRA DEHILINY: Mampiasa ny currentMethod global
     const paymentMethod = currentMethod === 'mvola' ? 'MVola' : 'Orange Money';
+    
+    console.log('📤 Méthode sélectionnée:', currentMethod);
+    console.log('📤 PaymentMethod envoyé:', paymentMethod);
     
     if (!pubgId || !pseudo) {
         showToast('Veuillez remplir tous les champs', 'error');
@@ -463,7 +452,7 @@ function submitOrder() {
         pseudo, 
         pack, 
         price, 
-        paymentMethod, // Izao no hafaina
+        paymentMethod,
         reference 
     });
     
@@ -475,7 +464,7 @@ function submitOrder() {
             pseudo, 
             pack, 
             price, 
-            paymentMethod, // ZAVATRA DEHILINY
+            paymentMethod,
             reference 
         })
     })
