@@ -312,14 +312,46 @@ function validatePubgId(pubgId) {
     return { valid: true };
 }
 
-// ========== PAIEMENT MVOLA ==========
+// ========== VARIABLES PAIEMENT ==========
+let currentMethod = 'mvola'; // 'mvola' ou 'orange'
 
-function generateUSSDCode(price) {
-    const cleanPrice = price.toString().replace(/[^0-9]/g, '');
-    return `#111*1*2*0383905692*${cleanPrice}*2*0#`;
+// Informations de paiement
+const paymentMethods = {
+    mvola: {
+        name: 'MVola',
+        phone: '0383905692',
+        phoneDisplay: '038 39 056 92',
+        operator: 'Selneker Dino',
+        ussdCode: (price) => `#111*1*2*0383905692*${price}*2*0#`
+    },
+    orange: {
+        name: 'Orange Money',
+        phone: '0377519833',
+        phoneDisplay: '037 75 198 33',
+        operator: 'Selneker Dino',
+        ussdCode: (price) => `#144*1*1*0377519833*0377519833*${price}*2#`
+    }
+};
+
+// ========== SÉLECTIONNER MÉTHODE ==========
+function selectMethod(method) {
+    currentMethod = method;
+    
+    // Met à jour les boutons actifs
+    document.getElementById('methodMvola').classList.toggle('active', method === 'mvola');
+    document.getElementById('methodOrange').classList.toggle('active', method === 'orange');
+    
+    // Met à jour l'affichage du numéro
+    const methodData = paymentMethods[method];
+    document.getElementById('phoneNumber').textContent = methodData.phoneDisplay;
+    document.getElementById('phoneName').textContent = `(${methodData.operator})`;
+    
+    // Met à jour le bouton de paiement direct
+    initPaymentButton();
 }
 
-function initMvolaDirectButton() {
+// ========== INITIALISER BOUTON PAIEMENT ==========
+function initPaymentButton() {
     const container = document.getElementById('payBtnContainer');
     if (!container) return;
     
@@ -331,13 +363,18 @@ function initMvolaDirectButton() {
         return;
     }
     
-    const ussdCode = generateUSSDCode(priceNumber);
+    const methodData = paymentMethods[currentMethod];
+    const ussdCode = methodData.ussdCode(priceNumber);
+    
+    // Style mifanaraka amin'ny méthode
+    const bgColor = currentMethod === 'mvola' ? 'rgba(0, 166, 81, 0.5)' : 'rgba(255, 121, 0, 0.5)';
+    const shadowColor = currentMethod === 'mvola' ? 'rgba(0,166,81,0.3)' : 'rgba(255,121,0,0.3)';
     
     container.innerHTML = `
         <a href="tel:${ussdCode}" 
            style="display: block; text-decoration: none; width: 100%;">
             <button style="
-                background: #00a65091;
+                background: ${bgColor};
                 color: white;
                 border: none;
                 padding: 15px 20px;
@@ -351,12 +388,39 @@ function initMvolaDirectButton() {
                 justify-content: center;
                 gap: 10px;
                 transition: all 0.3s;
-                box-shadow: 0 4px 10px rgba(0,166,81,0.3);
+                box-shadow: 0 4px 10px ${shadowColor};
             ">
-                Payer ${priceText} avec MVola
+                Payer ${priceText} avec ${methodData.name}
             </button>
         </a>
     `;
+}
+
+// ========== COPIER NUMÉRO ==========
+function copyNumber() {
+    const methodData = paymentMethods[currentMethod];
+    const number = methodData.phone;
+    
+    navigator.clipboard.writeText(number)
+        .then(() => showToast(`Numéro ${methodData.name} copié !`, 'success'))
+        .catch(() => showToast('Erreur de copie', 'error'));
+}
+
+// ========== MODIFIER openModal POUR RÉINITIALISER ==========
+function openModal(modal) {
+    modalInfo.style.display = 'none';
+    modalPay.style.display = 'none';
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
+    
+    setTimeout(saveOrderState, 100);
+    
+    if (modal.id === 'modalPay') {
+        selectMethod('mvola'); // MVola par défaut
+        setTimeout(initPaymentButton, 100);
+    }
 }
 
 
@@ -399,12 +463,12 @@ function submitOrder() {
         if (data.error) {
             showToast('Erreur : ' + data.error, 'error');
         } else {
-            showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
+            showToast(`Commande #${data.orderId} enregistrée !`, 'success');
             clearOrderState();
             closeAllModals();
         }
     })
-    .catch(() => showToast('❌ Impossible de contacter le serveur', 'error'))
+    .catch(() => showToast('Impossible de contacter le serveur', 'error'))
     .finally(() => {
         confirmBtn.disabled = false;
         confirmBtn.textContent = 'Confirmer';

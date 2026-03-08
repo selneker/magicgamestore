@@ -732,6 +732,60 @@ footer {
     animation: spin 0.8s linear infinite;
 }
 
+
+/* ========== SÉLECTION MÉTHODE PAIEMENT ========== */
+.payment-methods {
+    margin: 15px 0;
+}
+
+.method-selector {
+    display: flex;
+    gap: 10px;
+    background: var(--teirtly-color);
+    padding: 5px;
+    border-radius: 30px;
+}
+
+.method-btn {
+    flex: 1;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: transparent;
+    color: var(--secondly-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.method-btn i {
+    font-size: 1.1rem;
+}
+
+/* MVola actif */
+.method-btn.mvola.active {
+    background: #00A651;
+    color: white;
+}
+
+/* Orange Money actif */
+.method-btn.orange.active {
+    background: #FF7900;
+    color: white;
+}
+
+.method-btn:hover:not(.active) {
+    background: var(--accent-opac);
+    color: var(--accent-color);
+}
+
+
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     header {

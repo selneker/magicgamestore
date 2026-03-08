@@ -333,12 +333,24 @@
     </div>
 
     <!-- MODAL 2 - PAIEMENT -->
-    <div class="modalPay" id="modalPay">
+<div class="modalPay" id="modalPay">
     <div class="modalPay-container">
         <button class="modal-close" id="closePay"><i class="fa-solid fa-xmark"></i></button>
-        <h3>Paiement MVola</h3>
+        <h3>Paiement Mobile</h3>
 
-        <!-- BOUTON DE PAIEMENT DIRECT - SANS CODE AFFICHÉ -->
+        <!-- SÉLECTION MÉTHODE DE PAIEMENT -->
+        <div class="payment-methods">
+            <div class="method-selector">
+                <button class="method-btn mvola active" onclick="selectMethod('mvola')" id="methodMvola">
+                    MVola
+                </button>
+                <button class="method-btn orange" onclick="selectMethod('orange')" id="methodOrange">
+                    Orange Money
+                </button>
+            </div>
+        </div>
+
+        <!-- BOUTON DE PAIEMENT DIRECT (change selon méthode) -->
         <div class="paybtn" id="payBtnContainer">
             <!-- Le bouton sera inséré ici par JavaScript -->
         </div>
@@ -350,27 +362,27 @@
             <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
         </div>
         
-        <!--Numero de paiment-->
-        <div class="numero">
+        <!-- NUMÉRO DE PAIEMENT (change selon méthode) -->
+        <div class="numero" id="paymentNumber">
             <p>
-                <strong>038 39 056 92</strong>
-                <span style="color:#ffffffa4; font-size:0.9rem;"> (Selneker Dino)</span>
+                <strong id="phoneNumber">038 39 056 92</strong>
+                <span style="color:#ffffffa4; font-size:0.9rem;" id="phoneName">(Selneker Dino)</span>
             </p>
             <button class="btn-copy" onclick="copyNumber()">Copier</button>
         </div>
         
-        
+        <!-- RÉFÉRENCE -->
         <div class="reference-form">
             <small style="display: block; color: #666; margin-top: 5px;">
-                 Après paiement, entrez la référence reçue par SMS
+                Après paiement, entrez la référence reçue par SMS
             </small>
             <input type="text" id="referenceInput" placeholder="Reference (ex:Ref:1148190***)">
         </div>
         
+        <!-- BOUTONS RETOUR & CONFIRMER -->
         <div class="guidbtn">
-            <button class="btn-primary" id="confirm">Envoye la commande</button>
+            <button class="btn-primary" id="confirm">Envoyer la commande</button>
             <button class="btn-secondary" id="retour">Retour</button>
-            
         </div>
     </div>
 </div>
