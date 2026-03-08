@@ -470,7 +470,7 @@ function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
     if (!ordersToShow || !Array.isArray(ordersToShow)) {
-        console.error('Données invalides:', ordersToShow);
+        console.error('❌ Données invalides:', ordersToShow);
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur: Données invalides</td></tr>';
         return;
     }
@@ -484,33 +484,38 @@ function displayOrders(ordersToShow) {
         tbody.innerHTML = ordersToShow.map(order => {
             if (!order || typeof order !== 'object') return '';
             
-            // Déterminer la classe de statut
+            // Statut de livraison (en attente, livré, annulé)
             let statusClass = '';
-            let paymentMethodClass = '';
+            let statusIcon = '';
             
             switch(order.status) {
                 case 'en attente':
                     statusClass = 'status-en-attente';
+                    statusIcon = '⏳';
                     break;
                 case 'livré':
                     statusClass = 'status-livré';
+                    statusIcon = '✅';
                     break;
                 case 'annulé':
                     statusClass = 'status-annulé';
+                    statusIcon = '❌';
                     break;
                 default:
                     statusClass = 'status-en-attente';
+                    statusIcon = '⏳';
             }
             
-            // Déterminer la classe de méthode de paiement
+            // Badge de méthode de paiement (MVola / Orange Money)
+            let paymentBadge = '';
             if (order.paymentMethod === 'MVola') {
-                paymentMethodClass = 'payment-method mvola';
+                paymentBadge = '<span class="payment-badge mvola"><i class="fas fa-phone"></i> MVola</span>';
             } else if (order.paymentMethod === 'Orange Money') {
-                paymentMethodClass = 'payment-method orange';
+                paymentBadge = '<span class="payment-badge orange"><i class="fas fa-mobile-alt"></i> Orange Money</span>';
             }
 
             return `
-            <tr class="${statusClass}">
+            <tr>
                 <td data-label="ID">#${order.id || 'N/A'}</td>
                 <td data-label="Date">${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</td>
                 <td data-label="ID PUBG">
@@ -527,9 +532,7 @@ function displayOrders(ordersToShow) {
                 <td data-label="Pack">${order.pack || ''}</td>
                 <td data-label="Prix">${order.price || ''}</td>
                 <td data-label="Paiement">
-                    <span class="${paymentMethodClass}">
-                        ${order.paymentMethod || ''}
-                    </span>
+                    ${paymentBadge}
                 </td>
                 <td data-label="Référence">
                     <div class="copy-cell">
@@ -543,7 +546,7 @@ function displayOrders(ordersToShow) {
                 </td>
                 <td data-label="Statut">
                     <span class="status-badge ${statusClass}">
-                        ${order.status || 'en attente'}
+                        ${statusIcon} ${order.status || 'en attente'}
                     </span>
                 </td>
                 <td data-label="Actions">
@@ -570,7 +573,7 @@ function displayOrders(ordersToShow) {
             </tr>
         `}).join('');
     } catch (error) {
-        console.error('Erreur affichage:', error);
+        console.error('❌ Erreur affichage:', error);
         tbody.innerHTML = '<tr><td colspan="11" class="loading">Erreur d\'affichage</td></tr>';
     }
 }

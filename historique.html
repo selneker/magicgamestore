@@ -243,6 +243,35 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        /* ========== BADGE PAIEMENT DANS HISTORIQUE ========== */
+        .payment-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .payment-badge.mvola {
+            background: rgba(0, 166, 81, 0.15);
+            color: #00A651;
+        }
+
+        .payment-badge.orange {
+            background: rgba(255, 121, 0, 0.15);
+            color: #FF7900;
+        }
+
+        .order-details p {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
         
         @media (max-width: 768px) {
             .order-card {
@@ -485,7 +514,7 @@
             }
         }
 
-        // ========== AFFICHER LES COMMANDES ==========
+        // ========== AFFICHER LES COMMANDES (HISTORIQUE) ==========
         function displayOrders(orders) {
             const container = document.getElementById('ordersContainer');
             
@@ -495,10 +524,6 @@
                         <i class="fa-solid fa-box-open fa-3x"></i>
                         <h3>Aucune commande trouvée</h3>
                         <p>ID PUBG: ${currentPubgId}</p>
-                        <p>Vous n'avez pas encore effectué d'achat avec cet ID.</p>
-                        <a href="index.html" style="color: var(--accent-color); font-weight: bold; text-decoration: underline;">
-                            Faire un achat maintenant
-                        </a>
                     </div>
                 `;
                 return;
@@ -507,28 +532,35 @@
             container.innerHTML = `
                 <div class="orders-grid">
                     ${orders.map(order => {
-                        const statusClass = order.status === 'en attente' ? 'status-en-attente' : 
-                                           order.status === 'livré' ? 'status-livré' : 'status-annulé';
+                        // Badge de méthode de paiement
+                        let paymentBadge = '';
+                        if (order.paymentMethod === 'MVola') {
+                            paymentBadge = '<span class="payment-badge mvola"><i class="fas fa-phone"></i> MVola</span>';
+                        } else if (order.paymentMethod === 'Orange Money') {
+                            paymentBadge = '<span class="payment-badge orange"><i class="fas fa-mobile-alt"></i> Orange Money</span>';
+                        }
                         
-                        const statusText = order.status === 'en attente' ? 'En attente' : 
-                                          order.status === 'livré' ? 'Livré' : 'Annulé';
+                        // Badge de statut
+                        const statusClass = order.status === 'en attente' ? 'status-en-attente' : 
+                                        order.status === 'livré' ? 'status-livré' : 'status-annulé';
+                        const statusIcon = order.status === 'en attente' ? '⏳' : 
+                                        order.status === 'livré' ? '✅' : '❌';
                         
                         return `
-                        <div class="order-card ${statusClass}">
+                        <div class="order-card">
                             <div class="order-info">
                                 <h3>${order.pack}</h3>
                                 <div class="order-details">
                                     <p><i class="fa-regular fa-calendar"></i> ${new Date(order.date).toLocaleDateString()}</p>
                                     <p><i class="fa-regular fa-clock"></i> ${new Date(order.date).toLocaleTimeString()}</p>
                                     <p><i class="fa-solid fa-tag"></i> ${order.price}</p>
-                                    <p><i class="fa-regular fa-credit-card"></i> ${order.paymentMethod}</p>
+                                    <p><i class="fa-regular fa-credit-card"></i> ${paymentBadge}</p>
                                     <p><i class="fa-regular fa-user"></i> ${order.pseudo}</p>
                                     <p><i class="fa-regular fa-id-card"></i> ${order.pubgId}</p>
-                                    <p><i class="fa-regular fa-hashtag"></i> Réf: ${maskReference(order.reference)}</p>
                                 </div>
                             </div>
                             <div class="order-status">
-                                <span class="status-badge ${statusClass}">${statusText}</span>
+                                <span class="status-badge ${statusClass}">${statusIcon} ${order.status}</span>
                                 <span class="order-date">#${order.id}</span>
                             </div>
                         </div>
