@@ -222,6 +222,48 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
+
+// ========== CHANGER MOT DE PASSE ADMIN ==========
+app.post('/api/admin/change-password', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        // Récupérer l'admin
+        const user = await User.findOne({ email: req.user.email });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        
+        // Vérifier l'ancien mot de passe
+        const valid = await bcrypt.compare(currentPassword, user.password);
+        if (!valid) {
+            return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+        }
+        
+        // Vérifier que le nouveau mot de passe est valide
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 6 caractères' });
+        }
+        
+        // Hasher le nouveau mot de passe
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(newPassword, salt);
+        
+        // Mettre à jour
+        user.password = hash;
+        await user.save();
+        
+        console.log(`🔑 Mot de passe changé pour ${req.user.email}`);
+        res.json({ success: true, message: 'Mot de passe changé avec succès' });
+        
+    } catch (error) {
+        console.error('❌ Erreur changement mot de passe:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+
 // ========== ROUTES ADMIN ==========
 
 // Toutes les commandes

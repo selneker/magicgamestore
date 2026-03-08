@@ -66,7 +66,7 @@ function startAutoRefresh() {
             loadOrders();
             loadStats();
         }
-    }, 60000); // ← Changé à 60 secondes
+    }, 30000);
 }
 
 // ========== FONCTIONS DE SAUVEGARDE ==========
@@ -336,6 +336,123 @@ function logout() {
     document.getElementById('adminSection').style.display = 'none';
     showNotification('Déconnexion réussie', 'success');
 }
+
+
+// ========== CHANGER MOT DE PASSE ==========
+function changePassword() {
+    // Créer une modale simple
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--teirtly-color);
+        padding: 30px;
+        border-radius: 20px;
+        z-index: 10002;
+        width: 300px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    `;
+    
+    modal.innerHTML = `
+        <h3 style="color: var(--secondly-color); margin-bottom: 20px;">🔐 Changer mot de passe</h3>
+        <input type="password" id="currentPassword" placeholder="Mot de passe actuel" style="
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: var(--secondly-color);
+        ">
+        <input type="password" id="newPassword" placeholder="Nouveau mot de passe" style="
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: var(--secondly-color);
+        ">
+        <input type="password" id="confirmPassword" placeholder="Confirmer mot de passe" style="
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: var(--secondly-color);
+        ">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="submitPasswordChange()" style="
+                flex: 1;
+                padding: 10px;
+                background: var(--accent-color);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+            ">Changer</button>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                flex: 1;
+                padding: 10px;
+                background: #f44336;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+            ">Annuler</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Fonction pour soumettre
+window.submitPasswordChange = function() {
+    const current = document.getElementById('currentPassword').value;
+    const newPass = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    
+    if (!current || !newPass || !confirm) {
+        showNotification('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    
+    if (newPass !== confirm) {
+        showNotification('Les mots de passe ne correspondent pas', 'error');
+        return;
+    }
+    
+    if (newPass.length < 6) {
+        showNotification('Minimum 6 caractères', 'error');
+        return;
+    }
+    
+    fetch(`${BASE_URL}/api/admin/change-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            currentPassword: current,
+            newPassword: newPass
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'error');
+        } else {
+            showNotification('✅ Mot de passe changé!', 'success');
+            document.querySelector('.modal-change-password')?.remove();
+        }
+    })
+    .catch(() => showNotification('❌ Erreur', 'error'));
+};
+
 
 // ========== CHARGEMENT DES COMMANDES ==========
 function loadOrders() {
