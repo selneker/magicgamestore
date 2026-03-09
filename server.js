@@ -433,6 +433,66 @@ app.get('/api/reset-admin-password', async (req, res) => {
 });
 
 
+// ========== FORCE RESET ADMIN (SÉCURISÉ - À SUPPRIMER APRÈS) ==========
+app.get('/api/force-reset-admin', async (req, res) => {
+    try {
+        // 1. Esory ny admin taloha rehetra
+        await User.deleteMany({});
+        
+        // 2. Mamorona admin vaovao
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync('brad777', salt);
+        
+        const newAdmin = new User({
+            id: 1,
+            email: 'admin@magicgamestore.com',
+            password: hash,
+            role: 'admin'
+        });
+        
+        await newAdmin.save();
+        
+        // 3. Asehoy ny fanamarinana
+        const users = await User.find({});
+        
+        res.json({
+            success: true,
+            message: '✅ Admin réinitialisé avec succès',
+            credentials: {
+                email: 'admin@magicgamestore.com',
+                password: 'brad777'
+            },
+            usersInDB: users.map(u => ({
+                email: u.email,
+                role: u.role
+            }))
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+// ========== VOIR LES UTILISATEURS ==========
+app.get('/api/debug-users', async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.json({
+            count: users.length,
+            users: users.map(u => ({
+                id: u.id,
+                email: u.email,
+                role: u.role,
+                // Aza aseho ny password!
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 app.use(express.static(__dirname));
