@@ -140,48 +140,6 @@ function showLogsPanel() {
     })
     .catch(() => showNotification('❌ Erreur logs', 'error'));
 }
-/* 
-// ========== LOGIN ==========
-function login() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    fetch(`${BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.token) {
-            token = data.token;
-            localStorage.setItem('adminToken', token);
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminSection').style.display = 'block';
-            document.getElementById('adminEmail').textContent = data.user.email;
-            
-            adminOnline = true;
-            localStorage.setItem('adminStatus', 'online');
-            
-            const btn = document.getElementById('toggleAdminStatusBtn');
-            const text = document.getElementById('adminStatusText');
-            if (btn && text) {
-                btn.className = 'status-btn online';
-                text.textContent = 'En ligne';
-            }
-            
-            loadOrders();
-            loadStats();
-            startAutoRefresh();
-            showNotification('✅ Connecté', 'success');
-        } else {
-            document.getElementById('loginError').textContent = data.error || 'Erreur';
-        }
-    })
-    .catch(() => {
-        document.getElementById('loginError').textContent = 'Erreur serveur';
-    });
-} */
 
 // ========== LOGOUT ==========
 function logout() {
@@ -190,9 +148,8 @@ function logout() {
     localStorage.setItem('adminStatus', 'offline');
     localStorage.removeItem('adminToken');
     token = null;
-    document.getElementById('loginSection').style.display = 'flex';
-    document.getElementById('adminSection').style.display = 'none';
-    showNotification('✅ Déconnecté', 'success');
+    // Redirection vers la page de login si elle existe
+    window.location.href = '/admin/login.html';
 }
 
 // ========== LOAD ORDERS ==========
@@ -399,8 +356,12 @@ if (token) {
     })
     .then(res => {
         if (res.ok) {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminSection').style.display = 'block';
+            // Cacher login section si elle existe
+            const loginSection = document.getElementById('loginSection');
+            if (loginSection) loginSection.style.display = 'none';
+            
+            const adminSection = document.getElementById('adminSection');
+            if (adminSection) adminSection.style.display = 'block';
             
             adminOnline = true;
             localStorage.setItem('adminStatus', 'online');
@@ -420,4 +381,11 @@ if (token) {
         }
     })
     .catch(() => {});
+} else {
+    // Pas de token, afficher login section si elle existe
+    const loginSection = document.getElementById('loginSection');
+    const adminSection = document.getElementById('adminSection');
+    
+    if (loginSection) loginSection.style.display = 'flex';
+    if (adminSection) adminSection.style.display = 'none';
 }
