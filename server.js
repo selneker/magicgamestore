@@ -222,7 +222,7 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
-// ========== ROUTES ADMIN ==========
+// ========== ROUTES ADMIN (protégées) ==========
 
 // Toutes les commandes
 app.get('/api/admin/orders', authenticateToken, isAdmin, async (req, res) => {
@@ -392,131 +392,12 @@ app.post('/api/admin/restore', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ========== ROUTES DEBUG ==========
+// ========== ROUTES DEBUG (SÉCURISÉES - À SUPPRIMER EN PROD) ==========
 app.get('/api/debug-auth', (req, res) => {
     res.json({ 
         message: 'API OK',
-        env: { adminEmail: process.env.ADMIN_EMAIL },
         mongoConnected: mongoose.connection.readyState === 1
     });
-});
-
-// ========== ROUTES DE RÉINITIALISATION ==========
-
-// Route reset password (brad777)
-app.get('/api/reset-admin-password', async (req, res) => {
-    try {
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
-        const newPassword = 'brad777'; 
-        
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(newPassword, salt);
-        
-        const user = await User.findOne({ email: adminEmail });
-        
-        if (user) {
-            user.password = hash;
-            await user.save();
-            res.json({ 
-                success: true, 
-                message: `✅ Mot de passe réinitialisé: ${newPassword}`, 
-                email: adminEmail 
-            });
-        } else {
-            const newAdmin = new User({
-                id: 1,
-                email: adminEmail,
-                password: hash,
-                role: 'admin'
-            });
-            await newAdmin.save();
-            res.json({ 
-                success: true, 
-                message: `✅ Admin créé avec mot de passe: ${newPassword}`, 
-                email: adminEmail 
-            });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Force reset admin (brad777)
-app.get('/api/force-reset-admin', async (req, res) => {
-    try {
-        // Esory ny admin taloha rehetra
-        await User.deleteMany({});
-        
-        // Mamorona admin vaovao
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync('brad777', salt);
-        
-        const newAdmin = new User({
-            id: 1,
-            email: 'admin@magicgamestore.com',
-            password: hash,
-            role: 'admin'
-        });
-        
-        await newAdmin.save();
-        
-        const users = await User.find({});
-        
-        res.json({
-            success: true,
-            message: '✅ Admin réinitialisé avec succès',
-            credentials: {
-                email: 'admin@magicgamestore.com',
-                password: 'brad777'
-            },
-            usersInDB: users.map(u => ({
-                email: u.email,
-                role: u.role
-            }))
-        });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Voir les utilisateurs
-app.get('/api/debug-users', async (req, res) => {
-    try {
-        const users = await User.find({});
-        res.json({
-            count: users.length,
-            users: users.map(u => ({
-                id: u.id,
-                email: u.email,
-                role: u.role
-            }))
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/api/check-password', async (req, res) => {
-    try {
-        const user = await User.findOne({ email: 'admin@magicgamestore.com' });
-        
-        // Andramo ny "brad777"
-        const testBrad = await bcrypt.compare('brad777', user.password);
-        
-        // Andramo ny "admin123"
-        const testAdmin = await bcrypt.compare('admin123', user.password);
-        
-        res.json({
-            email: user.email,
-            hash: user.password.substring(0, 20) + '...',
-            password_brad777_match: testBrad,
-            password_admin123_match: testAdmin
-        });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
 });
 
 // ========== FICHIERS STATIQUES ==========
