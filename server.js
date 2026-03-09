@@ -243,11 +243,10 @@ app.put('/api/admin/orders/:id', authenticateToken, isAdmin, async (req, res) =>
         
         if (!order) return res.status(404).json({ error: 'Commande non trouvée' });
         
-        const oldStatus = order.status;
         order.status = status;
         await order.save();
         
-        logOrderAction('STATUS_UPDATE', orderId, { oldStatus, newStatus: status });
+        logOrderAction('STATUS_UPDATE', orderId, { newStatus: status });
         res.json({ message: 'Statut mis à jour' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -286,41 +285,6 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, async (req, res) => {
         res.json({ totalOrders, totalRevenue, statusCount, lastOrders });
     } catch (error) {
         res.status(500).json({ error: error.message });
-    }
-});
-
-// ========== ROUTE SÉCURISÉE POUR CHANGER MOT DE PASSE ==========
-app.post('/api/admin/change-password', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-        
-        const user = await User.findOne({ email: req.user.email });
-        
-        if (!user) {
-            return res.status(404).json({ error: 'Utilisateur non trouvé' });
-        }
-        
-        const valid = await bcrypt.compare(currentPassword, user.password);
-        if (!valid) {
-            return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
-        }
-        
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 6 caractères' });
-        }
-        
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(newPassword, salt);
-        
-        user.password = hash;
-        await user.save();
-        
-        console.log(`🔑 Mot de passe changé pour ${req.user.email}`);
-        res.json({ success: true, message: 'Mot de passe changé avec succès' });
-        
-    } catch (error) {
-        console.error('❌ Erreur changement mot de passe:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
     }
 });
 
@@ -392,7 +356,12 @@ app.post('/api/admin/restore', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ========== ROUTES DEBUG (SÉCURISÉES - À SUPPRIMER EN PROD) ==========
+// ========== ROUTE DE VÉRIFICATION ==========
+app.get('/api/admin/verify', authenticateToken, (req, res) => {
+    res.json({ valid: true, user: req.user });
+});
+
+// ========== ROUTES DEBUG ==========
 app.get('/api/debug-auth', (req, res) => {
     res.json({ 
         message: 'API OK',
