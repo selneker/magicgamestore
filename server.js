@@ -40,7 +40,7 @@ app.use(morgan('combined'));
 
 // ========== RATE LIMITING ==========
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100,
     message: { error: 'Trop de requêtes, veuillez attendre 15 minutes' }
 });
@@ -222,7 +222,7 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
-// ========== ROUTES ADMIN (protégées) ==========
+// ========== ROUTES ADMIN ==========
 
 // Toutes les commandes
 app.get('/api/admin/orders', authenticateToken, isAdmin, async (req, res) => {
@@ -243,10 +243,11 @@ app.put('/api/admin/orders/:id', authenticateToken, isAdmin, async (req, res) =>
         
         if (!order) return res.status(404).json({ error: 'Commande non trouvée' });
         
+        const oldStatus = order.status;
         order.status = status;
         await order.save();
         
-        logOrderAction('STATUS_UPDATE', orderId, { newStatus: status });
+        logOrderAction('STATUS_UPDATE', orderId, { oldStatus, newStatus: status });
         res.json({ message: 'Statut mis à jour' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -294,7 +295,9 @@ let adminStatus = { online: false };
 
 // Mettre à jour statut (admin)
 app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
-    adminStatus = { online: req.body.online };
+    adminStatus = {
+        online: req.body.online
+    };
     console.log(`📡 Admin ${adminStatus.online ? 'en ligne' : 'hors ligne'}`);
     res.json({ success: true, online: adminStatus.online });
 });
@@ -303,6 +306,7 @@ app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
 app.get('/api/admin/status', (req, res) => {
     res.json({ online: adminStatus.online });
 });
+
 
 // ========== ROUTES DE SAUVEGARDE ==========
 
@@ -356,53 +360,34 @@ app.post('/api/admin/restore', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ========== ROUTE DE VÉRIFICATION ==========
-app.get('/api/admin/verify', authenticateToken, (req, res) => {
-    res.json({ valid: true, user: req.user });
-});
-
 // ========== ROUTES DEBUG ==========
 app.get('/api/debug-auth', (req, res) => {
     res.json({ 
         message: 'API OK',
+        env: { adminEmail: process.env.ADMIN_EMAIL },
         mongoConnected: mongoose.connection.readyState === 1
     });
 });
 
-
-// TEMPORAIRE - À SUPPRIMER APRÈS
-app.get('/api/create-admin-force', async (req, res) => {
+app.get('/api/create-admin', async (req, res) => {
     try {
-        // Supprime l'ancien admin
-        await User.deleteMany({ email: 'admin@magicgamestore.com' });
+        if (!process.env.ADMIN_PASSWORD) return res.status(500).json({ error: 'ADMIN_PASSWORD non défini' });
         
-        // Crée un nouvel admin avec mot de passe admin123
         const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync('admin123', salt);
-        
-        const newAdmin = new User({
+        const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
+        const newAdmin = [{
             id: 1,
-            email: 'admin@magicgamestore.com',
+            email: process.env.ADMIN_EMAIL,
             password: hash,
-            role: 'admin'
-        });
-        
-        await newAdmin.save();
-        
-        res.json({ 
-            success: true, 
-            message: '✅ Admin créé',
-            credentials: {
-                email: 'admin@magicgamestore.com',
-                password: 'admin123'
-            }
-        });
+            role: 'admin',
+            createdAt: new Date().toISOString()
+        }];
+        fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(newAdmin, null, 2));
+        res.json({ success: true, message: '✅ Admin créé', email: process.env.ADMIN_EMAIL });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
-
-
 
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
