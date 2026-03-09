@@ -369,6 +369,41 @@ app.get('/api/debug-auth', (req, res) => {
     });
 });
 
+
+// TEMPORAIRE - À SUPPRIMER APRÈS
+app.get('/api/create-admin-force', async (req, res) => {
+    try {
+        // Supprime l'ancien admin
+        await User.deleteMany({ email: 'admin@magicgamestore.com' });
+        
+        // Crée un nouvel admin avec mot de passe admin123
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync('admin123', salt);
+        
+        const newAdmin = new User({
+            id: 1,
+            email: 'admin@magicgamestore.com',
+            password: hash,
+            role: 'admin'
+        });
+        
+        await newAdmin.save();
+        
+        res.json({ 
+            success: true, 
+            message: '✅ Admin créé',
+            credentials: {
+                email: 'admin@magicgamestore.com',
+                password: 'admin123'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 app.use(express.static(__dirname));
