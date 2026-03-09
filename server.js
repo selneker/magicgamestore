@@ -497,6 +497,28 @@ app.get('/api/debug-users', async (req, res) => {
     }
 });
 
+app.get('/api/check-password', async (req, res) => {
+    try {
+        const user = await User.findOne({ email: 'admin@magicgamestore.com' });
+        
+        // Andramo ny "brad777"
+        const testBrad = await bcrypt.compare('brad777', user.password);
+        
+        // Andramo ny "admin123"
+        const testAdmin = await bcrypt.compare('admin123', user.password);
+        
+        res.json({
+            email: user.email,
+            hash: user.password.substring(0, 20) + '...',
+            password_brad777_match: testBrad,
+            password_admin123_match: testAdmin
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 app.use(express.static(__dirname));
