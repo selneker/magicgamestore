@@ -392,7 +392,7 @@ app.post('/api/admin/restore', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ========== ROUTES DEBUG (À GARDER? À SUPPRIMER?) ==========
+// ========== ROUTES DEBUG ==========
 app.get('/api/debug-auth', (req, res) => {
     res.json({ 
         message: 'API OK',
@@ -401,8 +401,9 @@ app.get('/api/debug-auth', (req, res) => {
     });
 });
 
-// ========== ROUTE DE SECOURS (COMMENTÉE POUR SÉCURITÉ) ==========
+// ========== ROUTES DE RÉINITIALISATION ==========
 
+// Route reset password (brad777)
 app.get('/api/reset-admin-password', async (req, res) => {
     try {
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
@@ -416,7 +417,11 @@ app.get('/api/reset-admin-password', async (req, res) => {
         if (user) {
             user.password = hash;
             await user.save();
-            res.json({ success: true, message: `✅ Mot de passe réinitialisé: ${newPassword}`, email: adminEmail });
+            res.json({ 
+                success: true, 
+                message: `✅ Mot de passe réinitialisé: ${newPassword}`, 
+                email: adminEmail 
+            });
         } else {
             const newAdmin = new User({
                 id: 1,
@@ -425,21 +430,24 @@ app.get('/api/reset-admin-password', async (req, res) => {
                 role: 'admin'
             });
             await newAdmin.save();
-            res.json({ success: true, message: `✅ Admin créé avec mot de passe: ${newPassword}`, email: adminEmail });
+            res.json({ 
+                success: true, 
+                message: `✅ Admin créé avec mot de passe: ${newPassword}`, 
+                email: adminEmail 
+            });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-
-// ========== FORCE RESET ADMIN (SÉCURISÉ - À SUPPRIMER APRÈS) ==========
+// Force reset admin (brad777)
 app.get('/api/force-reset-admin', async (req, res) => {
     try {
-        // 1. Esory ny admin taloha rehetra
+        // Esory ny admin taloha rehetra
         await User.deleteMany({});
         
-        // 2. Mamorona admin vaovao
+        // Mamorona admin vaovao
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync('brad777', salt);
         
@@ -452,7 +460,6 @@ app.get('/api/force-reset-admin', async (req, res) => {
         
         await newAdmin.save();
         
-        // 3. Asehoy ny fanamarinana
         const users = await User.find({});
         
         res.json({
@@ -473,8 +480,7 @@ app.get('/api/force-reset-admin', async (req, res) => {
     }
 });
 
-
-// ========== VOIR LES UTILISATEURS ==========
+// Voir les utilisateurs
 app.get('/api/debug-users', async (req, res) => {
     try {
         const users = await User.find({});
@@ -483,15 +489,13 @@ app.get('/api/debug-users', async (req, res) => {
             users: users.map(u => ({
                 id: u.id,
                 email: u.email,
-                role: u.role,
-                // Aza aseho ny password!
+                role: u.role
             }))
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
-
 
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
