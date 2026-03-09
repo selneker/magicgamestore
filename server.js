@@ -406,7 +406,7 @@ app.get('/api/debug-auth', (req, res) => {
 app.get('/api/reset-admin-password', async (req, res) => {
     try {
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
-        const newPassword = 'tiavinaIhaly'; 
+        const newPassword = 'brad777'; 
         
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(newPassword, salt);
