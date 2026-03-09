@@ -140,7 +140,7 @@ function showLogsPanel() {
     })
     .catch(() => showNotification('❌ Erreur logs', 'error'));
 }
-
+/* 
 // ========== LOGIN ==========
 function login() {
     const email = document.getElementById('loginEmail').value;
@@ -181,7 +181,7 @@ function login() {
     .catch(() => {
         document.getElementById('loginError').textContent = 'Erreur serveur';
     });
-}
+} */
 
 // ========== LOGOUT ==========
 function logout() {
