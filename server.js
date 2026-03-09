@@ -40,7 +40,7 @@ app.use(morgan('combined'));
 
 // ========== RATE LIMITING ==========
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 100,
     message: { error: 'Trop de requêtes, veuillez attendre 15 minutes' }
 });
@@ -222,123 +222,6 @@ app.get('/api/orders/user/:pubgId', async (req, res) => {
     }
 });
 
-
-// ========== CHANGER MOT DE PASSE ADMIN ==========
-app.post('/api/admin/change-password', authenticateToken, isAdmin, async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-        
-        // Récupérer l'admin
-        const user = await User.findOne({ email: req.user.email });
-        
-        if (!user) {
-            return res.status(404).json({ error: 'Utilisateur non trouvé' });
-        }
-        
-        // Vérifier l'ancien mot de passe
-        const valid = await bcrypt.compare(currentPassword, user.password);
-        if (!valid) {
-            return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
-        }
-        
-        // Vérifier que le nouveau mot de passe est valide
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 6 caractères' });
-        }
-        
-        // Hasher le nouveau mot de passe
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(newPassword, salt);
-        
-        // Mettre à jour
-        user.password = hash;
-        await user.save();
-        
-        console.log(`🔑 Mot de passe changé pour ${req.user.email}`);
-        res.json({ success: true, message: 'Mot de passe changé avec succès' });
-        
-    } catch (error) {
-        console.error('❌ Erreur changement mot de passe:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
-
-// ========== ROUTE DE SECOURS POUR RÉINITIALISER ADMIN ==========
-
-app.get('/api/reset-admin-password', async (req, res) => {
-    try {
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
-        const newPassword = 'tiavinaIhaly'; 
-        
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(newPassword, salt);
-        
-        // Hita ny admin
-        const user = await User.findOne({ email: adminEmail });
-        
-        if (user) {
-            // Misy -> ovay
-            user.password = hash;
-            await user.save();
-            res.json({ 
-                success: true, 
-                message: `✅ Mot de passe réinitialisé: ${newPassword}`,
-                email: adminEmail
-            });
-        } else {
-            // Tsy misy -> foronina
-            const newAdmin = new User({
-                id: 1,
-                email: adminEmail,
-                password: hash,
-                role: 'admin'
-            });
-            await newAdmin.save();
-            res.json({ 
-                success: true, 
-                message: `✅ Admin créé avec mot de passe: ${newPassword}`,
-                email: adminEmail
-            });
-        }
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Route hafa: Mamorona admin vaovao
-app.get('/api/create-admin-now', async (req, res) => {
-    try {
-        const email = req.query.email || 'admin@magicgamestore.com';
-        const password = req.query.password || 'admin123';
-        
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(password, salt);
-        
-        // Mamafa ny admin taloha
-        await User.deleteMany({ email: email });
-        
-        // Mamorona vaovao
-        const newAdmin = new User({
-            id: Date.now(),
-            email: email,
-            password: hash,
-            role: 'admin'
-        });
-        await newAdmin.save();
-        
-        res.json({ 
-            success: true, 
-            message: `✅ Admin créé: ${email} / ${password}` 
-        });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-
 // ========== ROUTES ADMIN ==========
 
 // Toutes les commandes
@@ -406,15 +289,48 @@ app.get('/api/admin/stats', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
+// ========== ROUTE SÉCURISÉE POUR CHANGER MOT DE PASSE ==========
+app.post('/api/admin/change-password', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        const user = await User.findOne({ email: req.user.email });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        
+        const valid = await bcrypt.compare(currentPassword, user.password);
+        if (!valid) {
+            return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 6 caractères' });
+        }
+        
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(newPassword, salt);
+        
+        user.password = hash;
+        await user.save();
+        
+        console.log(`🔑 Mot de passe changé pour ${req.user.email}`);
+        res.json({ success: true, message: 'Mot de passe changé avec succès' });
+        
+    } catch (error) {
+        console.error('❌ Erreur changement mot de passe:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
 // ========== STATUT ADMIN SIMPLE ==========
 
 let adminStatus = { online: false };
 
 // Mettre à jour statut (admin)
 app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
-    adminStatus = {
-        online: req.body.online
-    };
+    adminStatus = { online: req.body.online };
     console.log(`📡 Admin ${adminStatus.online ? 'en ligne' : 'hors ligne'}`);
     res.json({ success: true, online: adminStatus.online });
 });
@@ -423,7 +339,6 @@ app.post('/api/admin/status', authenticateToken, isAdmin, (req, res) => {
 app.get('/api/admin/status', (req, res) => {
     res.json({ online: adminStatus.online });
 });
-
 
 // ========== ROUTES DE SAUVEGARDE ==========
 
@@ -477,7 +392,7 @@ app.post('/api/admin/restore', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// ========== ROUTES DEBUG ==========
+// ========== ROUTES DEBUG (À GARDER? À SUPPRIMER?) ==========
 app.get('/api/debug-auth', (req, res) => {
     res.json({ 
         message: 'API OK',
@@ -486,25 +401,37 @@ app.get('/api/debug-auth', (req, res) => {
     });
 });
 
-app.get('/api/create-admin', async (req, res) => {
+// ========== ROUTE DE SECOURS (COMMENTÉE POUR SÉCURITÉ) ==========
+/*
+app.get('/api/reset-admin-password', async (req, res) => {
     try {
-        if (!process.env.ADMIN_PASSWORD) return res.status(500).json({ error: 'ADMIN_PASSWORD non défini' });
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
+        const newPassword = 'tiavinaIhaly'; 
         
         const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, salt);
-        const newAdmin = [{
-            id: 1,
-            email: process.env.ADMIN_EMAIL,
-            password: hash,
-            role: 'admin',
-            createdAt: new Date().toISOString()
-        }];
-        fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(newAdmin, null, 2));
-        res.json({ success: true, message: '✅ Admin créé', email: process.env.ADMIN_EMAIL });
+        const hash = bcrypt.hashSync(newPassword, salt);
+        
+        const user = await User.findOne({ email: adminEmail });
+        
+        if (user) {
+            user.password = hash;
+            await user.save();
+            res.json({ success: true, message: `✅ Mot de passe réinitialisé: ${newPassword}`, email: adminEmail });
+        } else {
+            const newAdmin = new User({
+                id: 1,
+                email: adminEmail,
+                password: hash,
+                role: 'admin'
+            });
+            await newAdmin.save();
+            res.json({ success: true, message: `✅ Admin créé avec mot de passe: ${newPassword}`, email: adminEmail });
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+*/
 
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
