@@ -402,7 +402,7 @@ app.get('/api/debug-auth', (req, res) => {
 });
 
 // ========== ROUTE DE SECOURS (COMMENTÉE POUR SÉCURITÉ) ==========
-/*
+
 app.get('/api/reset-admin-password', async (req, res) => {
     try {
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@magicgamestore.com';
@@ -431,7 +431,7 @@ app.get('/api/reset-admin-password', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-*/
+
 
 // ========== FICHIERS STATIQUES ==========
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
