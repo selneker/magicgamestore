@@ -531,7 +531,8 @@ function fallbackCopy(text, type = '') {
     document.body.removeChild(textarea);
 }
 
-// ========== AFFICHAGE DES COMMANDES AVEC PRIX BIEN ALIGNÉS ==========
+
+// ========== AFFICHAGE DES COMMANDES ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
@@ -566,9 +567,13 @@ function displayOrders(ordersToShow) {
                     statusClass = 'status-en-attente';
             }
             
-            // Formater le prix pour qu'il soit bien aligné
+            // Formatage du prix : "21,000 Ar" sur une seule ligne
             const priceValue = order.price || '';
-            const priceFormatted = priceValue.replace(/(\d+)(\s*Ar)/, '<span class="price-value">$1</span><span class="currency">$2</span>');
+            // Si le prix est déjà formaté avec "Ar", on le garde tel quel
+            // Sinon on ajoute "Ar" à la fin
+            const priceFormatted = priceValue.includes('Ar') 
+                ? `<span class="price-value">${priceValue.replace('Ar', '')}</span><span class="currency">Ar</span>`
+                : `<span class="price-value">${priceValue}</span> <span class="currency">Ar</span>`;
 
             return `
             <tr class="${statusClass}">
@@ -585,8 +590,8 @@ function displayOrders(ordersToShow) {
                     </div>
                 </td>
                 <td data-label="Pseudo">${order.pseudo || ''}</td>
-                <td data-label="Pack">${order.pack || ''}</td>
-                <td data-label="Prix" style="text-align: right;">${priceFormatted}</td>
+                <td data-label="Pack" style="white-space: nowrap;">${order.pack || ''}</td>
+                <td data-label="Prix" style="text-align: right; white-space: nowrap;">${priceFormatted}</td>
                 <td data-label="Paiement">${order.paymentMethod || ''}</td>
                 <td data-label="Référence">
                     <div class="copy-cell">

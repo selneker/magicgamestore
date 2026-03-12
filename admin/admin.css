@@ -642,7 +642,7 @@ tr:last-child td {
     
     th, td {
         padding: 0.75rem;
-        font-size: 0.85rem;
+        font-size: 0.80rem;
     }
     
 
@@ -669,9 +669,28 @@ tr:last-child td {
         white-space: nowrap;
     }
 
-    /* Style pour le pack avec UC sur la même ligne */
     td[data-label="Pack"] {
         font-weight: 500;
+    }
+
+    td[data-label="Pack"] {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    td[data-label="Pack"] span.pack-uc {
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        td[data-label="Pack"]::before {
+            content: attr(data-label) ": ";
+            font-weight: 600;
+            color: var(--accent-color);
+            display: inline-block;
+            width: 60px;
+        }
     }
 
     /* Version mobile - garder le label mais aligner correctement */
