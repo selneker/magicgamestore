@@ -662,40 +662,85 @@ footer {
 }
 
 
-
-/* ========== TOAST EN HAUT ========== */
-.toast {
+/* ========== TOAST GLOBAL UNIFIÉ ========== */
+.global-toast {
     position: fixed;
-    color: var(--secondly-color);
-    top: 80px;
-    right: 20px;
-    padding: 0.8rem 0.8rem;
-    background: #1ed75f29;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--teirtly-color, #2C2C2C);
+    color: var(--secondly-color, #ECECEC);
+    padding: 12px 24px;
     border-radius: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    display: none;
+    font-size: 14px;
+    font-weight: 500;
     z-index: 10000;
-    animation: slideDown 0.3s ease; 
-    font-size: 0.9rem; /* Plus petit */
-    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    border: 1px solid rgba(0,122,255,0.3);
+    animation: toastSlideUp 0.3s ease;
+    max-width: 90%;
     text-align: center;
 }
 
-.toast.error {
-    background-color: rgba(255, 0, 0, 0.181);
-}
-
-/* Animation pour le toast */
-@keyframes slideDown {
+@keyframes toastSlideUp {
     from {
-        transform: translateY(-100%);
         opacity: 0;
+        transform: translate(-50%, 20px);
     }
     to {
-        transform: translateY(0);
         opacity: 1;
+        transform: translate(-50%, 0);
     }
 }
+
+@keyframes toastSlideDown {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+}
+
+/* Types de toasts (couleurs différentes selon le type) */
+.global-toast.success {
+    border-color: #4CAF50;
+}
+
+.global-toast.success i {
+    color: #4CAF50;
+}
+
+.global-toast.error {
+    border-color: #f44336;
+}
+
+.global-toast.error i {
+    color: #f44336;
+}
+
+.global-toast.info {
+    border-color: #007aff;
+}
+
+.global-toast.info i {
+    color: #007aff;
+}
+
+/* Position adaptée pour mobile */
+@media (max-width: 480px) {
+    .global-toast {
+        bottom: 70px;
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
 
 /* ANIMATIONS */
 .fade-in {

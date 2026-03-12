@@ -13,55 +13,115 @@ const BASE_URL = (() => {
 
 console.log('🌐 API URL:', BASE_URL);
 
-// ========== FONCTIONS DE NOTIFICATION ==========
-function showNotification(message, type = 'success') {
-    const oldNotification = document.querySelector('.custom-notification');
-    if (oldNotification) oldNotification.remove();
+
+// ========== TOAST GLOBAL POUR ADMIN ==========
+function showAdminToast(message, type = 'success') {
+    // Supprimer l'ancien toast
+    const oldToast = document.querySelector('.admin-toast');
+    if (oldToast) oldToast.remove();
     
-    const notification = document.createElement('div');
-    notification.className = 'custom-notification';
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
-        color: white;
-        border-radius: 5px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideInRight 0.3s ease;
-        font-weight: 500;
+    // Créer le nouveau toast
+    const toast = document.createElement('div');
+    toast.className = `admin-toast ${type}`;
+    
+    // Icône selon le type
+    let icon = 'fa-circle-check';
+    if (type === 'error') icon = 'fa-circle-exclamation';
+    if (type === 'info') icon = 'fa-info-circle';
+    
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <span>${message}</span>
     `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
     
+    // Styles du toast (comme le site principal)
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--teirtly-color, #2C2C2C);
+        color: var(--secondly-color, #ECECEC);
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,122,255,0.3);
+        animation: adminToastSlideIn 0.3s ease;
+        max-width: 350px;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Disparaître après 3 secondes
     setTimeout(() => {
-        notification.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
+        toast.style.animation = 'adminToastSlideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
-// Ajouter les animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+// Ajouter les animations CSS pour l'admin
+const adminToastStyle = document.createElement('style');
+adminToastStyle.textContent = `
+    @keyframes adminToastSlideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+    
+    @keyframes adminToastSlideOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+    
+    .admin-toast.success {
+        border-color: #4CAF50 !important;
+    }
+    
+    .admin-toast.success i {
+        color: #4CAF50;
+    }
+    
+    .admin-toast.error {
+        border-color: #f44336 !important;
+    }
+    
+    .admin-toast.error i {
+        color: #f44336;
+    }
+    
+    .admin-toast.info {
+        border-color: #007aff !important;
+    }
+    
+    .admin-toast.info i {
+        color: #007aff;
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(adminToastStyle);
+
 
 // ========== FONCTIONS DE RAFRAÎCHISSEMENT AUTO ==========
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(() => {
-        console.log('🔄 Rafraîchissement auto des données...');
+        console.log('Rafraîchissement auto des données...');
         if (token) {
             loadOrders();
             loadStats();
@@ -73,7 +133,7 @@ function startAutoRefresh() {
 
 // Créer un backup
 function backupData() {
-    if (!confirm('💾 Créer une sauvegarde des commandes ?')) return;
+    if (!confirm('Créer une sauvegarde des commandes ?')) return;
     
     showNotification('📦 Création du backup...', 'info');
     
@@ -93,8 +153,8 @@ function backupData() {
         }
     })
     .catch(err => {
-        console.error('❌ Erreur backup:', err);
-        showNotification('❌ Erreur lors du backup', 'error');
+        console.error('Erreur backup:', err);
+        showNotification('Erreur lors du backup', 'error');
     });
 }
 
@@ -125,10 +185,10 @@ function exportData() {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         
-        showNotification('✅ Export terminé', 'success');
+        showNotification('Export terminé', 'success');
     })
     .catch(err => {
-        console.error('❌ Erreur export:', err);
+        console.error('Erreur export:', err);
         showNotification(`❌ ${err.message}`, 'error');
     });
 }
@@ -155,7 +215,7 @@ function restoreData() {
                 } else if (backupData.orders && Array.isArray(backupData.orders)) {
                     ordersToRestore = backupData.orders;
                 } else {
-                    showNotification('❌ Format de backup invalide', 'error');
+                    showNotification('Format de backup invalide', 'error');
                     return;
                 }
                 
@@ -178,18 +238,18 @@ function restoreData() {
                     if (data.error) {
                         showNotification('❌ ' + data.error, 'error');
                     } else {
-                        showNotification(`✅ Restauration réussie: ${data.count} commandes`, 'success');
+                        showNotification(`Restauration réussie: ${data.count} commandes`, 'success');
                         loadOrders();
                         loadStats();
                     }
                 })
                 .catch(err => {
-                    console.error('❌ Erreur restauration:', err);
-                    showNotification('❌ Erreur lors de la restauration', 'error');
+                    console.error('Erreur restauration:', err);
+                    showNotification('Erreur lors de la restauration', 'error');
                 });
                 
             } catch (error) {
-                showNotification('❌ Fichier de backup invalide', 'error');
+                showNotification('Fichier de backup invalide', 'error');
             }
         };
         reader.readAsText(file);
@@ -207,7 +267,7 @@ function showLogsPanel() {
     })
     .then(res => res.json())
     .then(data => {
-        console.log('📋 Logs des commandes:', data);
+        console.log('Logs des commandes:', data);
         
         if (!data.logs || data.logs.length === 0) {
             alert('Aucun log trouvé');
@@ -265,7 +325,7 @@ function showLogsPanel() {
         document.body.appendChild(logModal);
     })
     .catch(err => {
-        console.error('❌ Erreur chargement logs:', err);
+        console.error('Erreur chargement logs:', err);
         showNotification('Erreur chargement logs', 'error');
     });
 }
@@ -318,7 +378,7 @@ function login() {
         }
     })
     .catch(err => {
-        console.error('❌ Erreur fetch:', err);
+        console.error('Erreur fetch:', err);
         document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
         showNotification('Erreur de connexion au serveur', 'error');
     });
@@ -387,6 +447,7 @@ function loadOrders() {
     });
 }
 
+
 // ========== CHARGEMENT DES STATISTIQUES ==========
 function loadStats() {
     if (!token) {
@@ -422,15 +483,20 @@ function loadStats() {
         console.log('📊 Stats reçues:', data);
         
         document.getElementById('totalOrders').textContent = data.totalOrders || 0;
-        document.getElementById('totalRevenue').textContent = (data.totalRevenue || 0).toLocaleString() + ' Ar';
+        
+        // Formatage du prix avec séparateur et alignement
+        const revenue = (data.totalRevenue || 0).toLocaleString('fr-FR');
+        document.getElementById('totalRevenue').innerHTML = `${revenue} <span style="font-size: 1rem; color: #ffffffa3;">Ar</span>`;
+        
         document.getElementById('pendingOrders').textContent = data.statusCount?.['en attente'] || 0;
         document.getElementById('deliveredOrders').textContent = data.statusCount?.['livré'] || 0;
     })
     .catch(err => {
         console.error('❌ Erreur chargement stats:', err);
-        showNotification('Erreur chargement statistiques', 'error');
+        showAdminToast('Erreur chargement statistiques', 'error');
     });
 }
+
 
 // ========== FONCTION DE COPIE ==========
 function copyToClipboard(text, type = '') {
@@ -465,7 +531,7 @@ function fallbackCopy(text, type = '') {
     document.body.removeChild(textarea);
 }
 
-// ========== AFFICHAGE DES COMMANDES AVEC LABELS POUR MOBILE ==========
+// ========== AFFICHAGE DES COMMANDES AVEC PRIX BIEN ALIGNÉS ==========
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
     
@@ -499,10 +565,14 @@ function displayOrders(ordersToShow) {
                 default:
                     statusClass = 'status-en-attente';
             }
+            
+            // Formater le prix pour qu'il soit bien aligné
+            const priceValue = order.price || '';
+            const priceFormatted = priceValue.replace(/(\d+)(\s*Ar)/, '<span class="price-value">$1</span><span class="currency">$2</span>');
 
             return `
             <tr class="${statusClass}">
-                <td data-label="ID">#${order.id || 'N/A'}</td>
+                <td data-label="ID" style="text-align: right;">#${order.id || 'N/A'}</td>
                 <td data-label="Date">${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</td>
                 <td data-label="ID PUBG">
                     <div class="copy-cell">
@@ -516,7 +586,7 @@ function displayOrders(ordersToShow) {
                 </td>
                 <td data-label="Pseudo">${order.pseudo || ''}</td>
                 <td data-label="Pack">${order.pack || ''}</td>
-                <td data-label="Prix">${order.price || ''}</td>
+                <td data-label="Prix" style="text-align: right;">${priceFormatted}</td>
                 <td data-label="Paiement">${order.paymentMethod || ''}</td>
                 <td data-label="Référence">
                     <div class="copy-cell">

@@ -33,9 +33,6 @@ const pubgIdInput = document.getElementById('pubgIdInput');
 const pseudoInput = document.getElementById('pseudoInput');
 const referenceInput = document.getElementById('referenceInput');
 
-// Toast
-const toast = document.getElementById('toast');
-
 // ========== URL API ==========
 const API_URL = (() => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -72,6 +69,39 @@ function checkAdminStatus() {
 
 setInterval(checkAdminStatus, 10000);
 checkAdminStatus();
+
+// ========== TOAST GLOBAL UNIFIÉ ==========
+function showGlobalToast(message, type = 'success') {
+    // Supprimer l'ancien toast
+    const oldToast = document.querySelector('.global-toast');
+    if (oldToast) oldToast.remove();
+    
+    // Créer le nouveau toast
+    const toast = document.createElement('div');
+    toast.className = `global-toast ${type}`;
+    
+    // Icône selon le type
+    let icon = 'fa-circle-check';
+    if (type === 'error') icon = 'fa-circle-exclamation';
+    if (type === 'info') icon = 'fa-info-circle';
+    
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Disparaître après 2 secondes
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideDown 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
+}
+
+// Remplacer l'ancienne fonction pour compatibilité
+const showToast = showGlobalToast;
+window.showToast = showGlobalToast;
 
 // ========== SAUVEGARDE DE SESSION ==========
 function saveOrderState() {
@@ -110,6 +140,55 @@ function clearOrderState() {
     localStorage.removeItem('orderState');
 }
 
+// ========== VÉRIFIER PRÉ-COMMANDE AU CHARGEMENT ==========
+function checkPreorder() {
+    const preorder = sessionStorage.getItem('rpPreorder');
+    
+    if (preorder) {
+        try {
+            const data = JSON.parse(preorder);
+            console.log('📦 Pré-commande détectée:', data);
+            
+            // Attendre que la page soit complètement chargée
+            setTimeout(() => {
+                // Chercher le bouton du pack 60 UC
+                const packBtn = document.querySelector('[data-pack="60 UC"]');
+                
+                if (packBtn) {
+                    // Simuler un clic sur le bouton
+                    packBtn.click();
+                    
+                    // Afficher une notification
+                    if (typeof showGlobalToast === 'function') {
+                        showGlobalToast('Pack 60 UC pré-sélectionné !', 'success');
+                    }
+                    
+                    console.log('✅ Pack 60 UC ouvert automatiquement');
+                } else {
+                    console.error('❌ Bouton 60 UC non trouvé');
+                    
+                    // Fallback: chercher par le texte
+                    const allButtons = document.querySelectorAll('.acheter');
+                    for (let btn of allButtons) {
+                        if (btn.textContent.includes('60 UC') || btn.dataset.pack === '60 UC') {
+                            btn.click();
+                            break;
+                        }
+                    }
+                }
+                
+                // Nettoyer le sessionStorage
+                sessionStorage.removeItem('rpPreorder');
+                
+            }, 1000); // Délai de 1 seconde
+            
+        } catch (error) {
+            console.error('❌ Erreur pré-commande:', error);
+            sessionStorage.removeItem('rpPreorder');
+        }
+    }
+}
+
 // ========== INITIALISATION ==========
 document.addEventListener("DOMContentLoaded", () => {
     if (mode === 'abonnements') {
@@ -138,6 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }, 500);
     }
+    
+    // Vérifier les pré-commandes de la page événements
+    checkPreorder();
     
     initEventListeners();
     setupKeyboardHandler();
@@ -244,13 +326,6 @@ function closeAllModals() {
     clearOrderState();
 }
 
-function showToast(message, type = 'success') {
-    toast.textContent = message;
-    toast.className = 'toast ' + type;
-    toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 3000);
-}
-
 function copyNumber() {
     const methodData = paymentMethods[currentMethod];
     const number = methodData.phone;
@@ -328,7 +403,7 @@ function validatePubgId(pubgId) {
 }
 
 // ========== VARIABLES PAIEMENT ==========
-let currentMethod = 'mvola'; // 'mvola' ou 'orange' - GLOBAL
+let currentMethod = 'mvola';
 
 // Informations de paiement
 const paymentMethods = {
@@ -350,20 +425,17 @@ const paymentMethods = {
 
 // ========== SÉLECTIONNER MÉTHODE ==========
 function selectMethod(method) {
-    currentMethod = method; // ZAVATRA DEHILINY - miova ny global
+    currentMethod = method;
     
     console.log('✅ Méthode changée en:', currentMethod);
     
-    // Met à jour les boutons actifs
     document.getElementById('methodMvola').classList.toggle('active', method === 'mvola');
     document.getElementById('methodOrange').classList.toggle('active', method === 'orange');
     
-    // Met à jour l'affichage du numéro
     const methodData = paymentMethods[method];
     document.getElementById('phoneNumber').textContent = methodData.phoneDisplay;
     document.getElementById('phoneName').textContent = `(${methodData.operator})`;
     
-    // Met à jour le bouton de paiement direct
     initPaymentButton();
 }
 
@@ -383,7 +455,6 @@ function initPaymentButton() {
     const methodData = paymentMethods[currentMethod];
     const ussdCode = methodData.ussdCode(priceNumber);
     
-    // Style mifanaraka amin'ny méthode
     const bgColor = currentMethod === 'mvola' ? 'rgba(0, 166, 81, 0.5)' : 'rgba(255, 121, 0, 0.5)';
     const shadowColor = currentMethod === 'mvola' ? 'rgba(0,166,81,0.3)' : 'rgba(255,121,0,0.3)';
     
@@ -421,7 +492,6 @@ function submitOrder() {
     const price = OrderPrice?.textContent;
     const reference = referenceInput?.value.trim();
     
-    // ✅ ZAVATRA DEHILINY: Mampiasa ny currentMethod global
     const paymentMethod = currentMethod === 'mvola' ? 'MVola' : 'Orange Money';
     
     console.log('📤 Méthode sélectionnée:', currentMethod);

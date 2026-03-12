@@ -6,91 +6,53 @@
     <title>Événements - Magic Game Store</title>
     <link rel="icon" type="image/png" href="/images/image.png">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="evenements.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
-    <style>
-        /* ========== STYLE POUR LA PAGE ÉVÉNEMENTS ========== */
-        .events-page {
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .texte-container {
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .texte-container span {
-            color: rgba(255, 255, 255, 0.175);
-            font-size: 1.2rem;
-            display: block;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .texte-container h1 {
-            color: rgba(255, 255, 255, 0.175);
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        /* Animation subtile */
-        .texte-container {
-            animation: fadeIn 1s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ========== STYLE BOTTOM NAVIGATION ========== */
-        .bottom-nav-link {
-            cursor: pointer;
-        }
-
-        .bottom-nav-link.active {
-            color: var(--accent-color) !important;
-        }
-
-        .bottom-nav-link.active span {
-            color: var(--accent-color);
-        }
-
-        .bottom-nav-link.active i {
-            color: var(--accent-color);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .texte-container h1 {
-                font-size: 1.8rem;
-            }
-            
-            .texte-container span {
-                font-size: 1rem;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- CONTENU PRINCIPAL -->
     <div class="events-page">
-        <div class="texte-container">
-            <span>Merci de visiter notre site web</span>
-            <h1>Aucun événement disponible pour le moment</h1>
+        <div class="events-container">
+            <!-- Header avec badge -->
+            <div class="events-header">
+                <span>Magic Game Store <i data-lucide="badge-check" width="15px" heigth="15px"style="color: var(--accent-color);"></i></span>
+            </div>
+            
+            <!-- Image en background -->
+            <div class="image-content"></div>
+            
+            <!-- Texte description -->
+            <div class="abouttxt">
+                <div class="abouttxt-container">
+                    <h3>Pre-Order RP A18</h3>
+                    <span>Promotion Royal Pass A18</span>
+                    <div class="redirect">
+                        <h3>60UC
+                            <br>
+                            <span style="text-decoration: line-through !important;">720UC</span>
+                        </h3>
+                        <button class="acheter" data-pack="60 UC" data-price="5,000 Ar">Pre-Order</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions: Like et Share -->
+            <div class="event-actions">
+                <div class="action-buttons">
+                    <!-- Like button avec compteur -->
+                    <button class="action-btn like-btn" id="likeBtn" onclick="handleLike()">
+                        <i class="fa-regular fa-heart" id="likeIcon"></i>
+                        <span id="likeCount">0</span>
+                    </button>
+                    
+                    <!-- Share button avec compteur -->
+                    <button class="action-btn share-btn" onclick="handleShare()">
+                        <i class="fa-regular fa-share-from-square"></i>
+                        <span id="shareCount">0</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -122,7 +84,6 @@
                         <span>Historique</span>
                     </a>
                 </li> 
-                
             </ul>
         </nav>
     </main>
@@ -132,36 +93,6 @@
     <script>
         lucide.createIcons();
     </script>
-    
-    <!-- SCRIPT POUR LA NAVIGATION (optionnel, si besoin de switch) -->
-    <script>
-        // ========== ÉLÉMENTS NÉCESSAIRES ==========
-        const bottomAchatLink = document.getElementById('bottomAchatLink');
-        const bottomAbonnementLink = document.getElementById('bottomAbonnementLink');
-        
-        // ========== GESTION DU SWITCH (si tu veux changer l'active) ==========
-        // Par défaut, c'est "Event" qui est actif sur cette page
-        
-        // Si tu veux que les liens Achat et Abonnement pointent vers index.html avec le bon mode
-        if (bottomAchatLink) {
-            bottomAchatLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Sauvegarde le mode dans localStorage
-                localStorage.setItem('mode', 'uc');
-                // Redirige vers index.html
-                window.location.href = 'index.html';
-            });
-        }
-        
-        if (bottomAbonnementLink) {
-            bottomAbonnementLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Sauvegarde le mode dans localStorage
-                localStorage.setItem('mode', 'abonnements');
-                // Redirige vers index.html
-                window.location.href = 'index.html';
-            });
-        }
-    </script>
+    <script src="evenements.js"></script>
 </body>
 </html>

@@ -1,7 +1,3 @@
-// ===========================================
-// SERVER.JS - MAGIC GAME STORE
-// ===========================================
-
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
@@ -49,13 +45,13 @@ app.use('/api/', limiter);
 // ========== MONGODB CONNEXION ==========
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-    console.error('❌ ERREUR: MONGODB_URI non définie');
+    console.error('ERREUR: MONGODB_URI non définie');
     process.exit(1);
 }
 
 mongoose.connect(MONGODB_URI);
-mongoose.connection.on('connected', () => console.log('✅ Connecté à MongoDB Atlas'));
-mongoose.connection.on('error', (err) => console.error('❌ Erreur MongoDB:', err));
+mongoose.connection.on('connected', () => console.log('Connecté à MongoDB Atlas'));
+mongoose.connection.on('error', (err) => console.error('Erreur MongoDB:', err));
 
 // ========== MODÈLES MONGODB ==========
 
@@ -88,6 +84,137 @@ userSchema.pre('save', async function(next) {
     next();
 });
 const User = mongoose.model('User', userSchema);
+
+// Schéma pour les likes
+const likeSchema = new mongoose.Schema({
+    contentId: { type: String, required: true },
+    sessionId: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    ip: String,
+    userAgent: String
+});
+// Index unique pour empêcher les doublons (même session pour même contenu)
+likeSchema.index({ contentId: 1, sessionId: 1 }, { unique: true });
+
+// Schéma pour les partages
+const shareSchema = new mongoose.Schema({
+    contentId: { type: String, required: true },
+    sessionId: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    ip: String,
+    userAgent: String
+});
+
+const Like = mongoose.model('Like', likeSchema);
+const Share = mongoose.model('Share', shareSchema);
+
+// ========== ROUTES POUR LES CONTENUS (LIKES/SHARES) ==========
+// À AJOUTER APRÈS LES ROUTES PUBLIQUES EXISTANTES
+app.get('/api/content/:contentId/stats', async (req, res) => {
+    try {
+        const [likes, shares] = await Promise.all([
+            Like.countDocuments({ contentId: req.params.contentId }),
+            Share.countDocuments({ contentId: req.params.contentId })
+        ]);
+        
+        res.json({ 
+            likes, 
+            shares,
+            contentId: req.params.contentId 
+        });
+    } catch (error) {
+        console.error('Erreur stats:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ajouter un like
+app.post('/api/content/:contentId/like', async (req, res) => {
+    try {
+        const { contentId } = req.params;
+        const { sessionId } = req.body;
+        
+        // Vérifier si l'utilisateur a déjà liké
+        const existingLike = await Like.findOne({ contentId, sessionId });
+        
+        if (existingLike) {
+            return res.status(400).json({ error: 'Déjà liké' });
+        }
+        
+        // Créer le like
+        const like = new Like({
+            contentId,
+            sessionId,
+            ip: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+        
+        await like.save();
+        
+        // Compter le nombre total
+        const count = await Like.countDocuments({ contentId });
+        
+        res.json({ success: true, count });
+        
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ error: 'Déjà liké' });
+        }
+        console.error('❌ Erreur like:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ajouter un share
+app.post('/api/content/:contentId/share', async (req, res) => {
+    try {
+        const { contentId } = req.params;
+        const { sessionId } = req.body;
+        
+        // Créer le share (pas de limite)
+        const share = new Share({
+            contentId,
+            sessionId,
+            ip: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+        
+        await share.save();
+        
+        // Compter le nombre total
+        const count = await Share.countDocuments({ contentId });
+        
+        res.json({ success: true, count });
+        
+    } catch (error) {
+        console.error('❌ Erreur share:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Route admin pour voir tous les likes/shares
+app.get('/api/admin/content-stats', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const [likes, shares, likesStats, sharesStats] = await Promise.all([
+            Like.find().sort({ timestamp: -1 }).limit(100),
+            Share.find().sort({ timestamp: -1 }).limit(100),
+            Like.aggregate([{ $group: { _id: '$contentId', count: { $sum: 1 } } }]),
+            Share.aggregate([{ $group: { _id: '$contentId', count: { $sum: 1 } } }])
+        ]);
+        
+        res.json({ 
+            recentLikes: likes,
+            recentShares: shares,
+            stats: {
+                likes: likesStats,
+                shares: sharesStats
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erreur admin stats:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // ========== FONCTIONS UTILITAIRES ==========
 
