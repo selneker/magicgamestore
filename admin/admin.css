@@ -645,35 +645,60 @@ tr:last-child td {
         font-size: 0.85rem;
     }
     
-    /* Désactiver l'alignement droit sur mobile */
+
     td[data-label="Prix"] {
-        text-align: left !important;
+        text-align: right !important;
+        white-space: nowrap;
     }
-    
-    td[data-label="Prix"]::before {
-        content: attr(data-label) ": ";
-        font-weight: 600;
+
+    /* Formatage du prix : "21,000 Ar" sur une seule ligne */
+    td[data-label="Prix"] .price-value {
+        display: inline !important;
+        margin-right: 2px;
+    }
+
+    td[data-label="Prix"] .currency {
+        display: inline !important;
         color: var(--accent-color);
-        display: inline-block;
-        width: 80px;
+        font-size: 0.85rem;
+        margin-left: 2px;
     }
-    
-    td[data-label="ID"] {
-        text-align: left !important;
+
+    /* Pour la colonne Pack */
+    td[data-label="Pack"] {
+        white-space: nowrap;
     }
-    
-    td[data-label="ID"]::before {
-        content: attr(data-label) ": ";
-        font-weight: 600;
-        color: var(--accent-color);
-        display: inline-block;
-        width: 80px;
+
+    /* Style pour le pack avec UC sur la même ligne */
+    td[data-label="Pack"] {
+        font-weight: 500;
     }
-    
-    .admin-toast {
-        bottom: 10px;
-        right: 10px;
-        left: 10px;
-        max-width: none;
+
+    /* Version mobile - garder le label mais aligner correctement */
+    @media (max-width: 768px) {
+        td[data-label="Prix"] {
+            text-align: left !important;
+        }
+        
+        td[data-label="Prix"]::before {
+            content: attr(data-label) ": ";
+            font-weight: 600;
+            color: var(--accent-color);
+            display: inline-block;
+            width: 60px;
+        }
+        
+        td[data-label="Prix"] .price-value,
+        td[data-label="Prix"] .currency {
+            display: inline !important;
+        }
+        
+        td[data-label="Pack"]::before {
+            content: attr(data-label) ": ";
+            font-weight: 600;
+            color: var(--accent-color);
+            display: inline-block;
+            width: 60px;
+        }
     }
 }
