@@ -135,7 +135,7 @@ function startAutoRefresh() {
 function backupData() {
     if (!confirm('Créer une sauvegarde des commandes ?')) return;
     
-    showNotification('📦 Création du backup...', 'info');
+    showAdminToast('📦 Création du backup...', 'info');
     
     fetch(`${BASE_URL}/api/admin/backup`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -146,21 +146,21 @@ function backupData() {
     })
     .then(data => {
         if (data.error) {
-            showNotification('❌ ' + data.error, 'error');
+            showAdminToast('❌ ' + data.error, 'error');
         } else {
-            showNotification(`✅ Backup créé: ${data.count} commandes`, 'success');
+            showAdminToast(`✅ Backup créé: ${data.count} commandes`, 'success');
             console.log('📁 Backup:', data);
         }
     })
     .catch(err => {
         console.error('Erreur backup:', err);
-        showNotification('Erreur lors du backup', 'error');
+        showAdminToast('Erreur lors du backup', 'error');
     });
 }
 
 // Exporter les données
 function exportData() {
-    showNotification('📥 Préparation de l\'export...', 'info');
+    showAdminToast('📥 Préparation de l\'export...', 'info');
     
     fetch(`${BASE_URL}/api/admin/export`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -185,11 +185,11 @@ function exportData() {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         
-        showNotification('Export terminé', 'success');
+        showAdminToast('Export terminé', 'success');
     })
     .catch(err => {
         console.error('Erreur export:', err);
-        showNotification(`❌ ${err.message}`, 'error');
+        showAdminToast(`❌ ${err.message}`, 'error');
     });
 }
 
@@ -215,7 +215,7 @@ function restoreData() {
                 } else if (backupData.orders && Array.isArray(backupData.orders)) {
                     ordersToRestore = backupData.orders;
                 } else {
-                    showNotification('Format de backup invalide', 'error');
+                    showAdminToast('Format de backup invalide', 'error');
                     return;
                 }
                 
@@ -223,7 +223,7 @@ function restoreData() {
                     return;
                 }
                 
-                showNotification('📦 Restauration en cours...', 'info');
+                showAdminToast('📦 Restauration en cours...', 'info');
                 
                 fetch(`${BASE_URL}/api/admin/restore`, {
                     method: 'POST',
@@ -236,20 +236,20 @@ function restoreData() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
-                        showNotification('❌ ' + data.error, 'error');
+                        showAdminToast('❌ ' + data.error, 'error');
                     } else {
-                        showNotification(`Restauration réussie: ${data.count} commandes`, 'success');
+                        showAdminToast(`Restauration réussie: ${data.count} commandes`, 'success');
                         loadOrders();
                         loadStats();
                     }
                 })
                 .catch(err => {
                     console.error('Erreur restauration:', err);
-                    showNotification('Erreur lors de la restauration', 'error');
+                    showAdminToast('Erreur lors de la restauration', 'error');
                 });
                 
             } catch (error) {
-                showNotification('Fichier de backup invalide', 'error');
+                showAdminToast('Fichier de backup invalide', 'error');
             }
         };
         reader.readAsText(file);
@@ -326,7 +326,7 @@ function showLogsPanel() {
     })
     .catch(err => {
         console.error('Erreur chargement logs:', err);
-        showNotification('Erreur chargement logs', 'error');
+        showAdminToast('Erreur chargement logs', 'error');
     });
 }
 
@@ -371,16 +371,16 @@ function login() {
             loadOrders();
             loadStats();
             startAutoRefresh();
-            showNotification('Connexion réussie', 'success');
+            showAdminToast('Connexion réussie', 'success');
         } else {
             document.getElementById('loginError').textContent = data.error || 'Erreur de connexion';
-            showNotification(data.error || 'Erreur de connexion', 'error');
+            showAdminToast(data.error || 'Erreur de connexion', 'error');
         }
     })
     .catch(err => {
         console.error('Erreur fetch:', err);
         document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
-        showNotification('Erreur de connexion au serveur', 'error');
+        showAdminToast('Erreur de connexion au serveur', 'error');
     });
 }
 
@@ -394,7 +394,7 @@ function logout() {
     token = null;
     document.getElementById('loginSection').style.display = 'flex';
     document.getElementById('adminSection').style.display = 'none';
-    showNotification('Déconnexion réussie', 'success');
+    showAdminToast('Déconnexion réussie', 'success');
 }
 
 // ========== CHARGEMENT DES COMMANDES ==========
@@ -418,7 +418,7 @@ function loadOrders() {
         if (res.status === 401 || res.status === 403) {
             console.log('⛔ Token invalide ou expiré');
             logout();
-            showNotification('Session expirée - Veuillez vous reconnecter', 'error');
+            showAdminToast('Session expirée - Veuillez vous reconnecter', 'error');
             throw new Error('Non autorisé');
         }
         
@@ -442,7 +442,7 @@ function loadOrders() {
     })
     .catch(err => {
         console.error('❌ Erreur chargement commandes:', err);
-        showNotification('Erreur chargement commandes', 'error');
+        showAdminToast('Erreur chargement commandes', 'error');
         displayOrders([]);
     });
 }
@@ -501,12 +501,12 @@ function loadStats() {
 // ========== FONCTION DE COPIE ==========
 function copyToClipboard(text, type = '') {
     if (!text) {
-        showNotification(`❌ Aucun${type ? ' ' + type : ''} à copier`, 'error');
+        showAdminToast(`❌ Aucun${type ? ' ' + type : ''} à copier`, 'error');
         return;
     }
     
     navigator.clipboard.writeText(text).then(() => {
-        showNotification(`✅ ${type || 'Élément'} copié !`, 'success');
+        showAdminToast(`✅ ${type || 'Élément'} copié !`, 'success');
     }).catch((err) => {
         console.error('Erreur de copie:', err);
         fallbackCopy(text, type);
@@ -523,9 +523,9 @@ function fallbackCopy(text, type = '') {
     
     try {
         document.execCommand('copy');
-        showNotification(`✅ ${type || 'Élément'} copié ! (fallback)`, 'success');
+        showAdminToast(`✅ ${type || 'Élément'} copié ! (fallback)`, 'success');
     } catch (err) {
-        showNotification(`❌ Erreur de copie`, 'error');
+        showAdminToast(`❌ Erreur de copie`, 'error');
     }
     
     document.body.removeChild(textarea);
@@ -680,14 +680,14 @@ function updateStatus(orderId, newStatus) {
         return res.json();
     })
     .then(data => {
-        console.log('✅ Statut mis à jour:', data);
-        showNotification(`✅ Commande #${orderId} ${newStatus}`, 'success');
+        console.log('Statut mis à jour:', data);
+        showAdminToast(`Commande #${orderId} ${newStatus}`, 'success');
         loadOrders();
         loadStats();
     })
     .catch(err => {
-        console.error('❌ Erreur mise à jour:', err);
-        showNotification(`❌ Erreur: ${err.message}`, 'error');
+        console.error('Erreur mise à jour:', err);
+        showAdminToast(`Erreur: ${err.message}`, 'error');
     });
 }
 
@@ -705,21 +705,21 @@ function deleteOrder(orderId) {
         return res.json();
     })
     .then(data => {
-        console.log('✅ Suppression réussie:', data);
-        showNotification(`✅ Commande #${orderId} supprimée`, 'success');
+        console.log('Suppression réussie:', data);
+        showAdminToast(`Commande #${orderId} supprimée`, 'success');
         loadOrders();
         loadStats();
     })
     .catch(err => {
-        console.error('❌ Erreur suppression:', err);
-        showNotification(`❌ Erreur: ${err.message}`, 'error');
+        console.error('Erreur suppression:', err);
+        showAdminToast(`Erreur: ${err.message}`, 'error');
     });
 }
 
 function refreshOrders() {
     loadOrders();
     loadStats();
-    showNotification('🔄 Données actualisées', 'success');
+    showAdminToast('Données actualisées', 'success');
 }
 
 // ========== STATUT ADMIN - SIMPLE ==========
@@ -734,11 +734,11 @@ window.toggleAdminStatus = function() {
     if (adminOnline) {
         btn.className = 'status-btn online';
         text.textContent = 'En ligne';
-        showNotification('✅ Admin en ligne', 'success');
+        showAdminToast('✅ Admin en ligne', 'success');
     } else {
         btn.className = 'status-btn offline';
         text.textContent = 'Hors ligne';
-        showNotification('📴 Admin hors ligne', 'info');
+        showAdminToast('📴 Admin hors ligne', 'info');
     }
     
     // Sauvegarde dans localStorage pour le client
