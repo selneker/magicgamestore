@@ -21,6 +21,7 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden; /* bloque le scroll horizontal */
 }
 
 body {
@@ -28,6 +29,9 @@ body {
     margin: 0;
     padding: 0;
     background-color: var(--primary-color);
+    overflow-x: hidden; /* double protection — élimine la scrollbar droite */
+    /* min-height évite le collapse de page au switch display:none */
+    min-height: 100vh;
 }
 
 
@@ -100,34 +104,32 @@ main {
         padding: 8px 0;
     }
     
-    /* ===== NAVIGATION INDICATOR ===== */
+    /* ===== NAVIGATION INDICATOR — CSS pur, zéro JS ===== */
     .nav-indicator {
         position: absolute;
-        height: 50px;
-        width: 50px; 
-        background: rgba(255, 255, 255, 0.129);
+        height: 46px;
+        width: calc(25% - 10px);
+        background: rgba(255, 255, 255, 0.13);
         backdrop-filter: blur(2px) brightness(1.1) url(#liquid-glass);
-        border-radius: 25px;
-
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        z-index: 1; 
+        border-radius: 23px;
+        /* Transition sur left uniquement — indépendant du scroll */
+        transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1;
         pointer-events: none;
-        bottom: 7px;
-        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 5px;
     }
-    
-    /* Couleur active pour les icônes et textes */
-    .bottom-nav-link.active {
-        color: var(--accent-color) !important;
-    }
-    
-    .bottom-nav-link.active span {
-        color: var(--accent-color);
-    }
-    
-    .bottom-nav-link.active i {
-        color: var(--accent-color);
-    }
+
+    /* Position selon class sur <ul> — 4 items = 25% chacun */
+    main ul.nav-pos-0 .nav-indicator { left: 5px; }
+    main ul.nav-pos-1 .nav-indicator { left: calc(25% + 5px); }
+    main ul.nav-pos-2 .nav-indicator { left: calc(50% + 5px); }
+    main ul.nav-pos-3 .nav-indicator { left: calc(75% + 5px); }
+
+    .bottom-nav-link.active              { color: var(--accent-color) !important; }
+    .bottom-nav-link.active span         { color: var(--accent-color); }
+    .bottom-nav-link.active i            { color: var(--accent-color); }
     
     footer .pieds {
         padding-bottom: 5rem;

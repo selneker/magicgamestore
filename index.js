@@ -197,12 +197,25 @@ function animateElementOut(element) {
         element.style.opacity = '0';
         element.style.transform = 'scale(0.95)';
         element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        
         setTimeout(() => {
-            element.style.display = 'none';
+            element.style.visibility = 'hidden';
+            element.style.pointerEvents = 'none';
+            element.style.height = '0';
+            element.style.overflow = 'hidden';
+            element.style.margin = '0';
+            element.style.padding = '0';
             resolve();
         }, 300);
     });
+}
+
+function animateElementIn(element) {
+    element.style.visibility = 'visible';
+    element.style.pointerEvents = 'auto';
+    element.style.height = '';
+    element.style.overflow = '';
+    element.style.margin = '';
+    element.style.padding = '';
 }
 
 function animateHeroTitle(newText) {
@@ -217,53 +230,21 @@ function animateHeroTitle(newText) {
     }, 300);
 }
 
-// ========== GESTION DU NAVIGATION INDICATOR ==========
-function updateNavIndicator() {
-    const activeLink = document.querySelector('.bottom-nav-link.active');
-    const indicator = document.querySelector('.nav-indicator');
-    const nav = document.querySelector('main nav');
-    
-    if (!activeLink || !indicator || !nav) return;
-    
-    const parentLi = activeLink.closest('li');
-    if (!parentLi) return;
-    
-    // Ajuster la largeur de l'indicateur (entre 50px et 70px)
-    const linkWidth = activeLink.offsetWidth;
-    const newWidth = Math.min(Math.max(linkWidth + 20, 50), 70);
-    
-    // Utiliser offsetLeft — indépendant du scroll, relatif au parent direct
-    const liLeft = parentLi.offsetLeft;
-    const liWidth = parentLi.offsetWidth;
-    const centerOffset = (liWidth / 2) - (newWidth / 2);
-    const leftPosition = liLeft + centerOffset;
-    
-    indicator.style.width = `${newWidth}px`;
-    indicator.style.transform = `translateX(${leftPosition}px)`;
+// ========== NAVIGATION INDICATOR — CSS pur ==========
+// L'indicateur se déplace via left% — zéro calcul, zéro dépendance au scroll
+function setNavIndicator(index) {
+    const ul = document.querySelector('main ul');
+    if (!ul) return;
+    ul.classList.remove('nav-pos-0','nav-pos-1','nav-pos-2','nav-pos-3');
+    ul.classList.add('nav-pos-' + index);
 }
-
-function animateNavIndicator() {
-    const indicator = document.querySelector('.nav-indicator');
-    if (!indicator) return;
-    
-    const currentTransform = indicator.style.transform;
-    
-    indicator.style.transform = `${currentTransform} scale(1.2)`;
-    indicator.style.opacity = '0.8';
-    
-    setTimeout(() => {
-        indicator.style.transform = currentTransform;
-        indicator.style.opacity = '1';
-    }, 200);
-}
+function updateNavIndicator() {} // conservé pour compatibilité
+function animateNavIndicator() {}
 
 // ========== SWITCH UC / ABONNEMENTS AVEC ANIMATIONS ==========
 async function showTarifs() {
     if (isAnimating) return;
     isAnimating = true;
-    
-    // Sauvegarder la position actuelle du scroll
-    const scrollY = window.scrollY;
     
     // Animation de sortie pour abonnements
     await animateElementOut(abonnements);
@@ -273,46 +254,29 @@ async function showTarifs() {
     animateHeroTitle('VENTE UC<br>PUBG MOBILE');
     
     // Afficher et animer tarifs
-    tarifs.style.display = 'block';
+    animateElementIn(tarifs);
     tarifs.style.opacity = '0';
     tarifs.style.transform = 'translateX(-30px)';
     tarifs.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    
     setTimeout(() => {
         tarifs.style.opacity = '1';
         tarifs.style.transform = 'translateX(0)';
     }, 50);
-    
     tarifs.classList.add('active');
-    
-    // Mise à jour du lien
+
     aboLink.innerHTML = '<i class="material-icons">subscriptions</i> Abonnement';
-    
-    // Mise à jour bottom nav
     if (bottomAchatLink) bottomAchatLink.classList.add('active');
     if (bottomAbonnementLink) bottomAbonnementLink.classList.remove('active');
-    
+    setNavIndicator(0);
+
     mode = 'uc';
     localStorage.setItem('mode', mode);
-    
-    // Mettre à jour l'indicateur AVANT le scroll — layout encore stable
-    setTimeout(() => {
-        requestAnimationFrame(() => {
-            updateNavIndicator();
-            animateNavIndicator();
-            // Restaurer le scroll après le recalcul
-            window.scrollTo(0, scrollY);
-            isAnimating = false;
-        });
-    }, 500);
+    isAnimating = false;
 }
 
 async function showAbonnements() {
     if (isAnimating) return;
     isAnimating = true;
-    
-    // Sauvegarder la position actuelle du scroll
-    const scrollY = window.scrollY;
     
     // Animation de sortie pour tarifs
     await animateElementOut(tarifs);
@@ -322,38 +286,24 @@ async function showAbonnements() {
     animateHeroTitle('ABONNEMENT<br>PUBG MOBILE');
     
     // Afficher et animer abonnements
-    abonnements.style.display = 'block';
+    animateElementIn(abonnements);
     abonnements.style.opacity = '0';
     abonnements.style.transform = 'translateX(30px)';
     abonnements.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    
     setTimeout(() => {
         abonnements.style.opacity = '1';
         abonnements.style.transform = 'translateX(0)';
     }, 50);
-    
     abonnements.classList.add('active');
-    
-    // Mise à jour du lien
+
     aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> Achat UC';
-    
-    // Mise à jour bottom nav
     if (bottomAchatLink) bottomAchatLink.classList.remove('active');
     if (bottomAbonnementLink) bottomAbonnementLink.classList.add('active');
-    
+    setNavIndicator(1);
+
     mode = 'abonnements';
     localStorage.setItem('mode', mode);
-    
-    // Mettre à jour l'indicateur AVANT le scroll — layout encore stable
-    setTimeout(() => {
-        requestAnimationFrame(() => {
-            updateNavIndicator();
-            animateNavIndicator();
-            // Restaurer le scroll après le recalcul
-            window.scrollTo(0, scrollY);
-            isAnimating = false;
-        });
-    }, 500);
+    isAnimating = false;
 }
 
 // ========== MODALES ==========
@@ -708,8 +658,10 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (mode === 'abonnements') {
         showAbonnements();
+        setNavIndicator(1);
     } else {
         showTarifs();
+        setNavIndicator(0);
     }
     
     const savedState = restoreOrderState();
