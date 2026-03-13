@@ -781,4 +781,18 @@
         }, 30000);
     </script>
 </body>
+
+
+<svg style="display: none;">
+  <filter id="liquid-glass">
+    <!-- Génère une texture de "bruit" fluide -->
+    <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="1" result="noise" />
+    <!-- Adoucit le bruit pour un aspect plus liquide -->
+    <feGaussianBlur in="noise" stdDeviation="20" result="softNoise" />
+    <!-- Déplace les pixels de l'arrière-plan en fonction du bruit -->
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="255" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+
+
 </html>

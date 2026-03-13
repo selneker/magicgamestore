@@ -8,6 +8,7 @@ const abonnements = document.getElementById("abonnements");
 const aboLink = document.getElementById("aboLink");
 const heroTitle = document.getElementById("heroTitle");
 let mode = localStorage.getItem('mode') || 'uc';
+let isAnimating = false; // AJOUTÉ
 
 // Nouveaux éléments pour le bottom nav
 const bottomAchatLink = document.getElementById('bottomAchatLink');
@@ -189,87 +190,170 @@ function checkPreorder() {
     }
 }
 
-// ========== INITIALISATION ==========
-document.addEventListener("DOMContentLoaded", () => {
-    if (mode === 'abonnements') {
-        showAbonnements();
-    } else {
-        showTarifs();
-    }
-    
-    const savedState = restoreOrderState();
-    
-    if (savedState && savedState.pack) {
-        OrderPack.textContent = savedState.pack;
-        OrderPrice.textContent = savedState.price;
-        
-        if (pubgIdInput) pubgIdInput.value = savedState.pubgId || '';
-        if (pseudoInput) pseudoInput.value = savedState.pseudo || '';
-        if (referenceInput) referenceInput.value = savedState.reference || '';
-        
-        showToast('Reprise de votre commande', 'info');
+// ========== FONCTIONS D'ANIMATION ========== // AJOUTÉ
+
+function animateElementOut(element) {
+    return new Promise((resolve) => {
+        element.style.opacity = '0';
+        element.style.transform = 'scale(0.95)';
+        element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
         
         setTimeout(() => {
-            if (savedState.currentModal === 'pay') {
-                openModal(modalPay);
-            } else if (savedState.currentModal === 'info') {
-                openModal(modalInfo);
-            }
-        }, 500);
-    }
-    
-    // Vérifier les pré-commandes de la page événements
-    checkPreorder();
-    
-    initEventListeners();
-    setupKeyboardHandler();
-});
+            element.style.display = 'none';
+            resolve();
+        }, 300);
+    });
+}
 
-// ========== SWITCH UC / ABONNEMENTS ==========
-function showTarifs() {
-    abonnements.style.display = 'none';
+function animateHeroTitle(newText) {
+    heroTitle.style.opacity = '0';
+    heroTitle.style.transform = 'scale(0.9)';
+    heroTitle.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    
+    setTimeout(() => {
+        heroTitle.innerHTML = newText;
+        heroTitle.style.opacity = '1';
+        heroTitle.style.transform = 'scale(1)';
+    }, 300);
+}
+
+// ========== GESTION DU NAVIGATION INDICATOR ==========
+function updateNavIndicator() {
+    const activeLink = document.querySelector('.bottom-nav-link.active');
+    const indicator = document.querySelector('.nav-indicator');
+    const nav = document.querySelector('main nav');
+    
+    if (!activeLink || !indicator || !nav) return;
+    
+    const parentLi = activeLink.closest('li');
+    if (!parentLi) return;
+    
+    // Ajuster la largeur de l'indicateur (entre 50px et 70px)
+    const linkWidth = activeLink.offsetWidth;
+    const newWidth = Math.min(Math.max(linkWidth + 20, 50), 70);
+    
+    // Utiliser offsetLeft — indépendant du scroll, relatif au parent direct
+    const liLeft = parentLi.offsetLeft;
+    const liWidth = parentLi.offsetWidth;
+    const centerOffset = (liWidth / 2) - (newWidth / 2);
+    const leftPosition = liLeft + centerOffset;
+    
+    indicator.style.width = `${newWidth}px`;
+    indicator.style.transform = `translateX(${leftPosition}px)`;
+}
+
+function animateNavIndicator() {
+    const indicator = document.querySelector('.nav-indicator');
+    if (!indicator) return;
+    
+    const currentTransform = indicator.style.transform;
+    
+    indicator.style.transform = `${currentTransform} scale(1.2)`;
+    indicator.style.opacity = '0.8';
+    
+    setTimeout(() => {
+        indicator.style.transform = currentTransform;
+        indicator.style.opacity = '1';
+    }, 200);
+}
+
+// ========== SWITCH UC / ABONNEMENTS AVEC ANIMATIONS ==========
+async function showTarifs() {
+    if (isAnimating) return;
+    isAnimating = true;
+    
+    // Sauvegarder la position actuelle du scroll
+    const scrollY = window.scrollY;
+    
+    // Animation de sortie pour abonnements
+    await animateElementOut(abonnements);
     abonnements.classList.remove('active', 'fade-in');
     
-    heroTitle.classList.remove('fade-in');
-    void heroTitle.offsetWidth;
-    heroTitle.innerHTML = 'VENTE UC<br>PUBG MOBILE';
-    heroTitle.classList.add('fade-in');
+    // Animation du Hero Title
+    animateHeroTitle('VENTE UC<br>PUBG MOBILE');
     
+    // Afficher et animer tarifs
     tarifs.style.display = 'block';
-    tarifs.classList.remove('fade-in');
-    void tarifs.offsetWidth;
-    tarifs.classList.add('active', 'fade-in');
+    tarifs.style.opacity = '0';
+    tarifs.style.transform = 'translateX(-30px)';
+    tarifs.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     
+    setTimeout(() => {
+        tarifs.style.opacity = '1';
+        tarifs.style.transform = 'translateX(0)';
+    }, 50);
+    
+    tarifs.classList.add('active');
+    
+    // Mise à jour du lien
     aboLink.innerHTML = '<i class="material-icons">subscriptions</i> Abonnement';
     
+    // Mise à jour bottom nav
     if (bottomAchatLink) bottomAchatLink.classList.add('active');
     if (bottomAbonnementLink) bottomAbonnementLink.classList.remove('active');
     
     mode = 'uc';
     localStorage.setItem('mode', mode);
+    
+    // Mettre à jour l'indicateur AVANT le scroll — layout encore stable
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            updateNavIndicator();
+            animateNavIndicator();
+            // Restaurer le scroll après le recalcul
+            window.scrollTo(0, scrollY);
+            isAnimating = false;
+        });
+    }, 500);
 }
 
-function showAbonnements() {
-    tarifs.style.display = 'none';
+async function showAbonnements() {
+    if (isAnimating) return;
+    isAnimating = true;
+    
+    // Sauvegarder la position actuelle du scroll
+    const scrollY = window.scrollY;
+    
+    // Animation de sortie pour tarifs
+    await animateElementOut(tarifs);
     tarifs.classList.remove('active', 'fade-in');
     
-    heroTitle.classList.remove('fade-in');
-    void heroTitle.offsetWidth;
-    heroTitle.innerHTML = 'ABONNEMENT<br>PUBG MOBILE';
-    heroTitle.classList.add('fade-in');
+    // Animation du Hero Title
+    animateHeroTitle('ABONNEMENT<br>PUBG MOBILE');
     
+    // Afficher et animer abonnements
     abonnements.style.display = 'block';
-    abonnements.classList.remove('fade-in');
-    void abonnements.offsetWidth;
-    abonnements.classList.add('active', 'fade-in');
+    abonnements.style.opacity = '0';
+    abonnements.style.transform = 'translateX(30px)';
+    abonnements.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     
+    setTimeout(() => {
+        abonnements.style.opacity = '1';
+        abonnements.style.transform = 'translateX(0)';
+    }, 50);
+    
+    abonnements.classList.add('active');
+    
+    // Mise à jour du lien
     aboLink.innerHTML = '<i class="fa-solid fa-dollar-sign"></i> Achat UC';
     
+    // Mise à jour bottom nav
     if (bottomAchatLink) bottomAchatLink.classList.remove('active');
     if (bottomAbonnementLink) bottomAbonnementLink.classList.add('active');
     
     mode = 'abonnements';
     localStorage.setItem('mode', mode);
+    
+    // Mettre à jour l'indicateur AVANT le scroll — layout encore stable
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            updateNavIndicator();
+            animateNavIndicator();
+            // Restaurer le scroll après le recalcul
+            window.scrollTo(0, scrollY);
+            isAnimating = false;
+        });
+    }, 500);
 }
 
 // ========== MODALES ==========
@@ -604,5 +688,73 @@ function initEventListeners() {
     });
 }
 
+// ========== INITIALISATION ==========
+document.addEventListener("DOMContentLoaded", () => {
+    // 🔥 FORCER LA POSITION DE LA NAVBAR (AJOUTÉ)
+    const mainNav = document.querySelector('main');
+    if (mainNav) {
+        mainNav.style.position = 'fixed';
+        mainNav.style.bottom = '20px';
+        mainNav.style.left = '50%';
+        mainNav.style.transform = 'translateX(-50%)';
+    }
+    
+    // Créer l'indicateur s'il n'existe pas
+    if (!document.querySelector('.nav-indicator') && document.querySelector('main nav')) {
+        const indicator = document.createElement('div');
+        indicator.className = 'nav-indicator';
+        document.querySelector('main nav').appendChild(indicator);
+    }
+    
+    if (mode === 'abonnements') {
+        showAbonnements();
+    } else {
+        showTarifs();
+    }
+    
+    const savedState = restoreOrderState();
+    
+    if (savedState && savedState.pack) {
+        OrderPack.textContent = savedState.pack;
+        OrderPrice.textContent = savedState.price;
+        
+        if (pubgIdInput) pubgIdInput.value = savedState.pubgId || '';
+        if (pseudoInput) pseudoInput.value = savedState.pseudo || '';
+        if (referenceInput) referenceInput.value = savedState.reference || '';
+        
+        showToast('Reprise de votre commande', 'info');
+        
+        setTimeout(() => {
+            if (savedState.currentModal === 'pay') {
+                openModal(modalPay);
+            } else if (savedState.currentModal === 'info') {
+                openModal(modalInfo);
+            }
+        }, 500);
+    }
+    
+    // Vérifier les pré-commandes de la page événements
+    checkPreorder();
+    
+    initEventListeners();
+    setupKeyboardHandler();
+    
+    // Position initiale de l'indicateur
+    setTimeout(updateNavIndicator, 300);
+    setTimeout(updateNavIndicator, 600);
+    
+    // Observer les changements
+    const observer = new MutationObserver(() => {
+        updateNavIndicator();
+    });
+    
+    document.querySelectorAll('.bottom-nav-link').forEach(link => {
+        observer.observe(link, { attributes: true, attributeFilter: ['class'] });
+    });
+    
+    window.addEventListener('resize', updateNavIndicator);
+});
+
 // ========== FONCTIONS GLOBALES ==========
 window.copyNumber = copyNumber;
+window.selectMethod = selectMethod;

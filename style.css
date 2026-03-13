@@ -35,23 +35,48 @@ main {
     display: none
 }
 
-@media (max-width:810px){
-    main {
-        backdrop-filter: blur(15px);
-        background-color: #33333365;
-        width: 375px;
-        max-width: 95%; 
-        height: 55px;
-        position: fixed;
-        bottom: 20px;  
-        left: 50%;
-        transform: translateX(-50%);
+@media (max-width: 810px) {
+     main {
+        backdrop-filter: url(#liquid-glass) blur(3px) brightness(1.1);
+        background: rgba(0, 0, 0, 0.1);
+        -webkit-backdrop-filter: blur(8px) brightness(1.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        width: 350px;
+        max-width: 95%;
+        height: 60px;
+        position: fixed !important;
+        bottom: 20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
         display: flex;
         justify-content: center;
         align-items: center;
-        border-radius: 28px;
-        padding-bottom: 0.3rem;
-        z-index: 1000; /
+        border-radius: 30px;
+        box-shadow: 0 8px 32px rgba(255, 255, 255, 0.045);
+        z-index: 1000 !important;
+        pointer-events: auto !important;
+        /* Isole la nav du reflow du body — empêche le saut au switch */
+        will-change: transform;
+        contain: layout style;
+    }
+
+
+    
+    main nav {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    
+    main ul {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        list-style: none;
+        padding: 0 10px;
+        margin: 0;
+        height: 100%;
+        position: relative;
     }
     
     main li {
@@ -59,6 +84,8 @@ main {
         display: flex;
         flex-direction: column;
         align-content: center;
+        flex: 1;
+        z-index: 2;
     }
 
     main a {
@@ -68,41 +95,45 @@ main {
         font-size: 10px;
         display: flex;
         flex-direction: column;
-    }
-    main ul {
-        display: flex;          
-        justify-content: center;  
-        align-items: center;       
-        gap: 3.2rem;               
-        list-style: none;         
-        padding: 0;
-        margin: 0;
-    }
-
-    footer .pieds {
-        padding-bottom: 5rem;
-
+        gap: 2px;
+        transition: color 0.3s ease;
+        padding: 8px 0;
     }
     
+    /* ===== NAVIGATION INDICATOR ===== */
+    .nav-indicator {
+        position: absolute;
+        height: 50px;
+        width: 50px; 
+        background: rgba(255, 255, 255, 0.129);
+        backdrop-filter: blur(2px) brightness(1.1) url(#liquid-glass);
+        border-radius: 25px;
+
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1; 
+        pointer-events: none;
+        bottom: 7px;
+        left: 0;
+    }
+    
+    /* Couleur active pour les icônes et textes */
+    .bottom-nav-link.active {
+        color: var(--accent-color) !important;
+    }
+    
+    .bottom-nav-link.active span {
+        color: var(--accent-color);
+    }
+    
+    .bottom-nav-link.active i {
+        color: var(--accent-color);
+    }
+    
+    footer .pieds {
+        padding-bottom: 5rem;
+    }
 }
 
-
-/* ========== SWITCH BOTTOM NAVIGATION ========== */
-.bottom-nav-link {
-    cursor: pointer;
-}
-
-.bottom-nav-link.active {
-    color: var(--accent-color) !important;
-}
-
-.bottom-nav-link.active span {
-    color: var(--accent-color);
-}
-
-.bottom-nav-link.active i {
-    color: var(--accent-color);
-}
 
 
 /* ========== INDICATEUR STATUT ADMIN ========== */
@@ -158,8 +189,12 @@ header {
     background: #3333339c;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: none;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    backdrop-filter:url(#liquid-glass) blur(3px) brightness(1.1);
+    background: rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(8px) brightness(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .header-container {
