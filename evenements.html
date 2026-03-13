@@ -11,88 +11,123 @@
     <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
 </head>
 <body>
-    <!-- CONTENU PRINCIPAL -->
-    <div class="events-page">
-        <div class="events-container">
-            <!-- Header avec badge -->
-            <div class="events-header">
-                <span>Magic Game Store <i data-lucide="badge-check" width="15px" heigth="15px"style="color: var(--accent-color);"></i></span>
-            </div>
-            
-            <!-- Image en background -->
-            <div class="image-content"></div>
-            
-            <!-- Texte description -->
-            <div class="abouttxt">
-                <div class="abouttxt-container">
-                    <h3>Pre-Order RP A18</h3>
-                    <span>Promotion Royal Pass A18</span>
-                    <div class="redirect">
-                        <h3>60UC
-                            <br>
-                            <span style="text-decoration: line-through !important;">720UC</span>
-                        </h3>
-                        <button class="acheter" data-pack="60 UC" data-price="5,000 Ar">Pre-Order</button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Actions: Like et Share -->
-            <div class="event-actions">
-                <div class="action-buttons">
-                    <!-- Like button avec compteur -->
-                    <button class="action-btn like-btn" id="likeBtn" onclick="handleLike()">
-                        <i class="fa-regular fa-heart" id="likeIcon"></i>
-                        <span id="likeCount">0</span>
-                    </button>
-                    
-                    <!-- Share button avec compteur -->
-                    <button class="action-btn share-btn" onclick="handleShare()">
-                        <i class="fa-regular fa-share-from-square"></i>
-                        <span id="shareCount">0</span>
-                    </button>
-                </div>
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <div class="header-logo">
+                <h1><a href="index.html">Magic Game Store</a></h1>
             </div>
+            <nav>
+                <li><a href="index.html"><i class="fa-solid fa-cart-plus"></i> Boutique</a></li>
+                <li><a href="historique.html"><i class="fa-solid fa-clock-rotate-left"></i> Historique</a></li>
+            </nav>
         </div>
+    </header>
+
+    <!-- PAGE TITRE -->
+    <div class="page-title-section">
+        <h1>Événements</h1>
+        <p class="page-subtitle">Offres et promotions exclusives</p>
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- GRILLE EVENTS -->
+    <div class="events-feed">
+
+        <!-- CARD EVENT -->
+        <div class="event-card">
+
+            <!-- Image -->
+            <div class="event-image">
+                <div class="event-image-bg" style="background-image: url('images/rp-a18.png');"></div>
+                <!-- Badge source -->
+                <div class="event-source-badge">
+                     Magic Game Store
+                    <i class="fa-solid fa-check" style="font-size:0.6rem;"></i>
+                </div>
+                <!-- Badge promo -->
+                <div class="event-promo-badge">Promo</div>
+            </div>
+
+            <!-- Contenu -->
+            <div class="event-body">
+
+                <!-- Titre + description -->
+                <div class="event-text">
+                    <h2 class="event-title">Pre-Order RP A18</h2>
+                    <p class="event-desc">Promotion exclusive Royal Pass A18  disponible pour une durée limitée.</p>
+                </div>
+
+                <!-- Prix -->
+                <div class="event-pricing">
+                    <div class="event-price-main">60 UC</div>
+                    <div class="event-price-old">720 UC</div>
+                </div>
+
+                <!-- CTA -->
+                <button class="event-cta acheter" data-pack="60 UC" data-price="5,000 Ar">
+                    Acheter maintenant
+                </button>
+
+            </div>
+
+            <!-- Footer : like + share -->
+            <div class="event-footer">
+                <button class="event-action-btn like-btn" id="likeBtn" onclick="handleLike()">
+                    <i class="fa-regular fa-heart" id="likeIcon"></i>
+                    <span id="likeCount">0</span>
+                </button>
+                <div class="event-footer-sep"></div>
+                <button class="event-action-btn share-btn" onclick="handleShare()">
+                    <i class="fa-regular fa-share-from-square"></i>
+                    <span id="shareCount">0</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Placeholder état vide si jamais aucun event -->
+        <!-- <div class="events-empty">
+            <div class="events-empty-icon"><i class="fa-regular fa-calendar"></i></div>
+            <p>Aucun événement pour le moment</p>
+        </div> -->
+
+    </div>
+
+    <!-- BOTTOM NAV -->
     <main class="bottom-nav">
         <nav>
-            <ul>     
+            <ul>
                 <li>
                     <a href="index.html" id="bottomAchatLink" class="bottom-nav-link">
-                        <i data-lucide="shopping-cart"></i> 
-                        <span>Achat UC</span>
+                        <i data-lucide="shopping-cart"></i>
+                        <span>Achat</span>
                     </a>
                 </li>
                 <li>
                     <a href="index.html" id="bottomAbonnementLink" class="bottom-nav-link">
-                        <i data-lucide="crown"></i> 
+                        <i data-lucide="crown"></i>
                         <span>Abonnement</span>
                     </a>
                 </li>
                 <li>
                     <a href="evenements.html" class="bottom-nav-link active">
-                        <i data-lucide="rss"></i> 
+                        <i data-lucide="rss"></i>
                         <span>Event</span>
                     </a>
-                </li> 
+                </li>
                 <li>
                     <a href="historique.html" class="bottom-nav-link">
-                        <i data-lucide="history"></i> 
-                        <span>Historique</span>
+                        <i data-lucide="history"></i>
+                        <span>Commande</span>
                     </a>
-                </li> 
+                </li>
             </ul>
         </nav>
     </main>
 
-    <!-- SCRIPTS -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons();
-    </script>
+    <script> lucide.createIcons(); </script>
     <script src="evenements.js"></script>
 </body>
 </html>
