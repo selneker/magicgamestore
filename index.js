@@ -524,7 +524,7 @@ function submitOrder() {
         if (data.error) {
             showToast('Erreur : ' + data.error, 'error');
         } else {
-            showToast(`✅ Commande #${data.orderId} enregistrée !`, 'success');
+            showToast(`Commande #${data.orderId} enregistrée !`, 'success');
             clearOrderState();
             closeAllModals();
         }
