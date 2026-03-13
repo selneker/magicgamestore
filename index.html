@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,7 +82,7 @@
         <div class="hero-container">
             <div class="titre">
                 <h2 id="heroTitle" style="margin-top:70px ;">VENTE UC<br>PUBG MOBILE</h2>
-                <span>Achete vos UC juste en quelque clics</span>
+                <span>Achete vos UC juste en quelque cliques</span>
             </div>
         </div>
     </div>
@@ -254,6 +254,7 @@
     <!-- FOOTER -->
     <footer>
         <div class="footer-container">
+            <!-- Ticker animé -->
             <div class="marque">
                 <div class="marque-container">
                     <h2 class="outlined-text"> COLLAB AVEC TACOS GAMING // BY MAGIC GAME STORE // ORIGINAL VERSION // </h2>
@@ -264,17 +265,47 @@
             </div>
             <div class="hr"><hr></div>
 
-            <div class="pieds">
-                <div class="contacts">
-                    <div class="contacts-container">
-                        <a href="tel:+261383905692"><span>CONTACTER</span></a>
-                        <a href="https://wa.me/261377519833"><span>WHATSAPP</span></a>
-                        <a href="https://wa.me/261377519833"><span>SIGNALER UN BUG</span></a>
+            <!-- Footer principal redesign -->
+            <div class="footer-main">
+                <!-- Colonne Marque -->
+                <div class="footer-brand">
+                    <span class="footer-logo-text">Magic Game Store</span>
+                    <p class="footer-tagline">La référence PUBG Mobile à Madagascar.<br>Paiement rapide, livraison instantanée.</p>
+                    <div class="footer-social">
+                        <a href="https://wa.me/261377519833" class="social-btn whatsapp" aria-label="WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                        <a href="tel:+261383905692" class="social-btn phone" aria-label="Appel">
+                            <i class="fa-solid fa-phone"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="copyright">
-                    <span>© 2026 MAGIC GAME STORE // SURAZY_PLAYER</span>
+
+                <!-- Colonne Liens -->
+                <div class="footer-links">
+                    <span class="footer-links-title">Navigation</span>
+                    <ul>
+                        <li><a href="index.html"><i class="fa-solid fa-store"></i> Boutique</a></li>
+                        <li><a href="historique.html"><i class="fa-solid fa-clock-rotate-left"></i> Historique</a></li>
+                        <li><a href="evenements.html"><i class="fa-solid fa-rss"></i> Événements</a></li>
+                    </ul>
                 </div>
+
+                <!-- Colonne Support -->
+                <div class="footer-links">
+                    <span class="footer-links-title">Support</span>
+                    <ul>
+                        <li><a href="https://wa.me/261377519833"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a></li>
+                        <li><a href="tel:+261383905692"><i class="fa-solid fa-phone"></i> 038 39 056 92</a></li>
+                        <li><a href="https://wa.me/261377519833"><i class="fa-solid fa-bug"></i> Signaler un bug</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer bas -->
+            <div class="footer-bottom">
+                <span class="footer-copyright">© 2026 Magic Game Store</span>
+                <span class="footer-made">Made with // by Surazy_Player</span>
             </div>
         </div>
     </footer>
@@ -314,19 +345,37 @@
     <!-- MODAL 1 - INFO COMMANDE -->
     <div class="modalInfo" id="modalInfo">
         <div class="modalInfo-container">
-            <button class="modal-close" id="closeInfo"><i class="fa-solid fa-xmark"></i></button>
-            <h3>Info du commande</h3>
-            <div class="packprice">
-                <strong>Pack : <span id="OrderPack"></span></strong>
-                <strong>Prix : <span id="OrderPrice"></span></strong>
+
+            <!-- Header App Store style -->
+            <div class="modal-header-info">
+                <h3>Votre commande</h3>
+                <button class="modal-close-inline" id="closeInfo">Fermer</button>
             </div>
-            <!-- <h3>Vos informations</h3> -->
-            <div class="userInfo">
-                <input type="text" id="pubgIdInput" placeholder="ID PUBG" >
-                <input type="text" id="pseudoInput" placeholder="Votre pseudo">
+
+            <!-- Résumé pack — ligne propre -->
+            <div class="order-summary-card">
+                <div class="order-summary-details">
+                    <span class="order-label">Pack</span>
+                    <span class="order-pack-name" id="OrderPack"></span>
+                </div>
+                <div class="order-price-badge">
+                    <span id="OrderPrice"></span>
+                </div>
             </div>
+
+            <!-- Section label + inputs -->
+            <div class="form-section">
+                <span class="form-section-label">Informations du compte</span>
+                <div class="userInfo">
+                    <input type="text" id="pubgIdInput" placeholder="ID PUBG Mobile">
+                    <div class="input-divider"></div>
+                    <input type="text" id="pseudoInput" placeholder="Pseudo en jeu">
+                </div>
+                <span class="form-section-hint">Votre ID se trouve dans votre profil PUBG Mobile.</span>
+            </div>
+
             <div class="btn-group">
-                <button class="btn-primary" id="next">Suivant</button>
+                <button class="btn-primary" id="next">Continuer</button>
                 <button class="btn-secondary" id="closeInfo2">Annuler</button>
             </div>
         </div>
@@ -335,51 +384,58 @@
     <!-- MODAL 2 - PAIEMENT -->
 <div class="modalPay" id="modalPay">
     <div class="modalPay-container">
-        <button class="modal-close" id="closePay"><i class="fa-solid fa-xmark"></i></button>
-        <h3>Paiement Mobile</h3>
 
-        <!-- SÉLECTION MÉTHODE DE PAIEMENT -->
+
+        <!-- Header App Store style -->
+        <div class="modal-header-pay">
+            <h3>Paiement</h3>
+            <button class="modal-close-inline" id="closePay">Fermer</button>
+        </div>
+
+        <!-- SÉLECTION MÉTHODE -->
         <div class="payment-methods">
             <div class="method-selector">
                 <button class="method-btn mvola active" onclick="selectMethod('mvola')" id="methodMvola">
-                    MVola
+                    <span class="method-dot mvola-dot"></span> MVola
                 </button>
                 <button class="method-btn orange" onclick="selectMethod('orange')" id="methodOrange">
-                    Orange Money
+                    <span class="method-dot orange-dot"></span> Orange Money
                 </button>
             </div>
         </div>
 
-        <!-- BOUTON DE PAIEMENT DIRECT (change selon méthode) -->
-        <div class="paybtn" id="payBtnContainer">
-            <!-- Le bouton sera inséré ici par JavaScript -->
+        <!-- BOUTON PAIEMENT DIRECT -->
+        <div class="paybtn" id="payBtnContainer"></div>
+
+        <!-- Séparateur -->
+        <div class="pay-separator">
+            <span class="separator-line"></span>
+            <span class="separator-text">ou manuellement</span>
+            <span class="separator-line"></span>
         </div>
-        
-        <!-- Séparateur OU -->
-        <div style="display: flex; align-items: center; margin: 20px 0; color: #999;">
-            <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
-            <span style="padding: 0 15px; font-weight: 500;">OU PAYER MANUELLEMENT</span>
-            <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
+
+        <!-- NUMÉRO -->
+        <div class="form-section">
+            <span class="form-section-label">Numéro de paiement</span>
+            <div class="numero" id="paymentNumber">
+                <div class="numero-info">
+                    <strong id="phoneNumber">038 39 056 92</strong>
+                    <span class="numero-name" id="phoneName">Selneker Dino</span>
+                </div>
+                <button class="btn-copy" onclick="copyNumber()">Copier</button>
+            </div>
         </div>
-        
-        <!-- NUMÉRO DE PAIEMENT (change selon méthode) -->
-        <div class="numero" id="paymentNumber">
-            <p>
-                <strong id="phoneNumber">038 39 056 92</strong>
-                <span style="color:#ffffffa4; font-size:0.9rem;" id="phoneName">(Selneker Dino)</span>
-            </p>
-            <button class="btn-copy" onclick="copyNumber()">Copier</button>
-        </div>
-        
+
         <!-- RÉFÉRENCE -->
-        <div class="reference-form">
-            <small style="display: block; color: #666; margin-top: 5px;">
-                Après paiement, entrez la référence reçue par SMS
-            </small>
-            <input type="text" id="referenceInput" placeholder="Reference (ex:Ref:1148190***)">
+        <div class="form-section">
+            <span class="form-section-label">Référence de transaction</span>
+            <div class="userInfo">
+                <input type="text" id="referenceInput" placeholder="Ex : Ref:1148190***">
+            </div>
+            <span class="form-section-hint">Reçue par SMS après votre paiement.</span>
         </div>
-        
-        <!-- BOUTONS RETOUR & CONFIRMER -->
+
+        <!-- BOUTONS -->
         <div class="guidbtn">
             <button class="btn-primary" id="confirm">Envoyer la commande</button>
             <button class="btn-secondary" id="retour">Retour</button>

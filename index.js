@@ -434,7 +434,7 @@ function selectMethod(method) {
     
     const methodData = paymentMethods[method];
     document.getElementById('phoneNumber').textContent = methodData.phoneDisplay;
-    document.getElementById('phoneName').textContent = `(${methodData.operator})`;
+    document.getElementById('phoneName').textContent = methodData.operator;
     
     initPaymentButton();
 }
@@ -454,30 +454,11 @@ function initPaymentButton() {
     
     const methodData = paymentMethods[currentMethod];
     const ussdCode = methodData.ussdCode(priceNumber);
-    
-    const bgColor = currentMethod === 'mvola' ? 'rgba(0, 166, 81, 0.5)' : 'rgba(255, 121, 0, 0.5)';
-    const shadowColor = currentMethod === 'mvola' ? 'rgba(0,166,81,0.3)' : 'rgba(255,121,0,0.3)';
+    const btnClass = currentMethod === 'mvola' ? 'btn-mvola' : 'btn-orange';
     
     container.innerHTML = `
-        <a href="tel:${ussdCode}" 
-           style="display: block; text-decoration: none; width: 100%;">
-            <button style="
-                background: ${bgColor};
-                color: white;
-                border: none;
-                padding: 15px 20px;
-                border-radius: 15px;
-                font-weight: bold;
-                font-size: 1.1rem;
-                cursor: pointer;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                transition: all 0.3s;
-                box-shadow: 0 4px 10px ${shadowColor};
-            ">
+        <a href="tel:${ussdCode}">
+            <button class="${btnClass}">
                 Payer ${priceText} avec ${methodData.name}
             </button>
         </a>
@@ -548,7 +529,7 @@ function submitOrder() {
             closeAllModals();
         }
     })
-    .catch(() => showToast('❌ Impossible de contacter le serveur', 'error'))
+    .catch(() => showToast('Impossible de contacter le serveur', 'error'))
     .finally(() => {
         confirmBtn.disabled = false;
         confirmBtn.textContent = 'Confirmer';
