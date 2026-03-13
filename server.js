@@ -284,6 +284,35 @@ function isAdmin(req, res, next) {
     next();
 }
 
+
+// ========== CHANGEMENT DE MOT DE PASSE ADMIN ==========
+app.post('/api/admin/change-password', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findOne({ email: req.user.email });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        
+        // Vérifier l'ancien mot de passe
+        const validPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+        }
+        
+        // Hasher le nouveau mot de passe
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+        
+        res.json({ success: true, message: 'Mot de passe changé' });
+    } catch (error) {
+        console.error('❌ Erreur changement mot de passe:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========== ROUTES PUBLIQUES ==========
 
 // Login
