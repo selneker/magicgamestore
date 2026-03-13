@@ -412,14 +412,14 @@ const paymentMethods = {
         phone: '0383905692',
         phoneDisplay: '038 39 056 92',
         operator: 'Selneker Dino',
-        ussdCode: (price) => `#111*1*2*0383905692*${price}*2*0#`
+        ussdCode: (price) => `#111*1*2*0383905692*${price}*1*0#`
     },
     orange: {
         name: 'Orange Money',
         phone: '0377519833',
         phoneDisplay: '037 75 198 33',
         operator: 'Selneker Dino',
-        ussdCode: (price) => `#144*1*1*0377519833*0377519833*${price}*2#`
+        ussdCode: (price) => `#144*1*1*0377519833*0377519833*${price}*1#`
     }
 };
 
