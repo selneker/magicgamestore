@@ -367,11 +367,53 @@ header nav a i {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
     background: var(--teirtly-color);
+    position: relative;
+    overflow: visible;
 }
 
 .tarif:hover, .abonnement:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ---- BADGE PROMO — coin haut gauche ---- */
+.promo-badge {
+    position: absolute;
+    top: -3px;
+    left: 0px;
+    background: var(--accent-color);
+    color: white;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 99px;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
+}
+
+/* ---- PRIX EN COLONNE ---- */
+.price-promo-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    margin: 4px 0;
+}
+
+.price-old {
+    font-size: 0.7rem;
+    color: rgba(236,236,236,0.28);
+    text-decoration: line-through;
+    font-weight: 400;
+}
+
+.price-new {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
 .tarif h3, .abonnement h3 {
@@ -469,7 +511,15 @@ footer {
     color: white;
     transform: translateY(-2px);
 }
-
+.social-btn.facebook {
+    background: rgba(37, 69, 211, 0.1);
+    color: #0091ff;
+}
+.social-btn.facebook:hover {
+    background: #005DDD;
+    color: white;
+    transform: translateY(-2px);
+}
 .social-btn.phone {
     background: rgba(0,122,255,0.1);
     color: var(--accent-color);
