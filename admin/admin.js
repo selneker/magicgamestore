@@ -561,7 +561,7 @@ function copyToClipboard(text, type = '') {
     }
     
     navigator.clipboard.writeText(text).then(() => {
-        showNotification(`✅ ${type || 'Élément'} copié !`, 'success');
+        showNotification(`${type || 'Élément'} copié !`, 'success');
     }).catch((err) => {
         console.error('Erreur de copie:', err);
         fallbackCopy(text, type);
@@ -578,7 +578,7 @@ function fallbackCopy(text, type = '') {
     
     try {
         document.execCommand('copy');
-        showNotification(`✅ ${type || 'Élément'} copié ! (fallback)`, 'success');
+        showNotification(`${type || 'Élément'} copié ! (fallback)`, 'success');
     } catch (err) {
         showNotification(`Erreur de copie`, 'error');
     }
