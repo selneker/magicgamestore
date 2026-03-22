@@ -36,8 +36,9 @@ function showAdminToast(message, type = 'success') {
     // Styles du toast
     toast.style.cssText = `
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
         background: var(--teirtly-color, #2C2C2C);
         color: var(--secondly-color, #ECECEC);
         padding: 12px 24px;
@@ -50,7 +51,7 @@ function showAdminToast(message, type = 'success') {
         gap: 10px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.3);
         border: 1px solid rgba(0,122,255,0.3);
-        animation: adminToastSlideIn 0.3s ease;
+        animation: toastIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
         max-width: 350px;
     `;
     
@@ -130,18 +131,18 @@ function showAbonnements() {
 
 // ========== CHANGEMENT DE MOT DE PASSE ==========
 function changePassword() {
-    const currentPassword = prompt("🔐 Entrez votre mot de passe actuel:");
+    const currentPassword = prompt("Entrez votre mot de passe actuel:");
     if (!currentPassword) return;
     
     const newPassword = prompt("✨ Entrez votre nouveau mot de passe (min 6 caractères):");
     if (!newPassword || newPassword.length < 6) {
-        showAdminToast("❌ Le mot de passe doit contenir au moins 6 caractères", 'error');
+        showAdminToast("Le mot de passe doit contenir au moins 6 caractères", 'error');
         return;
     }
     
-    const confirmPassword = prompt("✅ Confirmez votre nouveau mot de passe:");
+    const confirmPassword = prompt("Confirmez votre nouveau mot de passe:");
     if (newPassword !== confirmPassword) {
-        showAdminToast("❌ Les mots de passe ne correspondent pas", 'error');
+        showAdminToast("Les mots de passe ne correspondent pas", 'error');
         return;
     }
     
@@ -163,12 +164,12 @@ function changePassword() {
         if (data.error) {
             showAdminToast('❌ ' + data.error, 'error');
         } else {
-            showAdminToast('✅ Mot de passe changé avec succès!', 'success');
+            showAdminToast('Mot de passe changé avec succès!', 'success');
         }
     })
     .catch(err => {
         console.error('❌ Erreur:', err);
-        showAdminToast('❌ Erreur de connexion au serveur', 'error');
+        showAdminToast('Erreur de connexion au serveur', 'error');
     });
 }
 
@@ -337,55 +338,48 @@ function showLogsPanel() {
             return;
         }
         
-        const logModal = document.createElement('div');
-        logModal.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 800px;
-            max-height: 80vh;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            z-index: 10001;
-            padding: 20px;
-            overflow: auto;
+        const overlay = document.createElement('div');
+        overlay.className = 'log-modal-overlay';
+        overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+        overlay.innerHTML = `
+            <div class="log-modal">
+                <div class="log-modal-header">
+                    <h3>Historique des actions</h3>
+                    <button class="log-modal-close" onclick="this.closest('.log-modal-overlay').remove()">&times;</button>
+                </div>
+                <div class="log-modal-body">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Action</th>
+                                <th>Commande</th>
+                                <th>Détails</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.logs.map(log => `
+                                <tr>
+                                    <td>${new Date(log.timestamp).toLocaleString('fr-FR')}</td>
+                                    <td>
+                                        <span class="log-badge ${log.action === 'DELETE' ? 'delete' : log.action === 'STATUS_UPDATE' ? 'update' : 'other'}">
+                                            ${log.action}
+                                        </span>
+                                    </td>
+                                    <td>#${log.orderId}</td>
+                                    <td style="font-size:0.78rem;color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                        ${JSON.stringify(log.details || log.deletedOrder || '').substring(0, 60)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         `;
-        
-        logModal.innerHTML = `
-            <h3 style="margin-top: 0;">📋 Historique des actions</h3>
-            <button onclick="this.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background: #f5f5f5;">
-                        <th style="padding: 10px; text-align: left;">Date</th>
-                        <th style="padding: 10px; text-align: left;">Action</th>
-                        <th style="padding: 10px; text-align: left;">Commande</th>
-                        <th style="padding: 10px; text-align: left;">Détails</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.logs.map(log => `
-                        <tr style="border-bottom: 1px solid #ddd;">
-                            <td style="padding: 8px;">${new Date(log.timestamp).toLocaleString()}</td>
-                            <td style="padding: 8px;">
-                                <span style="background: ${log.action === 'DELETE' ? '#f44336' : log.action === 'STATUS_UPDATE' ? '#ff9800' : '#4CAF50'}; color: white; padding: 3px 8px; border-radius: 3px;">
-                                    ${log.action}
-                                </span>
-                            </td>
-                            <td style="padding: 8px;">#${log.orderId}</td>
-                            <td style="padding: 8px; max-width: 300px; overflow: auto;">
-                                ${JSON.stringify(log.details || log.deletedOrder || '').substring(0, 50)}...
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-        
-        document.body.appendChild(logModal);
+
+        document.body.appendChild(overlay);
     })
     .catch(err => {
         console.error('Erreur chargement logs:', err);
@@ -423,13 +417,11 @@ function login() {
             adminOnline = true;
             localStorage.setItem('adminStatus', 'online');
             
-            // Met à jour le bouton
-            const btn = document.getElementById('toggleAdminStatusBtn');
+            // Met à jour le toggle switch
+            const chk  = document.getElementById('statusToggleInput');
             const text = document.getElementById('adminStatusText');
-            if (btn && text) {
-                btn.className = 'status-btn online';
-                text.textContent = 'En ligne';
-            }
+            if (chk)  chk.checked = true;
+            if (text) text.textContent = 'En ligne';
             
             loadOrders();
             loadStats();
@@ -552,9 +544,11 @@ function loadStats() {
         
         document.getElementById('pendingOrders').textContent = data.statusCount?.['en attente'] || 0;
         document.getElementById('deliveredOrders').textContent = data.statusCount?.['livré'] || 0;
+        // Sync bottom sheet stats si ouvert
+        if (typeof syncSheetStats === 'function') syncSheetStats();
     })
     .catch(err => {
-        console.error('❌ Erreur chargement stats:', err);
+        console.error('Erreur chargement stats:', err);
         showAdminToast('Erreur chargement statistiques', 'error');
     });
 }
@@ -562,7 +556,7 @@ function loadStats() {
 // ========== FONCTION DE COPIE ==========
 function copyToClipboard(text, type = '') {
     if (!text) {
-        showNotification(`❌ Aucun${type ? ' ' + type : ''} à copier`, 'error');
+        showNotification(`Aucun${type ? ' ' + type : ''} à copier`, 'error');
         return;
     }
     
@@ -586,15 +580,82 @@ function fallbackCopy(text, type = '') {
         document.execCommand('copy');
         showNotification(`✅ ${type || 'Élément'} copié ! (fallback)`, 'success');
     } catch (err) {
-        showNotification(`❌ Erreur de copie`, 'error');
+        showNotification(`Erreur de copie`, 'error');
     }
     
     document.body.removeChild(textarea);
 }
 
 // ========== AFFICHAGE DES COMMANDES ==========
+function renderMobileCards(ordersToShow) {
+    const container = document.getElementById('ordersMobileCards');
+    if (!container) return;
+
+    if (!ordersToShow || ordersToShow.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:48px 0;color:var(--text-secondary);font-size:0.88rem;">Aucune commande</div>`;
+        return;
+    }
+
+    container.innerHTML = ordersToShow.map(order => {
+        const sc = order.status === 'en attente' ? 'status-en-attente'
+                 : order.status === 'livré'      ? 'status-livré'
+                 : 'status-annulé';
+
+        const d = new Date(order.date);
+        const dateStr = d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short' });
+        const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+
+        const priceVal = (order.price || '').replace(' Ar','').replace('Ar','').trim();
+
+        return `
+        <div class="order-card-mobile">
+            <div class="ocm-top">
+                <span class="ocm-pack">${order.pack || '—'}</span>
+                <span class="ocm-price">${priceVal} <span style="font-size:0.75rem;color:var(--accent-color)">Ar</span></span>
+            </div>
+            <div class="ocm-meta">
+                <span class="ocm-meta-item"><i class="fas fa-hashtag"></i>#${order.id}</span>
+                <span class="ocm-meta-item"><i class="fas fa-calendar"></i>${dateStr} ${timeStr}</span>
+                <span class="ocm-meta-item"><i class="fas fa-gamepad"></i>${order.pubgId || '—'}</span>
+                <span class="ocm-meta-item"><i class="fas fa-user"></i>${order.pseudo || '—'}</span>
+                <span class="ocm-meta-item"><i class="fas fa-credit-card"></i>${order.paymentMethod || '—'}</span>
+            </div>
+            <div class="ocm-ref">
+                <span class="ocm-ref-label">Référence</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="ocm-ref-value">${order.reference || '—'}</span>
+                    <button class="icon-btn copy-ref-btn" onclick="copyToClipboard('${order.reference || ''}','référence')" title="Copier">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="ocm-bottom">
+                <span class="status-badge ${sc}">${order.status || 'en attente'}</span>
+                <div class="ocm-actions">
+                    ${order.status !== 'livré' ? `
+                    <button class="icon-btn deliver-btn" onclick="updateStatus(${order.id},'livré')" title="Livrer">
+                        <i class="fas fa-check"></i>
+                    </button>` : ''}
+                    ${order.status !== 'annulé' && order.status !== 'livré' ? `
+                    <button class="icon-btn cancel-btn" onclick="updateStatus(${order.id},'annulé')" title="Annuler">
+                        <i class="fas fa-times"></i>
+                    </button>` : ''}
+                    <button class="icon-btn delete-btn" onclick="deleteOrder(${order.id})" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button class="icon-btn copy-id-btn" onclick="copyToClipboard('${order.pubgId || ''}','ID PUBG')" title="Copier ID">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
 function displayOrders(ordersToShow) {
     const tbody = document.getElementById('ordersBody');
+    // Render mobile cards too
+    renderMobileCards(ordersToShow);
     
     if (!ordersToShow || !Array.isArray(ordersToShow)) {
         console.error('❌ Données invalides:', ordersToShow);
@@ -782,18 +843,15 @@ function refreshOrders() {
 
 // ========== STATUT ADMIN ==========
 window.toggleAdminStatus = function() {
-    adminOnline = !adminOnline;
+    const checkbox = document.getElementById('statusToggleInput');
+    adminOnline = checkbox ? checkbox.checked : !adminOnline;
     
-    const btn = document.getElementById('toggleAdminStatusBtn');
     const text = document.getElementById('adminStatusText');
+    if (text) text.textContent = adminOnline ? 'En ligne' : 'Hors ligne';
     
     if (adminOnline) {
-        btn.className = 'status-btn online';
-        text.textContent = 'En ligne';
         showNotification('Admin en ligne', 'success');
     } else {
-        btn.className = 'status-btn offline';
-        text.textContent = 'Hors ligne';
         showNotification('Admin hors ligne', 'info');
     }
     
@@ -823,12 +881,10 @@ if (token) {
             adminOnline = true;
             localStorage.setItem('adminStatus', 'online');
             
-            const btn = document.getElementById('toggleAdminStatusBtn');
-            const text = document.getElementById('adminStatusText');
-            if (btn && text) {
-                btn.className = 'status-btn online';
-                text.textContent = 'En ligne';
-            }
+            const chk2  = document.getElementById('statusToggleInput');
+            const text2 = document.getElementById('adminStatusText');
+            if (chk2)  chk2.checked = true;
+            if (text2) text2.textContent = 'En ligne';
             
             loadOrders();
             loadStats();
