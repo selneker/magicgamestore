@@ -612,9 +612,9 @@ tr:hover td { background: var(--fill-3); }
     flex-shrink: 0;
 }
 
-.status-en-attente { background: rgba(255,159,10,0.14); color: var(--orange); }
-.status-livré      { background: rgba(48,209,88,0.12);  color: var(--green); }
-.status-annulé     { background: rgba(255,69,58,0.12);  color: var(--red); }
+.status-en-attente { background: rgba(255, 157, 10, 0.027); color: var(--orange); }
+.status-livré      { background: rgba(48, 209, 88, 0.03);  color: var(--green); }
+.status-annulé     { background: rgba(255, 68, 58, 0.032);  color: var(--red); }
 
 /* ══════════════════
    COPY CELL
