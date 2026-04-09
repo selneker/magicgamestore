@@ -45,13 +45,49 @@ app.use('/api/', limiter);
 // ========== MONGODB CONNEXION ==========
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-    console.error('ERREUR: MONGODB_URI non définie');
+    console.error('❌ ERREUR: MONGODB_URI non définie');
     process.exit(1);
 }
 
-mongoose.connect(MONGODB_URI);
-mongoose.connection.on('connected', () => console.log('Connecté à MongoDB Atlas'));
-mongoose.connection.on('error', (err) => console.error('Erreur MongoDB:', err));
+// Connexion avec options
+mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 30000,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 30000
+});
+
+mongoose.connection.on('connected', () => console.log('✅ Connecté à MongoDB Atlas'));
+mongoose.connection.on('error', (err) => console.error('❌ Erreur MongoDB:', err));
+mongoose.connection.on('disconnected', () => console.log('⚠️ Déconnecté de MongoDB'));
+
+// Attendre la connexion avant d'initialiser
+mongoose.connection.once('open', () => {
+    console.log('✅ Base de données prête');
+    initializeAdmin();
+});
+
+// Fonction initializeAdmin modifiée
+async function initializeAdmin() {
+    try {
+        const User = mongoose.model('User', userSchema);
+        const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
+        
+        if (!adminExists) {
+            const admin = new User({
+                id: 1,
+                email: process.env.ADMIN_EMAIL,
+                password: process.env.ADMIN_PASSWORD,
+                role: 'admin'
+            });
+            await admin.save();
+            console.log('✅ Admin créé dans MongoDB');
+        } else {
+            console.log('✅ Admin existe déjà');
+        }
+    } catch (error) {
+        console.error('❌ Erreur création admin:', error);
+    }
+}
 
 // ========== MODÈLES MONGODB ==========
 
