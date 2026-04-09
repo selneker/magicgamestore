@@ -16,13 +16,14 @@ body {
 
 /* ---- PAGE TITLE ---- */
 .page-title-section {
-    padding: 28px 20px 0;
+    padding: 50px 20px 0;
     max-width: 680px;
     margin: 0 auto;
 }
 
 .page-title-section h1 {
     font-size: 1.9rem;
+    margin-top: 55rem;
     font-weight: 700;
     letter-spacing: -0.03em;
     color: var(--secondly-color);
